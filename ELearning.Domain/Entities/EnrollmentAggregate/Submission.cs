@@ -1,4 +1,5 @@
-﻿using ELearning.SharedKernel;
+﻿using ELearning.Domain.Entities.EnrollmentAggregate.Events;
+using ELearning.SharedKernel;
 
 namespace ELearning.Domain.Entities.EnrollmentAggregate;
 

@@ -1,4 +1,5 @@
 using ELearning.Domain.Entities.CourseAggregate.Enums;
+using ELearning.Domain.Entities.CourseAggregate.Events;
 using ELearning.Domain.Entities.EnrollmentAggregate;
 using ELearning.Domain.ValueObjects;
 using ELearning.SharedKernel;
