@@ -6,14 +6,23 @@ namespace ELearning.Domain.Entities.EnrollmentAggregate;
 public class Submission : BaseEntity
 {
     public Guid EnrollmentId { get; private set; }
+
     public Guid AssignmentId { get; private set; }
+
     public string Content { get; private set; }
+
     public string FileUrl { get; private set; }
+
     public bool IsGraded { get; private set; }
+
     public int? Score { get; private set; }
+
     public string Feedback { get; private set; }
+
     public DateTime SubmittedDate { get; private set; }
+
     public Guid? GradedById { get; private set; }
+
     public DateTime? GradedDate { get; private set; }
 
     private Submission()

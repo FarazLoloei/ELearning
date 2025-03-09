@@ -7,26 +7,33 @@ namespace ELearning.Domain.Entities.EnrollmentAggregate;
 public class Enrollment : BaseEntity, IAggregateRoot<Enrollment>
 {
     private readonly List<Progress> _progressRecords = new List<Progress>();
+
     private readonly List<Submission> _submissions = new List<Submission>();
 
     public Guid StudentId { get; private set; }
+
     public Guid CourseId { get; private set; }
+
     public EnrollmentStatus Status { get; private set; }
+
     public DateTime? CompletedDate { get; private set; }
+
     public Rating? CourseRating { get; private set; }
+
     public string Review { get; private set; }
 
     public IReadOnlyCollection<Progress> ProgressRecords => _progressRecords.AsReadOnly();
+
     public IReadOnlyCollection<Submission> Submissions => _submissions.AsReadOnly();
 
     private Enrollment()
     { }
 
-    public Enrollment(Guid studentId, Guid courseId)
+    public Enrollment(Guid studentId, Guid courseId, EnrollmentStatus? enrollmentStatus)
     {
         StudentId = studentId;
         CourseId = courseId;
-        Status = EnrollmentStatus.Active;
+        Status = enrollmentStatus ?? EnrollmentStatus.Active;
     }
 
     public void MarkAsCompleted()

@@ -6,9 +6,13 @@ namespace ELearning.Domain.Entities.EnrollmentAggregate;
 public class Progress : BaseEntity
 {
     public Guid EnrollmentId { get; private set; }
+
     public Guid LessonId { get; private set; }
+
     public ProgressStatus Status { get; private set; }
+
     public DateTime? CompletedDate { get; private set; }
+
     public int TimeSpentSeconds { get; private set; }
 
     private Progress()
