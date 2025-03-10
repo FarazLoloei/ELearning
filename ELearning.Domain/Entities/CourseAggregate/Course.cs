@@ -11,19 +11,69 @@ public class Course : BaseEntity, IAggregateRoot<Course>
     private readonly List<Module> _modules = new List<Module>();
     private readonly List<Enrollment> _enrollments = new List<Enrollment>();
 
+    /// <summary>
+    /// Name of the course.
+    /// </summary>
     public string Title { get; private set; }
+
+    /// <summary>
+    /// Detailed explanation of course content and objectives.
+    /// </summary>
     public string Description { get; private set; }
+
+    /// <summary>
+    /// Reference to the instructor who created/teaches the course.
+    /// </summary>
     public Guid InstructorId { get; private set; }
+
+    /// <summary>
+    /// Current state of the course (Draft, Published, Unpublished, Archived).
+    /// </summary>
     public CourseStatus Status { get; private set; }
+
+    /// <summary>
+    /// Difficulty level of the course (Beginner, Intermediate, Advanced, AllLevels).
+    /// </summary>
     public CourseLevel Level { get; private set; }
+
+    /// <summary>
+    /// Total estimated time to complete the course.
+    /// </summary>
     public Duration Duration { get; private set; }
+
+    /// <summary>
+    /// Calculated average rating from all student reviews.
+    /// </summary>
     public Rating AverageRating { get; private set; }
+
+    /// <summary>
+    /// Subject category of the course (e.g., Programming, Design, Business, etc.).
+    /// </summary>
     public CourseCategory Category { get; private set; }
+
+    /// <summary>
+    /// The date when the course was made available to students.
+    /// </summary>
     public DateTime PublishedDate { get; private set; }
+
+    /// <summary>
+    /// Boolean indicating if the course is highlighted on the platform.
+    /// </summary>
     public bool IsFeatured { get; private set; }
+
+    /// <summary>
+    /// Cost to enroll in the course.
+    /// </summary>
     public decimal Price { get; private set; }
 
+    /// <summary>
+    /// Collection of content modules making up the course.
+    /// </summary>
     public IReadOnlyCollection<Module> Modules => _modules.AsReadOnly();
+
+    /// <summary>
+    /// Collection of student enrollments in this course.
+    /// </summary>
     public IReadOnlyCollection<Enrollment> Enrollments => _enrollments.AsReadOnly();
 
     // Private constructor for EF Core

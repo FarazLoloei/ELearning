@@ -6,12 +6,39 @@ namespace ELearning.Domain.Entities.CourseAggregate;
 
 public class Lesson : BaseEntity
 {
+    /// <summary>
+    /// Name of the lesson
+    /// </summary>
     public string Title { get; private set; }
+
+    /// <summary>
+    /// The actual lesson content (text/HTML)
+    /// </summary>
     public string Content { get; private set; }
+
+    /// <summary>
+    /// Format of lesson (Video, Text, Presentation, Interactive)
+    /// </summary>
     public LessonType Type { get; private set; }
+
+    /// <summary>
+    /// Link to video content (for video-type lessons)
+    /// </summary>
     public string VideoUrl { get; private set; }
+
+    /// <summary>
+    /// Estimated time to complete the lesson
+    /// </summary>
     public Duration Duration { get; private set; }
+
+    /// <summary>
+    /// Sequence number within the module
+    /// </summary>
     public int Order { get; private set; }
+
+    /// <summary>
+    /// Reference to the parent module
+    /// </summary>
     public Guid ModuleId { get; private set; }
 
     private Lesson()

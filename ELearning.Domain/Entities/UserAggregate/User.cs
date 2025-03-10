@@ -6,13 +6,44 @@ namespace ELearning.Domain.Entities.UserAggregate;
 
 public class User : BaseEntity, IAggregateRoot<User>
 {
+    /// <summary>
+    /// User's first name
+    /// </summary>
     public string FirstName { get; protected set; }
+
+    /// <summary>
+    /// User's last name
+    /// </summary>
     public string LastName { get; protected set; }
+
+    /// <summary>
+    /// Unique identifier for login/communication
+    /// </summary>
     public Email Email { get; protected set; }
+
+    /// <summary>
+    /// Secured password storage
+    /// </summary>
     public string PasswordHash { get; protected set; }
+
+    /// <summary>
+    /// Link to profile image
+    /// </summary>
     public string ProfilePictureUrl { get; protected set; }
+
+    /// <summary>
+    /// Type of user (Student, Instructor, Admin)
+    /// </summary>
     public UserRole Role { get; protected set; }
+
+    /// <summary>
+    /// Whether account is enabled
+    /// </summary>
     public bool IsActive { get; protected set; }
+
+    /// <summary>
+    /// Timestamp of most recent login
+    /// </summary>
     public DateTime? LastLoginDate { get; protected set; }
 
     protected User()

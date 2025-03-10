@@ -8,8 +8,19 @@ public class Instructor : User
 {
     private readonly List<Course> _courses = new List<Course>();
 
+    /// <summary>
+    /// Professional biography
+    /// </summary>
     public string Bio { get; private set; }
+
+    /// <summary>
+    /// Areas of specialization
+    /// </summary>
     public string Expertise { get; private set; }
+
+    /// <summary>
+    /// Collection of courses created by this instructor
+    /// </summary>
     public IReadOnlyCollection<Course> Courses => _courses.AsReadOnly();
 
     private Instructor() : base()

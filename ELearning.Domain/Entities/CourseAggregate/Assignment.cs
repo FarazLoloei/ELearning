@@ -5,11 +5,34 @@ namespace ELearning.Domain.Entities.CourseAggregate;
 
 public class Assignment : BaseEntity
 {
+    /// <summary>
+    /// Name of the assignment
+    /// </summary>
     public string Title { get; private set; }
+
+    /// <summary>
+    /// Instructions and requirements
+    /// </summary>
     public string Description { get; private set; }
+
+    /// <summary>
+    /// Format (Quiz, Essay, Project, Exam)
+    /// </summary>
     public AssignmentType Type { get; private set; }
+
+    /// <summary>
+    /// Maximum score possible
+    /// </summary>
     public int MaxPoints { get; private set; }
+
+    /// <summary>
+    /// Deadline for submission
+    /// </summary>
     public DateTime? DueDate { get; private set; }
+
+    /// <summary>
+    /// Reference to the parent module
+    /// </summary>
     public Guid ModuleId { get; private set; }
 
     private Assignment()

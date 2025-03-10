@@ -10,6 +10,9 @@ public class Student : User
 {
     private readonly List<Enrollment> _enrollments = new List<Enrollment>();
 
+    /// <summary>
+    /// Courses this student is enrolled in
+    /// </summary>
     public IReadOnlyCollection<Enrollment> Enrollments => _enrollments.AsReadOnly();
 
     private Student() : base()
