@@ -1,6 +1,5 @@
 ﻿namespace ELearning.Application.Submissions.Dtos;
 
-// DTO for submission
 public readonly record struct SubmissionDto(
     Guid Id,
     Guid AssignmentId,
