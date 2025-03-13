@@ -19,7 +19,7 @@ public static class DependencyInjection
         services.AddAutoMapper(Assembly.GetExecutingAssembly());
 
         // Register FluentValidation
-        services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
+        //services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
 
         // Register MediatR pipeline behaviors
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));

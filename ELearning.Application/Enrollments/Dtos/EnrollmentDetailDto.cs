@@ -1,4 +1,6 @@
-﻿namespace ELearning.Application.Enrollments.Dtos;
+﻿using ELearning.Application.Submissions.Dtos;
+
+namespace ELearning.Application.Enrollments.Dtos;
 
 // Detailed DTO for enrollment
 public readonly record struct EnrollmentDetailDto(
