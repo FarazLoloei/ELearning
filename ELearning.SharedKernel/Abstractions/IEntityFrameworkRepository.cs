@@ -1,6 +1,6 @@
-﻿namespace ELearning.SharedKernel;
+﻿namespace ELearning.SharedKernel.Abstractions;
 
-public interface IRepository<T> where T : BaseEntity
+public interface IEntityFrameworkRepository<T> where T : BaseEntity
 {
     Task<T> GetByIdAsync(Guid id);
 
