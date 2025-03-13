@@ -25,7 +25,7 @@ public class ValidationBehavior<TRequest, TResponse>
 
             if (failures.Any())
             {
-                throw new ValidationException(failures);
+                throw new ValidationException((IEnumerable<FluentValidation.Results.ValidationFailure>)failures);
             }
         }
 
