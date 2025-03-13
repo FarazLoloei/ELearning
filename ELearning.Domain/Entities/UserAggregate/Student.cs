@@ -26,7 +26,7 @@ public class Student : User
 
     public void EnrollInCourse(Course course)
     {
-        var enrollment = new Enrollment(Id, course.Id);
+        var enrollment = new Enrollment(Id, course.Id, null, null);
         _enrollments.Add(enrollment);
 
         AddDomainEvent(new EnrollmentCreatedEvent(this, course, enrollment));

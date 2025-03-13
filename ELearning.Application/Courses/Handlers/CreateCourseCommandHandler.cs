@@ -14,9 +14,9 @@ namespace ELearning.Application.Courses.Handlers;
 public class CreateCourseCommandHandler(ICourseRepository courseRepository,
         ICurrentUserService currentUserService,
         IInstructorRepository instructorRepository)
-    : IRequestHandler<CreateCourseCommand, Result<Guid>>
+    : IRequestHandler<CreateCourseCommand, Result>
 {
-    public async Task<Result<Guid>> Handle(CreateCourseCommand request, CancellationToken cancellationToken)
+    public async Task<Result> Handle(CreateCourseCommand request, CancellationToken cancellationToken)
     {
         if (!currentUserService.IsAuthenticated || currentUserService.UserId == null)
         {
@@ -37,7 +37,7 @@ public class CreateCourseCommandHandler(ICourseRepository courseRepository,
 
         if (category == null || level == null)
         {
-            return Result.Failure<Guid>("Invalid category or level.");
+            return Result.Failure("Invalid category or level.");
         }
 
         // Create duration value object
@@ -55,6 +55,6 @@ public class CreateCourseCommandHandler(ICourseRepository courseRepository,
 
         await courseRepository.AddAsync(course);
 
-        return Result.Success(course.Id);
+        return Result.Success();
     }
 }

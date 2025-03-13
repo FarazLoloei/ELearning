@@ -1,4 +1,6 @@
-﻿namespace ELearning.Application.Courses.Dtos;
+﻿using ELearning.Application.Instructors.Dtos;
+
+namespace ELearning.Application.Courses.Dtos;
 
 public readonly record struct CourseDetailDto(
     Guid Id,

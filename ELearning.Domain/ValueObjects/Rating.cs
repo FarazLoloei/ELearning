@@ -5,6 +5,7 @@ namespace ELearning.Domain.ValueObjects;
 public class Rating : ValueObject
 {
     public decimal Value { get; private set; }
+
     public int NumberOfRatings { get; private set; }
 
     private Rating()
