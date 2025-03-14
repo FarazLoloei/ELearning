@@ -1,10 +1,10 @@
-﻿using ELearning.Application.Common.Model;
-using ELearning.Application.Enrollments.Dtos;
+﻿using ELearning.Application.Enrollments.Dtos;
+using ELearning.SharedKernel;
+using ELearning.SharedKernel.Abstractions;
 
-namespace ELearning.Infrastructure.Dapr.Abstraction;
+namespace ELearning.Application.Enrollments.Abstractions.ReadModels;
 
-// Interface for Enrollment read service
-public interface IEnrollmentReadService : IReadService<EnrollmentDetailDto, Guid>
+public interface IEnrollmentReadService : IReadRepository<EnrollmentDetailDto, Guid>
 {
     Task<PaginatedList<EnrollmentDto>> GetStudentEnrollmentsAsync(Guid studentId, int pageNumber, int pageSize);
 

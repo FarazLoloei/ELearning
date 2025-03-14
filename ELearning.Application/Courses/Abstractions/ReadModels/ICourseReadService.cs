@@ -1,10 +1,10 @@
-﻿using ELearning.Application.Common.Model;
-using ELearning.Application.Courses.Dtos;
+﻿using ELearning.Application.Courses.Dtos;
+using ELearning.SharedKernel;
+using ELearning.SharedKernel.Abstractions;
 
-namespace ELearning.Infrastructure.Dapr.Abstraction;
+namespace ELearning.Application.Courses.Abstractions.ReadModels;
 
-// Interface for Course read service
-public interface ICourseReadService : IReadService<CourseDetailDto, Guid>
+public interface ICourseReadService : IReadRepository<CourseDetailDto, Guid>
 {
     Task<PaginatedList<CourseListDto>> SearchCoursesAsync(string searchTerm, int? categoryId, int? levelId, bool? isFeatured, int pageNumber, int pageSize);
 

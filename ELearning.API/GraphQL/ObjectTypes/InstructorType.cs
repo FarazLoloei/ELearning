@@ -1,5 +1,4 @@
 ﻿using ELearning.Application.Instructors.Dtos;
-using HotChocolate.Types;
 
 namespace ELearning.API.GraphQL.ObjectTypes;
 

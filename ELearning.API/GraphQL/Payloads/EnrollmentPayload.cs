@@ -4,9 +4,9 @@ public class EnrollmentPayload : Payload
 {
     public Guid? EnrollmentId { get; }
 
-    public EnrollmentPayload(Guid enrollmentId)
+    public EnrollmentPayload()//(Guid enrollmentId)
     {
-        EnrollmentId = enrollmentId;
+        //EnrollmentId = enrollmentId;
     }
 
     public EnrollmentPayload(string error)

@@ -4,9 +4,9 @@ public class SubmissionPayload : Payload
 {
     public Guid? SubmissionId { get; }
 
-    public SubmissionPayload(Guid submissionId)
+    public SubmissionPayload()//(Guid submissionId)
     {
-        SubmissionId = submissionId;
+        //SubmissionId = submissionId;
     }
 
     public SubmissionPayload(string error)

@@ -1,9 +1,9 @@
 ﻿using Dapr.Client;
 using ELearning.Application.Common.Exceptions;
-using ELearning.Application.Common.Model;
+using ELearning.Application.Enrollments.Abstractions.ReadModels;
 using ELearning.Application.Enrollments.Dtos;
 using ELearning.Domain.Entities.EnrollmentAggregate;
-using ELearning.Infrastructure.Dapr.Abstraction;
+using ELearning.SharedKernel;
 using Microsoft.Extensions.Logging;
 
 namespace ELearning.Infrastructure.ReadModels;
@@ -40,9 +40,9 @@ public class EnrollmentReadService(DaprClient daprClient, ILogger<EnrollmentRead
         try
         {
             var data = await daprClient.InvokeMethodAsync<PaginatedResponse<EnrollmentDetailDto>>(
+                 httpMethod: HttpMethod.Get,
                 "enrollmentservice",
-                $"api/enrollments?pageNumber={pageNumber}&pageSize={pageSize}",
-                new HttpInvocationOptions { Method = HttpMethod.Get });
+                $"api/enrollments?pageNumber={pageNumber}&pageSize={pageSize}");
 
             return new PaginatedList<EnrollmentDetailDto>(
                 data.Items,
@@ -62,9 +62,9 @@ public class EnrollmentReadService(DaprClient daprClient, ILogger<EnrollmentRead
         try
         {
             var data = await daprClient.InvokeMethodAsync<PaginatedResponse<EnrollmentDto>>(
+                 httpMethod: HttpMethod.Get,
                 "enrollmentservice",
-                $"api/students/{studentId}/enrollments?pageNumber={pageNumber}&pageSize={pageSize}",
-                new HttpInvocationOptions { Method = HttpMethod.Get });
+                $"api/students/{studentId}/enrollments?pageNumber={pageNumber}&pageSize={pageSize}");
 
             return new PaginatedList<EnrollmentDto>(
                 data.Items,
@@ -84,9 +84,9 @@ public class EnrollmentReadService(DaprClient daprClient, ILogger<EnrollmentRead
         try
         {
             var data = await daprClient.InvokeMethodAsync<PaginatedResponse<EnrollmentDto>>(
+                 httpMethod: HttpMethod.Get,
                 "enrollmentservice",
-                $"api/courses/{courseId}/enrollments?pageNumber={pageNumber}&pageSize={pageSize}",
-                new HttpInvocationOptions { Method = HttpMethod.Get });
+                $"api/courses/{courseId}/enrollments?pageNumber={pageNumber}&pageSize={pageSize}");
 
             return new PaginatedList<EnrollmentDto>(
                 data.Items,
@@ -106,9 +106,9 @@ public class EnrollmentReadService(DaprClient daprClient, ILogger<EnrollmentRead
         try
         {
             var enrollment = await daprClient.InvokeMethodAsync<EnrollmentDetailDto>(
+                 httpMethod: HttpMethod.Get,
                 "enrollmentservice",
-                $"api/students/{studentId}/courses/{courseId}/enrollment",
-                new HttpInvocationOptions { Method = HttpMethod.Get });
+                $"api/students/{studentId}/courses/{courseId}/enrollment");
 
             if (enrollment == null)
             {

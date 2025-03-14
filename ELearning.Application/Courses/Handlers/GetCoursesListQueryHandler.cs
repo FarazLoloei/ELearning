@@ -3,6 +3,7 @@ using ELearning.Application.Common.Model;
 using ELearning.Application.Courses.Dtos;
 using ELearning.Application.Courses.Queries;
 using ELearning.Domain.Entities.CourseAggregate.Abstractions.Repositories;
+using ELearning.SharedKernel;
 using MediatR;
 
 namespace ELearning.Application.Courses.Handlers;

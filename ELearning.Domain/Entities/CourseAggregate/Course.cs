@@ -3,6 +3,7 @@ using ELearning.Domain.Entities.CourseAggregate.Events;
 using ELearning.Domain.Entities.EnrollmentAggregate;
 using ELearning.Domain.ValueObjects;
 using ELearning.SharedKernel;
+using ELearning.SharedKernel.Abstractions;
 
 namespace ELearning.Domain.Entities.CourseAggregate;
 

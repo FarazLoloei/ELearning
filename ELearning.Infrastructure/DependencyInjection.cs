@@ -4,6 +4,7 @@ using ELearning.Domain.Entities.EnrollmentAggregate.Abstractions.Repositories;
 using ELearning.Domain.Entities.UserAggregate.Abstractions.Repositories;
 using ELearning.Infrastructure.Data;
 using ELearning.Infrastructure.Data.Repositories;
+using ELearning.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;

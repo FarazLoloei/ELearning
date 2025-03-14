@@ -1,10 +1,10 @@
-﻿using ELearning.Application.Common.Model;
-using ELearning.Application.Submissions.Dtos;
+﻿using ELearning.Application.Submissions.Dtos;
+using ELearning.SharedKernel;
+using ELearning.SharedKernel.Abstractions;
 
-namespace ELearning.Infrastructure.Dapr.Abstraction;
+namespace ELearning.Application.Submissions.Abstractions.ReadModels;
 
-// Interface for Submission read service
-public interface ISubmissionReadService : IReadService<SubmissionDetailDto, Guid>
+public interface ISubmissionReadService : IReadRepository<SubmissionDetailDto, Guid>
 {
     Task<PaginatedList<SubmissionDto>> GetPendingSubmissionsAsync(Guid instructorId, int pageNumber, int pageSize);
 

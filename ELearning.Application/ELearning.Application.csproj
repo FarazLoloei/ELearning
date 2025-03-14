@@ -11,10 +11,6 @@
     <ProjectReference Include="..\ELearning.Domain\ELearning.Domain.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Enrollments\Queries\" />
-  </ItemGroup>
-
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
