@@ -1,9 +1,9 @@
 ﻿using Dapr.Client;
 using ELearning.Application.Common.Exceptions;
-using ELearning.Application.Common.Model;
+using ELearning.Application.Submissions.Abstractions.ReadModels;
 using ELearning.Application.Submissions.Dtos;
 using ELearning.Domain.Entities.EnrollmentAggregate;
-using ELearning.Infrastructure.Dapr.Abstraction;
+using ELearning.SharedKernel;
 using Microsoft.Extensions.Logging;
 
 namespace ELearning.Infrastructure.ReadModels;
@@ -40,9 +40,9 @@ public class SubmissionReadService(DaprClient daprClient, ILogger<SubmissionRead
         try
         {
             var data = await daprClient.InvokeMethodAsync<PaginatedResponse<SubmissionDetailDto>>(
+                httpMethod: HttpMethod.Get,
                 "submissionservice",
-                $"api/submissions?pageNumber={pageNumber}&pageSize={pageSize}",
-                new HttpInvocationOptions { Method = HttpMethod.Get });
+                $"api/submissions?pageNumber={pageNumber}&pageSize={pageSize}");
 
             return new PaginatedList<SubmissionDetailDto>(
                 data.Items,
@@ -62,9 +62,9 @@ public class SubmissionReadService(DaprClient daprClient, ILogger<SubmissionRead
         try
         {
             var data = await daprClient.InvokeMethodAsync<PaginatedResponse<SubmissionDto>>(
+                httpMethod: HttpMethod.Get,
                 "submissionservice",
-                $"api/instructors/{instructorId}/pending-submissions?pageNumber={pageNumber}&pageSize={pageSize}",
-                new HttpInvocationOptions { Method = HttpMethod.Get });
+                $"api/instructors/{instructorId}/pending-submissions?pageNumber={pageNumber}&pageSize={pageSize}");
 
             return new PaginatedList<SubmissionDto>(
                 data.Items,
@@ -84,9 +84,9 @@ public class SubmissionReadService(DaprClient daprClient, ILogger<SubmissionRead
         try
         {
             var data = await daprClient.InvokeMethodAsync<PaginatedResponse<SubmissionDto>>(
+                httpMethod: HttpMethod.Get,
                 "submissionservice",
-                $"api/students/{studentId}/submissions?pageNumber={pageNumber}&pageSize={pageSize}",
-                new HttpInvocationOptions { Method = HttpMethod.Get });
+                $"api/students/{studentId}/submissions?pageNumber={pageNumber}&pageSize={pageSize}");
 
             return new PaginatedList<SubmissionDto>(
                 data.Items,
@@ -106,9 +106,9 @@ public class SubmissionReadService(DaprClient daprClient, ILogger<SubmissionRead
         try
         {
             var data = await daprClient.InvokeMethodAsync<PaginatedResponse<SubmissionDto>>(
+                httpMethod: HttpMethod.Get,
                 "submissionservice",
-                $"api/assignments/{assignmentId}/submissions?pageNumber={pageNumber}&pageSize={pageSize}",
-                new HttpInvocationOptions { Method = HttpMethod.Get });
+                $"api/assignments/{assignmentId}/submissions?pageNumber={pageNumber}&pageSize={pageSize}");
 
             return new PaginatedList<SubmissionDto>(
                 data.Items,

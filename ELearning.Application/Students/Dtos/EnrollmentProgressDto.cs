@@ -1,4 +1,4 @@
-﻿namespace ELearning.Application.Students;
+﻿namespace ELearning.Application.Students.Dtos;
 
 public readonly record struct EnrollmentProgressDto(
     Guid EnrollmentId,

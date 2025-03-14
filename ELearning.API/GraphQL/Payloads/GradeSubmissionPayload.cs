@@ -4,9 +4,9 @@ public class GradeSubmissionPayload : Payload
 {
     public bool Success { get; }
 
-    public GradeSubmissionPayload(bool success)
+    public GradeSubmissionPayload()//(bool success)
     {
-        Success = success;
+        //Success = success;
     }
 
     public GradeSubmissionPayload(string error)

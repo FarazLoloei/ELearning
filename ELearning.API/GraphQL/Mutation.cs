@@ -1,16 +1,24 @@
-﻿using ELearning.Application.Courses.Commands;
+﻿using ELearning.API.GraphQL.InputTypes;
+using ELearning.API.GraphQL.Payloads;
+using ELearning.Application.Courses.Commands;
 using ELearning.Application.Enrollments.Commands;
 using ELearning.Application.Submissions.Commands;
-using HotChocolate;
-using HotChocolate.Types;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 
 namespace ELearning.API.GraphQL;
 
-// GraphQL Mutation Type
+/// <summary>
+/// GraphQL mutation root type
+/// </summary>
+[GraphQLDescription("The mutation root type for the E-Learning API")]
 public class Mutation
 {
-    // Course mutations
+    /// <summary>
+    /// Create a new course
+    /// </summary>
+    [GraphQLDescription("Create a new course")]
+    [Authorize(Roles = "Instructor")]
     public async Task<CoursePayload> CreateCourse(
         [Service] IMediator mediator,
         CreateCourseInput input)
@@ -30,14 +38,18 @@ public class Mutation
 
         if (result.IsSuccess)
         {
-            return new CoursePayload(result.Value);
+            return new CoursePayload();
         }
 
         return new CoursePayload(result.Error);
     }
 
-    // Enrollment mutations
-    public async Task<EnrollmentPayload> CreateEnrollment(
+    /// <summary>
+    /// Enroll in a course
+    /// </summary>
+    [GraphQLDescription("Enroll in a course")]
+    [Authorize(Roles = "Student")]
+    public async Task<EnrollmentPayload?> CreateEnrollment(
         [Service] IMediator mediator,
         CreateEnrollmentInput input)
     {
@@ -50,14 +62,18 @@ public class Mutation
 
         if (result.IsSuccess)
         {
-            return new EnrollmentPayload(result.Value);
+            return new EnrollmentPayload();
         }
 
         return new EnrollmentPayload(result.Error);
     }
 
-    // Submission mutations
-    public async Task<SubmissionPayload> CreateSubmission(
+    /// <summary>
+    /// Submit an assignment
+    /// </summary>
+    [GraphQLDescription("Submit an assignment")]
+    [Authorize(Roles = "Student")]
+    public async Task<SubmissionPayload?> CreateSubmission(
         [Service] IMediator mediator,
         CreateSubmissionInput input)
     {
@@ -72,13 +88,18 @@ public class Mutation
 
         if (result.IsSuccess)
         {
-            return new SubmissionPayload(result.Value);
+            return new SubmissionPayload();
         }
 
         return new SubmissionPayload(result.Error);
     }
 
-    public async Task<GradeSubmissionPayload> GradeSubmission(
+    /// <summary>
+    /// Grade a submission
+    /// </summary>
+    [GraphQLDescription("Grade a submission")]
+    [Authorize(Roles = "Instructor")]
+    public async Task<GradeSubmissionPayload?> GradeSubmission(
         [Service] IMediator mediator,
         GradeSubmissionInput input)
     {
@@ -93,7 +114,7 @@ public class Mutation
 
         if (result.IsSuccess)
         {
-            return new GradeSubmissionPayload(true);
+            return new GradeSubmissionPayload();
         }
 
         return new GradeSubmissionPayload(result.Error);

@@ -8,6 +8,8 @@ public interface IAssignmentRepository
 
     Task<IReadOnlyList<Assignment>> GetByCourseIdAsync(Guid courseId);
 
+    Task<Module> GetModuleForAssignmentAsync(Guid assignmentId);
+
     Task AddAsync(Assignment assignment);
 
     Task UpdateAsync(Assignment assignment);

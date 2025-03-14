@@ -1,4 +1,4 @@
-﻿namespace ELearning.SharedKernel;
+﻿namespace ELearning.SharedKernel.Abstractions;
 
 public interface IDomainEvent
 {

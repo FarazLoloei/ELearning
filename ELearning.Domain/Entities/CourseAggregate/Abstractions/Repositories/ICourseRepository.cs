@@ -1,9 +1,9 @@
 ﻿using ELearning.Domain.Entities.CourseAggregate.Enums;
-using ELearning.SharedKernel;
+using ELearning.SharedKernel.Abstractions;
 
 namespace ELearning.Domain.Entities.CourseAggregate.Abstractions.Repositories;
 
-public interface ICourseRepository : IRepository<Course>
+public interface ICourseRepository : IEntityFrameworkRepository<Course>
 {
     Task<IReadOnlyList<Course>> GetByInstructorIdAsync(Guid instructorId);
 

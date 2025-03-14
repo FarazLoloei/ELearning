@@ -2,7 +2,6 @@
 
 namespace ELearning.Application.Enrollments.Dtos;
 
-// Detailed DTO for enrollment
 public readonly record struct EnrollmentDetailDto(
     Guid Id,
     Guid StudentId,
@@ -16,5 +15,5 @@ public readonly record struct EnrollmentDetailDto(
     List<LessonProgressDto> LessonProgress,
     List<SubmissionDto> Submissions,
     decimal? CourseRating,
-    string Review
+    string? Review
 );

@@ -1,9 +1,9 @@
 ﻿using Dapr.Client;
 using ELearning.Application.Common.Exceptions;
-using ELearning.Application.Common.Model;
+using ELearning.Application.Courses.Abstractions.ReadModels;
 using ELearning.Application.Courses.Dtos;
 using ELearning.Domain.Entities.CourseAggregate;
-using ELearning.Infrastructure.Dapr.Abstraction;
+using ELearning.SharedKernel;
 using Microsoft.Extensions.Logging;
 
 namespace ELearning.Infrastructure.ReadModels;
@@ -41,9 +41,9 @@ public class CourseReadService(DaprClient daprClient, ILogger<CourseReadService>
             // In a real implementation, you would use Dapr queries or bulk get operations
             // For simplicity, we're simulating with a direct state get
             var data = await daprClient.InvokeMethodAsync<PaginatedResponse<CourseDetailDto>>(
+                httpMethod: HttpMethod.Get,
                 "courseservice",
-                $"api/courses?pageNumber={pageNumber}&pageSize={pageSize}",
-                new HttpInvocationOptions { Method = HttpMethod.Get });
+                $"api/courses?pageNumber={pageNumber}&pageSize={pageSize}");
 
             return new PaginatedList<CourseDetailDto>(
                 data.Items,
@@ -88,9 +88,9 @@ public class CourseReadService(DaprClient daprClient, ILogger<CourseReadService>
             var queryString = string.Join("&", queryParams.Select(p => $"{p.Key}={Uri.EscapeDataString(p.Value)}"));
 
             var data = await daprClient.InvokeMethodAsync<PaginatedResponse<CourseListDto>>(
+                HttpMethod.Get,
                 "courseservice",
-                $"api/courses/search?{queryString}",
-                new HttpInvocationOptions { Method = HttpMethod.Get });
+                $"api/courses/search?{queryString}");
 
             return new PaginatedList<CourseListDto>(
                 data.Items,
@@ -110,9 +110,9 @@ public class CourseReadService(DaprClient daprClient, ILogger<CourseReadService>
         try
         {
             var featuredCourses = await daprClient.InvokeMethodAsync<List<CourseListDto>>(
+                HttpMethod.Get,
                 "courseservice",
-                $"api/courses/featured?count={count}",
-                new HttpInvocationOptions { Method = HttpMethod.Get });
+                $"api/courses/featured?count={count}");
 
             return featuredCourses;
         }
@@ -128,9 +128,9 @@ public class CourseReadService(DaprClient daprClient, ILogger<CourseReadService>
         try
         {
             var courses = await daprClient.InvokeMethodAsync<List<CourseListDto>>(
+                HttpMethod.Get,
                 "courseservice",
-                $"api/instructors/{instructorId}/courses",
-                new HttpInvocationOptions { Method = HttpMethod.Get });
+                $"api/instructors/{instructorId}/courses");
 
             return courses;
         }
@@ -146,9 +146,9 @@ public class CourseReadService(DaprClient daprClient, ILogger<CourseReadService>
         try
         {
             var courses = await daprClient.InvokeMethodAsync<List<CourseListDto>>(
+                HttpMethod.Get,
                 "courseservice",
-                $"api/courses/category/{categoryId}",
-                new HttpInvocationOptions { Method = HttpMethod.Get });
+                $"api/courses/category/{categoryId}");
 
             return courses;
         }

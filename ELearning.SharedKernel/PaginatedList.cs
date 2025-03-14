@@ -1,4 +1,4 @@
-﻿namespace ELearning.Application.Common.Model;
+﻿namespace ELearning.SharedKernel;
 
 public class PaginatedList<T>
 {

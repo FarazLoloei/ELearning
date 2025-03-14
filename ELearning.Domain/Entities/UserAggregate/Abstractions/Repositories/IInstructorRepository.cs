@@ -1,8 +1,8 @@
-﻿using ELearning.SharedKernel;
+﻿using ELearning.SharedKernel.Abstractions;
 
 namespace ELearning.Domain.Entities.UserAggregate.Abstractions.Repositories;
 
-public interface IInstructorRepository : IRepository<Instructor>
+public interface IInstructorRepository : IEntityFrameworkRepository<Instructor>
 {
     Task<IReadOnlyList<Instructor>> GetTopInstructorsAsync(int count);
 

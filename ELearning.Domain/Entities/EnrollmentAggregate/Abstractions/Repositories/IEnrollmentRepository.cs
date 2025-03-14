@@ -1,8 +1,8 @@
-﻿using ELearning.SharedKernel;
+﻿using ELearning.SharedKernel.Abstractions;
 
 namespace ELearning.Domain.Entities.EnrollmentAggregate.Abstractions.Repositories;
 
-public interface IEnrollmentRepository : IRepository<Enrollment>
+public interface IEnrollmentRepository : IEntityFrameworkRepository<Enrollment>
 {
     Task<Enrollment> GetByStudentAndCourseIdAsync(Guid studentId, Guid courseId);
 

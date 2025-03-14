@@ -1,6 +1,7 @@
 ﻿using ELearning.Domain.Entities.EnrollmentAggregate.Enums;
 using ELearning.Domain.ValueObjects;
 using ELearning.SharedKernel;
+using ELearning.SharedKernel.Abstractions;
 
 namespace ELearning.Domain.Entities.EnrollmentAggregate;
 

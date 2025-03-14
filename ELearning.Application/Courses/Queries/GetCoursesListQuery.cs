@@ -1,5 +1,6 @@
 ﻿using ELearning.Application.Common.Model;
 using ELearning.Application.Courses.Dtos;
+using ELearning.SharedKernel;
 using MediatR;
 
 namespace ELearning.Application.Courses.Queries;

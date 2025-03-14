@@ -1,7 +1,6 @@
-﻿using ELearning.Application.Submissions.Commands;
-using FluentValidation;
+﻿using FluentValidation;
 
-namespace ELearning.Application.Submissions.Validators;
+namespace ELearning.Application.Submissions.Commands.Validators;
 
 public class GradeSubmissionCommandValidator : AbstractValidator<GradeSubmissionCommand>
 {
