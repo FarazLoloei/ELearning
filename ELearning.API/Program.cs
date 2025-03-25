@@ -1,41 +1,54 @@
+using Ocelot.Cache.CacheManager;
+using Ocelot.DependencyInjection;
+using Ocelot.Middleware;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
+// Configure configuration sources
+builder.Configuration
+    .SetBasePath(builder.Environment.ContentRootPath)
+    .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+    .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: true)
+    .AddJsonFile($"ocelot.{builder.Environment.EnvironmentName}.json", optional: false, reloadOnChange: true)
+    .AddEnvironmentVariables();
 
+// Add services to the container
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("CorsPolicy",
+        b => b.AllowAnyOrigin()
+            .AllowAnyMethod()
+            .AllowAnyHeader());
+});
+
+// Add Ocelot
+builder.Services.AddOcelot(builder.Configuration)
+    .AddCacheManager(settings => settings.WithDictionaryHandle());
+
+// Add controllers
+builder.Services.AddControllers();
+
+// Build the app
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// Configure the HTTP request pipeline
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
+    app.UseDeveloperExceptionPage();
 }
 
-app.UseHttpsRedirection();
+app.UseRouting();
 
-var summaries = new[]
+app.UseCors("CorsPolicy");
+
+// Configure endpoints
+app.UseEndpoints(endpoints =>
 {
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
+    endpoints.MapControllers();
+});
 
-app.MapGet("/weatherforecast", () =>
-{
-    var forecast = Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
-.WithName("GetWeatherForecast");
+// Configure Ocelot middleware
+await app.UseOcelot();
 
+// Run the app
 app.Run();
-
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
