@@ -1,0 +1,302 @@
+{
+  "Routes": [
+    // GraphQL route
+    {
+      "DownstreamPathTemplate": "/graphql",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "elearning-graphql-api",
+          "Port": 80
+        }
+      ],
+      "UpstreamPathTemplate": "/graphql",
+      "UpstreamHttpMethod": [ "POST", "GET", "OPTIONS" ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer",
+        "AllowedScopes": []
+      },
+      "RateLimitOptions": {
+        "ClientWhitelist": [],
+        "EnableRateLimiting": true,
+        "Period": "1s",
+        "PeriodTimespan": 1,
+        "Limit": 10
+      },
+      "FileCacheOptions": {
+        "TtlSeconds": 15
+      }
+    },
+
+    // REST API routes - Courses
+    {
+      "DownstreamPathTemplate": "/api/courses",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "elearning-rest-api",
+          "Port": 80
+        }
+      ],
+      "UpstreamPathTemplate": "/api/courses",
+      "UpstreamHttpMethod": [ "GET", "POST" ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer",
+        "AllowedScopes": []
+      }
+    },
+    {
+      "DownstreamPathTemplate": "/api/courses/{id}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "elearning-rest-api",
+          "Port": 80
+        }
+      ],
+      "UpstreamPathTemplate": "/api/courses/{id}",
+      "UpstreamHttpMethod": [ "GET", "PUT", "DELETE" ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer",
+        "AllowedScopes": []
+      }
+    },
+    {
+      "DownstreamPathTemplate": "/api/courses/featured",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "elearning-rest-api",
+          "Port": 80
+        }
+      ],
+      "UpstreamPathTemplate": "/api/courses/featured",
+      "UpstreamHttpMethod": [ "GET" ],
+      "FileCacheOptions": {
+        "TtlSeconds": 60
+      }
+    },
+    {
+      "DownstreamPathTemplate": "/api/courses/category/{categoryId}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "elearning-rest-api",
+          "Port": 80
+        }
+      ],
+      "UpstreamPathTemplate": "/api/courses/category/{categoryId}",
+      "UpstreamHttpMethod": [ "GET" ],
+      "FileCacheOptions": {
+        "TtlSeconds": 30
+      }
+    },
+
+    // REST API routes - Enrollments
+    {
+      "DownstreamPathTemplate": "/api/enrollments",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "elearning-rest-api",
+          "Port": 80
+        }
+      ],
+      "UpstreamPathTemplate": "/api/enrollments",
+      "UpstreamHttpMethod": [ "POST" ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer",
+        "AllowedScopes": []
+      }
+    },
+    {
+      "DownstreamPathTemplate": "/api/enrollments/{id}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "elearning-rest-api",
+          "Port": 80
+        }
+      ],
+      "UpstreamPathTemplate": "/api/enrollments/{id}",
+      "UpstreamHttpMethod": [ "GET" ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer",
+        "AllowedScopes": []
+      }
+    },
+    {
+      "DownstreamPathTemplate": "/api/enrollments/{id}/status",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "elearning-rest-api",
+          "Port": 80
+        }
+      ],
+      "UpstreamPathTemplate": "/api/enrollments/{id}/status",
+      "UpstreamHttpMethod": [ "PUT" ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer",
+        "AllowedScopes": []
+      }
+    },
+
+    // REST API routes - Students
+    {
+      "DownstreamPathTemplate": "/api/students/{id}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "elearning-rest-api",
+          "Port": 80
+        }
+      ],
+      "UpstreamPathTemplate": "/api/students/{id}",
+      "UpstreamHttpMethod": [ "GET" ],
+      "FileCacheOptions": {
+        "TtlSeconds": 30
+      }
+    },
+    {
+      "DownstreamPathTemplate": "/api/students/{id}/progress",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "elearning-rest-api",
+          "Port": 80
+        }
+      ],
+      "UpstreamPathTemplate": "/api/students/{id}/progress",
+      "UpstreamHttpMethod": [ "GET" ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer",
+        "AllowedScopes": []
+      }
+    },
+    {
+      "DownstreamPathTemplate": "/api/students/{id}/enrollments",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "elearning-rest-api",
+          "Port": 80
+        }
+      ],
+      "UpstreamPathTemplate": "/api/students/{id}/enrollments",
+      "UpstreamHttpMethod": [ "GET" ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer",
+        "AllowedScopes": []
+      }
+    },
+
+    // REST API routes - Instructors
+    {
+      "DownstreamPathTemplate": "/api/instructors/{id}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "elearning-rest-api",
+          "Port": 80
+        }
+      ],
+      "UpstreamPathTemplate": "/api/instructors/{id}",
+      "UpstreamHttpMethod": [ "GET" ],
+      "FileCacheOptions": {
+        "TtlSeconds": 30
+      }
+    },
+    {
+      "DownstreamPathTemplate": "/api/instructors/{id}/with-courses",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "elearning-rest-api",
+          "Port": 80
+        }
+      ],
+      "UpstreamPathTemplate": "/api/instructors/{id}/with-courses",
+      "UpstreamHttpMethod": [ "GET" ],
+      "FileCacheOptions": {
+        "TtlSeconds": 30
+      }
+    },
+    {
+      "DownstreamPathTemplate": "/api/instructors/{id}/pending-submissions",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "elearning-rest-api",
+          "Port": 80
+        }
+      ],
+      "UpstreamPathTemplate": "/api/instructors/{id}/pending-submissions",
+      "UpstreamHttpMethod": [ "GET" ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer",
+        "AllowedScopes": []
+      }
+    },
+
+    // REST API routes - Submissions
+    {
+      "DownstreamPathTemplate": "/api/submissions",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "elearning-rest-api",
+          "Port": 80
+        }
+      ],
+      "UpstreamPathTemplate": "/api/submissions",
+      "UpstreamHttpMethod": [ "POST" ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer",
+        "AllowedScopes": []
+      }
+    },
+    {
+      "DownstreamPathTemplate": "/api/submissions/{id}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "elearning-rest-api",
+          "Port": 80
+        }
+      ],
+      "UpstreamPathTemplate": "/api/submissions/{id}",
+      "UpstreamHttpMethod": [ "GET" ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer",
+        "AllowedScopes": []
+      }
+    },
+    {
+      "DownstreamPathTemplate": "/api/submissions/{id}/grade",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "elearning-rest-api",
+          "Port": 80
+        }
+      ],
+      "UpstreamPathTemplate": "/api/submissions/{id}/grade",
+      "UpstreamHttpMethod": [ "POST" ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer",
+        "AllowedScopes": []
+      }
+    }
+  ],
+  "GlobalConfiguration": {
+    "BaseUrl": "https://elearning-platform.com",
+    "RequestIdKey": "OcRequestId",
+    "AdministrationPath": "/administration",
+    "RateLimitOptions": {
+      "DisableRateLimitHeaders": false,
+      "QuotaExceededMessage": "API rate limit exceeded",
+      "HttpStatusCode": 429
+    }
+  }
+}
