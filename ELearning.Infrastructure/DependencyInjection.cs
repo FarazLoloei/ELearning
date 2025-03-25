@@ -38,6 +38,10 @@ public static class DependencyInjection
         services.AddTransient<IEmailService, EmailService>();
         services.AddTransient<IFileStorageService, FileStorageService>();
 
+        // Register CurrentUserService if HttpContextAccessor is available
+        services.AddHttpContextAccessor();
+        services.AddScoped<ICurrentUserService, CurrentUserService>();
+
         return services;
     }
 }
