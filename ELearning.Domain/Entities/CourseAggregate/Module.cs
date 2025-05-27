@@ -5,6 +5,7 @@ namespace ELearning.Domain.Entities.CourseAggregate;
 public class Module : BaseEntity
 {
     private readonly List<Lesson> _lessons = new List<Lesson>();
+
     private readonly List<Assignment> _assignments = new List<Assignment>();
 
     /// <summary>

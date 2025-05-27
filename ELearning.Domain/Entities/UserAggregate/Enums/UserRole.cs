@@ -2,7 +2,7 @@
 
 namespace ELearning.Domain.Entities.UserAggregate.Enums;
 
-public class UserRole : Enumeration
+public sealed class UserRole : Enumeration
 {
     public static UserRole Student = new UserRole(1, nameof(Student));
 

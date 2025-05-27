@@ -2,9 +2,9 @@
 
 namespace ELearning.Domain.Entities.CourseAggregate.Exceptions;
 
-public class CourseCannotBePublishedException : DomainException
+public sealed class CourseCannotBePublishedException : DomainException
 {
     public CourseCannotBePublishedException(string reason)
-        : base($"Course cannot be published: {reason}")
+        : base($"Course cannot be published: '{reason}'")
     { }
 }

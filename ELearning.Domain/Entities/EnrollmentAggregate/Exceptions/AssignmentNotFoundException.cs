@@ -2,9 +2,9 @@
 
 namespace ELearning.Domain.Entities.EnrollmentAggregate.Exceptions;
 
-public class AssignmentNotFoundException : DomainException
+public sealed class AssignmentNotFoundException : DomainException
 {
     public AssignmentNotFoundException(Guid assignmentId)
-        : base($"Assignment with ID {assignmentId} was not found.")
+        : base($"Assignment with ID '{assignmentId}' was not found.")
     { }
 }

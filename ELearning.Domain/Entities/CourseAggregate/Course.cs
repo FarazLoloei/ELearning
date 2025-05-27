@@ -10,6 +10,7 @@ namespace ELearning.Domain.Entities.CourseAggregate;
 public class Course : BaseEntity, IAggregateRoot<Course>
 {
     private readonly List<Module> _modules = new List<Module>();
+
     private readonly List<Enrollment> _enrollments = new List<Enrollment>();
 
     /// <summary>

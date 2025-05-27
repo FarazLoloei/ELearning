@@ -35,6 +35,7 @@ public class Assignment : BaseEntity
     /// </summary>
     public Guid ModuleId { get; private set; }
 
+    // Private constructor for EF Core
     private Assignment()
     { }
 

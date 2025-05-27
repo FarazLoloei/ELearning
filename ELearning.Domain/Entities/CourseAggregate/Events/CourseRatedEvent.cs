@@ -5,7 +5,7 @@ using ELearning.SharedKernel.Abstractions;
 
 namespace ELearning.Domain.Entities.CourseAggregate.Events;
 
-public class CourseRatedEvent : IDomainEvent
+public sealed class CourseRatedEvent : IDomainEvent
 {
     public Student Student { get; }
 
@@ -15,14 +15,14 @@ public class CourseRatedEvent : IDomainEvent
 
     public Rating Rating { get; }
 
-    public DateTime OccurredOn { get; }
+    public DateTime OccurredOnUTC { get; }
 
     public CourseRatedEvent(Student student, Course course, Enrollment enrollment, Rating rating)
     {
-        Student = student;
-        Course = course;
-        Enrollment = enrollment;
-        Rating = rating;
-        OccurredOn = DateTime.UtcNow;
+        Student = student ?? throw new ArgumentNullException(nameof(student));
+        Course = course ?? throw new ArgumentNullException(nameof(course));
+        Enrollment = enrollment ?? throw new ArgumentNullException(nameof(enrollment));
+        Rating = rating ?? throw new ArgumentNullException(nameof(rating));
+        OccurredOnUTC = DateTime.UtcNow;
     }
 }

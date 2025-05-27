@@ -2,9 +2,9 @@
 
 namespace ELearning.Domain.Entities.CourseAggregate.Exceptions;
 
-public class CourseNotFoundException : DomainException
+public sealed class CourseNotFoundException : DomainException
 {
     public CourseNotFoundException(Guid courseId)
-        : base($"Course with ID {courseId} was not found.")
+        : base($"Course with ID '{courseId}' was not found.")
     { }
 }
