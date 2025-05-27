@@ -25,20 +25,14 @@ public class GetPendingSubmissionsQueryHandler(
 {
     public async Task<Result<PaginatedList<SubmissionDto>>> Handle(GetPendingSubmissionsQuery request, CancellationToken cancellationToken)
     {
-        if (!currentUserService.IsAuthenticated || currentUserService.UserId == null)
-        {
+        if (!currentUserService.IsAuthenticated || currentUserService.UserId is null)
             throw new ForbiddenAccessException();
-        }
 
         // Ensure current user is the instructor or an admin
         var currentUserId = currentUserService.UserId.Value;
-        var isRequestedInstructor = currentUserId == request.InstructorId;
-        var isAdmin = currentUserService.IsInRole("Admin");
 
-        if (!isRequestedInstructor && !isAdmin)
-        {
+        if (currentUserId != request.InstructorId && !currentUserService.IsInRole("Admin"))
             throw new ForbiddenAccessException();
-        }
 
         try
         {
@@ -55,8 +49,9 @@ public class GetPendingSubmissionsQueryHandler(
             // Fall back to repositories
 
             // Get all courses by this instructor
-            var instructorCourses = await courseRepository.GetByInstructorIdAsync(request.InstructorId);
-            var courseIds = instructorCourses.Select(c => c.Id).ToList();
+            var courseIds = (await courseRepository.GetByInstructorIdAsync(request.InstructorId))
+                            .Select(c => c.Id)
+                            .ToList();
 
             // Get all assignments in these courses
             var assignmentIds = new List<Guid>();
@@ -67,20 +62,19 @@ public class GetPendingSubmissionsQueryHandler(
             }
 
             // Get all ungraded submissions for these assignments
-            var allSubmissions = new List<Submission>();
+            var ungradedSubmissions = new List<Submission>();
             foreach (var assignmentId in assignmentIds)
             {
                 var submissions = await submissionRepository.GetByAssignmentIdAsync(assignmentId);
-                allSubmissions.AddRange(submissions.Where(s => !s.IsGraded));
+                ungradedSubmissions.AddRange(submissions.Where(s => !s.IsGraded));
             }
 
             // Order by submission date (oldest first)
-            var orderedSubmissions = allSubmissions
+            var orderedSubmissions = ungradedSubmissions
                 .OrderBy(s => s.SubmittedDate)
                 .ToList();
 
             // Apply pagination
-            var totalCount = orderedSubmissions.Count;
             var paginatedSubmissions = orderedSubmissions
                 .Skip((request.PageNumber - 1) * request.PageSize)
                 .Take(request.PageSize)
@@ -92,7 +86,7 @@ public class GetPendingSubmissionsQueryHandler(
             {
                 var assignment = await assignmentRepository.GetByIdAsync(submission.AssignmentId);
 
-                var submissionDto = new SubmissionDto
+                submissionDtos.Add(new SubmissionDto
                 {
                     Id = submission.Id,
                     AssignmentId = submission.AssignmentId,
@@ -101,14 +95,12 @@ public class GetPendingSubmissionsQueryHandler(
                     IsGraded = submission.IsGraded,
                     Score = submission.Score,
                     MaxPoints = assignment.MaxPoints
-                };
-
-                submissionDtos.Add(submissionDto);
+                });
             }
 
             var paginatedList = new PaginatedList<SubmissionDto>(
                 submissionDtos,
-                totalCount,
+                orderedSubmissions.Count,
                 request.PageNumber,
                 request.PageSize);
 

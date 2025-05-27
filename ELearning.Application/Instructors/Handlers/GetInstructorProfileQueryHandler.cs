@@ -29,12 +29,8 @@ public class GetInstructorProfileQueryHandler(
         catch (Exception)
         {
             // If Dapr service fails, fall back to direct repository access
-            var instructor = await instructorRepository.GetByIdAsync(request.InstructorId);
-
-            if (instructor == null)
-            {
+            var instructor = await instructorRepository.GetByIdAsync(request.InstructorId) ??
                 throw new NotFoundException(nameof(Instructor), request.InstructorId);
-            }
 
             // Get additional data for instructor profile
             var totalStudents = await instructorRepository.GetTotalStudentsCountByInstructorIdAsync(request.InstructorId);

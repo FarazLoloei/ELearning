@@ -19,20 +19,20 @@ public class UpdateEnrollmentStatusCommandHandler(
 {
     private static readonly Dictionary<string, EnrollmentStatus> StatusMap = new(StringComparer.OrdinalIgnoreCase)
     {
-        { "Active", EnrollmentStatus.Active },
-        { "Paused", EnrollmentStatus.Paused },
-        { "Completed", EnrollmentStatus.Completed },
-        { "Abandoned", EnrollmentStatus.Abandoned }
+        ["Active"] = EnrollmentStatus.Active,
+        ["Paused"] = EnrollmentStatus.Paused,
+        ["Completed"] = EnrollmentStatus.Completed,
+        ["Abandoned"] = EnrollmentStatus.Abandoned
     };
 
     public async Task<Result> Handle(UpdateEnrollmentStatusCommand request, CancellationToken cancellationToken)
     {
-        ValidateUser();
+        EnsureAuthenticated();
 
         var enrollment = await enrollmentRepository.GetByIdAsync(request.EnrollmentId)
                           ?? throw new NotFoundException(nameof(Enrollment), request.EnrollmentId);
 
-        EnsureUserIsAuthorized(enrollment);
+        EnsureAuthorized(enrollment);
 
         if (!StatusMap.TryGetValue(request.Status, out var newStatus))
         {
@@ -51,22 +51,18 @@ public class UpdateEnrollmentStatusCommandHandler(
         return Result.Success();
     }
 
-    private void ValidateUser()
+    private void EnsureAuthenticated()
     {
         if (!currentUserService.IsAuthenticated || currentUserService.UserId == null)
-        {
             throw new ForbiddenAccessException();
-        }
     }
 
-    private void EnsureUserIsAuthorized(Enrollment enrollment)
+    private void EnsureAuthorized(Enrollment enrollment)
     {
         var isOwner = enrollment.StudentId == currentUserService.UserId;
         var isAuthorized = isOwner || currentUserService.IsInRole("Instructor") || currentUserService.IsInRole("Admin");
 
         if (!isAuthorized)
-        {
             throw new ForbiddenAccessException();
-        }
     }
 }

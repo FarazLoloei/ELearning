@@ -34,12 +34,8 @@ public class GetEnrollmentDetailQueryHandler(
         catch (Exception)
         {
             // Fall back to repository
-            var enrollment = await enrollmentRepository.GetByIdAsync(request.EnrollmentId);
-
-            if (enrollment == null)
-            {
+            var enrollment = await enrollmentRepository.GetByIdAsync(request.EnrollmentId) ??
                 throw new NotFoundException(nameof(Enrollment), request.EnrollmentId);
-            }
 
             var course = await courseRepository.GetByIdAsync(enrollment.CourseId);
             var student = await studentRepository.GetByIdAsync(enrollment.StudentId);

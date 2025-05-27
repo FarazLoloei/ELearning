@@ -24,19 +24,15 @@ public class GetInstructorCoursesQueryHandler(
         try
         {
             // Try Dapr read service first
-            throw new NotImplementedException();
-            //var instructorCoursesDto = await instructorRepository.GetInstructorWithCoursesAsync(request.InstructorId);
-            //return Result.Success(instructorCoursesDto);
+            var instructor = await instructorRepository.GetInstructorWithCoursesAsync(request.InstructorId);
+            var instructorCoursesDto = mapper.Map<InstructorCoursesDto>(instructor);
+            return Result.Success(instructorCoursesDto);
         }
         catch (Exception)
         {
             // Fall back to repository
-            var instructor = await instructorRepository.GetByIdAsync(request.InstructorId);
-
-            if (instructor == null)
-            {
+            var instructor = await instructorRepository.GetByIdAsync(request.InstructorId) ??
                 throw new NotFoundException(nameof(Instructor), request.InstructorId);
-            }
 
             // Get instructor statistics
             var totalStudents = await instructorRepository.GetTotalStudentsCountByInstructorIdAsync(request.InstructorId);
