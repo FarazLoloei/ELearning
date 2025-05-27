@@ -59,8 +59,8 @@ public class GetStudentEnrollmentsQueryHandler(
                     CourseId = enrollment.CourseId,
                     CourseTitle = course.Title,
                     Status = enrollment.Status.Name,
-                    EnrollmentDate = enrollment.CreatedAt,
-                    CompletedDate = enrollment.CompletedDate,
+                    EnrollmentDate = enrollment.CreatedAt(),
+                    CompletedDate = enrollment.CompletedDateUTC,
                     CompletionPercentage = completionPercentage
                 };
 

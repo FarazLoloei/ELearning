@@ -2,7 +2,7 @@
 
 namespace ELearning.Domain.Entities.EnrollmentAggregate.Enums;
 
-public class ProgressStatus : Enumeration
+public sealed class ProgressStatus : Enumeration
 {
     public static ProgressStatus NotStarted = new ProgressStatus(1, nameof(NotStarted));
     public static ProgressStatus InProgress = new ProgressStatus(2, nameof(InProgress));

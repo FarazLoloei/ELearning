@@ -83,7 +83,7 @@ public class CourseRepository : ICourseRepository
                 c.Description.ToLower().Contains(searchTerm));
         }
 
-        query = query.OrderByDescending(c => c.CreatedAt);
+        query = query.OrderByDescending(c => c.CreatedAt());
 
         return await query
             .Skip((pageNumber - 1) * pageSize)

@@ -70,19 +70,19 @@ public class Lesson : BaseEntity
         Title = title;
         Content = content;
         Type = type;
-        UpdatedAt = DateTime.UtcNow;
+        UpdatedAt(DateTime.UtcNow);
     }
 
     public void UpdateVideo(string videoUrl, Duration duration)
     {
         VideoUrl = videoUrl;
         Duration = duration;
-        UpdatedAt = DateTime.UtcNow;
+        UpdatedAt(DateTime.UtcNow);
     }
 
     public void UpdateOrder(int order)
     {
         Order = order;
-        UpdatedAt = DateTime.UtcNow;
+        UpdatedAt(DateTime.UtcNow);
     }
 }

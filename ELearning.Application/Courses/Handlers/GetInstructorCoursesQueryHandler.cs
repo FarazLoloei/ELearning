@@ -61,7 +61,7 @@ public class GetInstructorCoursesQueryHandler(
                     Category = course.Category.Name,
                     Status = course.Status.Name,
                     EnrollmentsCount = enrollments.Count,
-                    CreatedAt = course.CreatedAt,
+                    CreatedAt = course.CreatedAt(),
                     PublishedDate = course.PublishedDate
                 };
 

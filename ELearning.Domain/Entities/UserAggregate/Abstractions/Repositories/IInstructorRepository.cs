@@ -10,5 +10,5 @@ public interface IInstructorRepository : IEntityFrameworkRepository<Instructor>
 
     Task<decimal> GetAverageRatingByInstructorIdAsync(Guid instructorId);
 
-    //Task<InstructorCoursesDto> GetInstructorWithCoursesAsync(Guid instructorId);
+    Task<Instructor> GetInstructorWithCoursesAsync(Guid instructorId);
 }

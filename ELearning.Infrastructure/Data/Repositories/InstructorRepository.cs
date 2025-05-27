@@ -84,4 +84,9 @@ public class InstructorRepository : IInstructorRepository
 
         return ratings.Sum(r => r.Rating * r.Count) / ratings.Sum(r => r.Count);
     }
+
+    public Task<Instructor> GetInstructorWithCoursesAsync(Guid instructorId)
+    {
+        throw new NotImplementedException();
+    }
 }

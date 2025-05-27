@@ -69,12 +69,12 @@ public class Assignment : BaseEntity
         Description = description;
         Type = type;
         MaxPoints = maxPoints;
-        UpdatedAt = DateTime.UtcNow;
+        UpdatedAt(DateTime.UtcNow);
     }
 
     public void SetDueDate(DateTime? dueDate)
     {
         DueDate = dueDate;
-        UpdatedAt = DateTime.UtcNow;
+        UpdatedAt(DateTime.UtcNow);
     }
 }

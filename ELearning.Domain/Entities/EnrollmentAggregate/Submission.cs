@@ -82,7 +82,7 @@ public class Submission : BaseEntity
         GradedById = gradedById;
         GradedDate = DateTime.UtcNow;
         IsGraded = true;
-        UpdatedAt = DateTime.UtcNow;
+        UpdatedAt(DateTime.UtcNow);
 
         AddDomainEvent(new SubmissionGradedEvent(this));
     }
@@ -97,6 +97,6 @@ public class Submission : BaseEntity
 
         Content = content;
         FileUrl = fileUrl;
-        UpdatedAt = DateTime.UtcNow;
+        UpdatedAt(DateTime.UtcNow);
     }
 }

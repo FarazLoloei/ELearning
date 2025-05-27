@@ -62,7 +62,7 @@ public class EnrollmentRepository(ApplicationDbContext context) : IEnrollmentRep
     public async Task<IReadOnlyList<Enrollment>> GetRecentEnrollmentsAsync(int count)
     {
         return await context.Enrollments
-            .OrderByDescending(e => e.CreatedAt)
+            .OrderByDescending(e => e.CreatedAt())
             .Take(count)
             .ToListAsync();
     }

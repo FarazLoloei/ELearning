@@ -8,12 +8,12 @@ namespace ELearning.Domain.Entities.UserAggregate;
 
 public class Student : User
 {
-    private readonly List<Enrollment> _enrollments = new List<Enrollment>();
+    private readonly Dictionary<Guid, Enrollment> _enrollments = new();
 
     /// <summary>
     /// Courses this student is enrolled in
     /// </summary>
-    public IReadOnlyCollection<Enrollment> Enrollments => _enrollments.AsReadOnly();
+    public IReadOnlyCollection<Enrollment> Enrollments => _enrollments.Values.ToList().AsReadOnly();
 
     private Student() : base()
     {
@@ -24,20 +24,17 @@ public class Student : User
     {
     }
 
-    public void EnrollInCourse(Course course)
+    public bool EnrollInCourse(Course course)
     {
+        if (course == null) throw new ArgumentNullException(nameof(course));
+        if (_enrollments.ContainsKey(course.Id)) return false; // Already enrolled
+
         var enrollment = new Enrollment(Id, course.Id, null, null);
-        _enrollments.Add(enrollment);
+        _enrollments[course.Id] = enrollment;
 
         AddDomainEvent(new EnrollmentCreatedEvent(this, course, enrollment));
+        return true;
     }
 
-    public void UnenrollFromCourse(Guid courseId)
-    {
-        var enrollment = _enrollments.FirstOrDefault(e => e.CourseId == courseId);
-        if (enrollment != null)
-        {
-            _enrollments.Remove(enrollment);
-        }
-    }
+    public bool UnenrollFromCourse(Guid courseId) => _enrollments.Remove(courseId);
 }

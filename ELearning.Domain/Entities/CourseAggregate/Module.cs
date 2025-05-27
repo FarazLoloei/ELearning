@@ -54,25 +54,25 @@ public class Module : BaseEntity
     public void AddLesson(Lesson lesson)
     {
         _lessons.Add(lesson);
-        UpdatedAt = DateTime.UtcNow;
+        UpdatedAt(DateTime.UtcNow);
     }
 
     public void RemoveLesson(Lesson lesson)
     {
         _lessons.Remove(lesson);
-        UpdatedAt = DateTime.UtcNow;
+        UpdatedAt(DateTime.UtcNow);
     }
 
     public void AddAssignment(Assignment assignment)
     {
         _assignments.Add(assignment);
-        UpdatedAt = DateTime.UtcNow;
+        UpdatedAt(DateTime.UtcNow);
     }
 
     public void RemoveAssignment(Assignment assignment)
     {
         _assignments.Remove(assignment);
-        UpdatedAt = DateTime.UtcNow;
+        UpdatedAt(DateTime.UtcNow);
     }
 
     public void UpdateDetails(string title, string description, int order)
@@ -80,6 +80,6 @@ public class Module : BaseEntity
         Title = title;
         Description = description;
         Order = order;
-        UpdatedAt = DateTime.UtcNow;
+        UpdatedAt(DateTime.UtcNow);
     }
 }
