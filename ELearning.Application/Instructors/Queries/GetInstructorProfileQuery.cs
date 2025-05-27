@@ -7,7 +7,7 @@ namespace ELearning.Application.Instructors.Queries;
 /// <summary>
 /// Query to retrieve the profile information of an instructor
 /// </summary>
-public class GetInstructorProfileQuery : IRequest<Result<InstructorDto>>
+public record GetInstructorProfileQuery : IRequest<Result<InstructorDto>>
 {
     /// <summary>
     /// ID of the instructor to retrieve

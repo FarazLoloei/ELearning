@@ -8,7 +8,7 @@ namespace ELearning.Application.Submissions.Queries;
 /// <summary>
 /// Query to get pending submissions for an instructor
 /// </summary>
-public class GetPendingSubmissionsQuery : IRequest<Result<PaginatedList<SubmissionDto>>>
+public record GetPendingSubmissionsQuery : IRequest<Result<PaginatedList<SubmissionDto>>>
 {
     public Guid InstructorId { get; set; }
 
