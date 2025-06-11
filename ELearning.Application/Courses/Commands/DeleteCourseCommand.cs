@@ -6,7 +6,4 @@ namespace ELearning.Application.Courses.Commands;
 /// <summary>
 /// Command to delete a course
 /// </summary>
-public class DeleteCourseCommand : IRequest<Result>
-{
-    public Guid CourseId { get; set; }
-}
+public record DeleteCourseCommand(Guid CourseId) : IRequest<Result>;
