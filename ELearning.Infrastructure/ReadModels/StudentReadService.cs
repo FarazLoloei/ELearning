@@ -2,78 +2,67 @@
 using ELearning.Application.Common.Exceptions;
 using ELearning.Application.Students.Abstractions.ReadModels;
 using ELearning.Application.Students.Dtos;
-using ELearning.Domain.Entities.CourseAggregate;
 using ELearning.Domain.Entities.UserAggregate;
 using ELearning.SharedKernel;
 using ELearning.SharedKernel.Models;
 using Microsoft.Extensions.Logging;
+using System.Web;
 
 namespace ELearning.Infrastructure.ReadModels;
 
 public class StudentReadService(DaprClient daprClient, ILogger<StudentReadService> logger) : IStudentReadService
 {
     private const string StateStoreName = "userstore";
+    private const string UserServiceName = "userservice";
 
-    public async Task<StudentDto> GetByIdAsync(Guid id)
+    public async Task<StudentDto> GetByIdAsync(Guid id, CancellationToken cancellationToken)
     {
         try
         {
             var student = await daprClient.GetStateAsync<StudentDto>(
                 StateStoreName,
-                id.ToString());
+                id.ToString(),
+                cancellationToken: cancellationToken);
 
-            if (student == null)
-            {
-                throw new NotFoundException(nameof(Course), id);
-            }
-
-            return student;
+            return (student == null) ? throw new NotFoundException(nameof(User), id) : student;
         }
         catch (Exception ex) when (ex is not NotFoundException)
         {
-            logger.LogError(ex, "Error retrieving student with ID {StudentId}", id);
+            logger.LogError(ex, "Error retrieving student state for ID {StudentId}", id);
             throw;
         }
     }
 
-    public async Task<StudentDto> GetStudentByIdAsync(Guid id)
+    public async Task<StudentDto> GetStudentByIdAsync(Guid id, CancellationToken cancellationToken)
     {
         try
         {
             var student = await daprClient.InvokeMethodAsync<StudentDto>(
                 HttpMethod.Get,
-                "userservice",
-                $"api/students/{id}");
+                UserServiceName,
+                $"api/students/{id}",
+                cancellationToken);
 
-            if (student == null)
-            {
-                throw new NotFoundException(nameof(Student), id);
-            }
-
-            return student;
+            return (student == null) ? throw new NotFoundException(nameof(User), id) : student;
         }
         catch (Exception ex) when (ex is not NotFoundException)
         {
-            logger.LogError(ex, "Error retrieving student with ID {StudentId}", id);
+            logger.LogError(ex, "Error retrieving student from service for ID {StudentId}", id);
             throw;
         }
     }
 
-    public async Task<StudentProgressDto> GetStudentProgressAsync(Guid studentId)
+    public async Task<StudentProgressDto> GetStudentProgressAsync(Guid studentId, CancellationToken cancellationToken)
     {
         try
         {
             var progress = await daprClient.InvokeMethodAsync<StudentProgressDto>(
-                 httpMethod: HttpMethod.Get,
-                "userservice",
-                $"api/students/{studentId}/progress");
+                HttpMethod.Get,
+                UserServiceName,
+                $"api/students/{studentId}/progress",
+                cancellationToken);
 
-            if (progress == null)
-            {
-                throw new NotFoundException("Student progress", studentId);
-            }
-
-            return progress;
+            return (progress == null) ? throw new NotFoundException("Student progress", studentId) : progress;
         }
         catch (Exception ex) when (ex is not NotFoundException)
         {
@@ -82,20 +71,25 @@ public class StudentReadService(DaprClient daprClient, ILogger<StudentReadServic
         }
     }
 
-    public async Task<PaginatedList<StudentDto>> ListAsync(PaginationParameters pagination)
+    public async Task<PaginatedList<StudentDto>> ListAsync(PaginationParameters pagination, CancellationToken cancellationToken)
     {
         try
         {
-            // In a real implementation, you would use Dapr queries or bulk get operations
-            // For simplicity, we're simulating with a direct state get
-            var data = await daprClient.InvokeMethodAsync<PaginatedResponse<StudentDto>>(
-                httpMethod: HttpMethod.Get,
-                "userservice",
-                $"api/courses?pageNumber={pagination.PageNumber} &pageSize= {pagination.PageSize}");
+            var queryParams = HttpUtility.ParseQueryString(string.Empty);
+            queryParams["pageNumber"] = pagination.PageNumber.ToString();
+            queryParams["pageSize"] = pagination.PageSize.ToString();
+
+            var endpoint = $"api/students?{queryParams}";
+
+            var response = await daprClient.InvokeMethodAsync<PaginatedResponse<StudentDto>>(
+                HttpMethod.Get,
+                UserServiceName,
+                endpoint,
+                cancellationToken);
 
             return new PaginatedList<StudentDto>(
-                data.Items,
-                data.TotalCount,
+                response.Items,
+                response.TotalCount,
                 pagination.PageNumber,
                 pagination.PageSize);
         }
