@@ -4,6 +4,7 @@ using ELearning.Application.Courses.Abstractions.ReadModels;
 using ELearning.Application.Courses.Dtos;
 using ELearning.Domain.Entities.CourseAggregate;
 using ELearning.SharedKernel;
+using ELearning.SharedKernel.Models;
 using Microsoft.Extensions.Logging;
 
 namespace ELearning.Infrastructure.ReadModels;
@@ -43,13 +44,13 @@ public class CourseReadService(DaprClient daprClient, ILogger<CourseReadService>
             var data = await daprClient.InvokeMethodAsync<PaginatedResponse<CourseDetailDto>>(
                 httpMethod: HttpMethod.Get,
                 "courseservice",
-                $"api/courses?pageNumber={pageNumber}&pageSize={pageSize}");
+                $"api/courses?pageNumber={pagination.PageNumber}&pageSize={pagination.PageSize}");
 
             return new PaginatedList<CourseDetailDto>(
                 data.Items,
                 data.TotalCount,
-                pageNumber,
-                pageSize);
+                pagination.PageNumber,
+                pagination.PageSize);
         }
         catch (Exception ex)
         {
