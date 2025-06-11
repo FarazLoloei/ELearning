@@ -25,7 +25,7 @@ public class GetCoursesListQueryHandler(
 
         var courseDtos = mapper.Map<List<CourseListDto>>(courses);
 
-        var totalCount = await courseRepository.GetCoursesCountAsync();
+        var totalCount = await courseRepository.GetCoursesCountAsync(cancellationToken);
 
         var paginatedList = new PaginatedList<CourseListDto>(
             courseDtos,

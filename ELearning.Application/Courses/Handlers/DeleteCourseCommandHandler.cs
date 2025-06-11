@@ -33,7 +33,7 @@ public class DeleteCourseCommandHandler(
             throw new ForbiddenAccessException();
 
         // Check if there are any enrollments for this course
-        var enrollments = await enrollmentRepository.GetByCourseIdAsync(request.CourseId);
+        var enrollments = await enrollmentRepository.GetByCourseIdAsync(request.CourseId, cancellationToken);
 
         if (enrollments.Any())
             return Result.Failure("Cannot delete a course with active enrollments. Archive it instead.");

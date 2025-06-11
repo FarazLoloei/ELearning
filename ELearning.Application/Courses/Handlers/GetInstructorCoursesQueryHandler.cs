@@ -48,7 +48,7 @@ public class GetInstructorCoursesQueryHandler(
             // Get course details
             foreach (var course in instructor.Courses)
             {
-                var enrollments = await enrollmentRepository.GetByCourseIdAsync(course.Id);
+                var enrollments = await enrollmentRepository.GetByCourseIdAsync(course.Id, cancellationToken);
 
                 var courseDto = new InstructorCourseDto
                 {

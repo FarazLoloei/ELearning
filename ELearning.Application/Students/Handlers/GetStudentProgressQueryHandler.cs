@@ -40,7 +40,7 @@ public class GetStudentProgressQueryHandler(
                 throw new NotFoundException(nameof(Student), request.StudentId);
             }
 
-            var enrollments = await enrollmentRepository.GetByStudentIdAsync(request.StudentId);
+            var enrollments = await enrollmentRepository.GetByStudentIdAsync(request.StudentId, cancellationToken);
             var completedEnrollments = enrollments.Where(e => e.Status == EnrollmentStatus.Completed).ToList();
             var inProgressEnrollments = enrollments.Where(e => e.Status == EnrollmentStatus.Active).ToList();
 

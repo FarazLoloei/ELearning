@@ -41,7 +41,7 @@ public class CreateSubmissionCommandHandler(
         var module = await assignmentRepository.GetModuleForAssignmentAsync(request.AssignmentId)
             ?? throw new NotFoundException("Module for assignment", request.AssignmentId);
 
-        var enrollment = await enrollmentRepository.GetByStudentAndCourseIdAsync(studentId, module.CourseId)
+        var enrollment = await enrollmentRepository.GetByStudentAndCourseIdAsync(studentId, module.CourseId, cancellationToken)
             ?? throw new StudentNotEnrolledException(studentId, module.CourseId);
 
         // (Optional) Handle late submissions

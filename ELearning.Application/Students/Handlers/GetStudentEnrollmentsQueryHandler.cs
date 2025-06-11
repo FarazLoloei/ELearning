@@ -35,7 +35,7 @@ public class GetStudentEnrollmentsQueryHandler(
         catch (Exception)
         {
             // Fall back to repository
-            var enrollments = await enrollmentRepository.GetByStudentIdAsync(request.StudentId);
+            var enrollments = await enrollmentRepository.GetByStudentIdAsync(request.StudentId, cancellationToken);
 
             // Manual pagination
             var totalCount = enrollments.Count;

@@ -31,7 +31,7 @@ public class CreateEnrollmentCommandHandler(
             throw new NotFoundException(nameof(Course), request.CourseId);
 
         // Check if student is already enrolled
-        var alreadyEnrolled = await enrollmentRepository.GetByStudentAndCourseIdAsync(studentId, request.CourseId) is not null;
+        var alreadyEnrolled = await enrollmentRepository.GetByStudentAndCourseIdAsync(studentId, request.CourseId, cancellationToken) is not null;
         if (alreadyEnrolled)
             return Result.Failure("You are already enrolled in this course.");
 

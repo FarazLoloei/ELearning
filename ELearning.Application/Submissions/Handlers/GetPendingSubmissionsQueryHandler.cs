@@ -49,7 +49,7 @@ public class GetPendingSubmissionsQueryHandler(
             // Fall back to repositories
 
             // Get all courses by this instructor
-            var courseIds = (await courseRepository.GetByInstructorIdAsync(request.InstructorId))
+            var courseIds = (await courseRepository.GetByInstructorIdAsync(request.InstructorId, cancellationToken))
                             .Select(c => c.Id)
                             .ToList();
 
