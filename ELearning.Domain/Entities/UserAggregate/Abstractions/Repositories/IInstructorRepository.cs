@@ -2,13 +2,28 @@
 
 namespace ELearning.Domain.Entities.UserAggregate.Abstractions.Repositories;
 
+/// <summary>
+/// Repository interface for Instructor entity with custom read operations.
+/// </summary>
 public interface IInstructorRepository : IEntityFrameworkRepository<Instructor>
 {
-    Task<IReadOnlyList<Instructor>> GetTopInstructorsAsync(int count);
+    /// <summary>
+    /// Retrieves the top instructors based on rating, enrollment, or other criteria.
+    /// </summary>
+    Task<IReadOnlyList<Instructor>> GetTopInstructorsAsync(int count, CancellationToken cancellationToken);
 
-    Task<int> GetTotalStudentsCountByInstructorIdAsync(Guid instructorId);
+    /// <summary>
+    /// Gets the total number of students taught by a specific instructor.
+    /// </summary>
+    Task<int> GetTotalStudentCountAsync(Guid instructorId, CancellationToken cancellationToken);
 
-    Task<decimal> GetAverageRatingByInstructorIdAsync(Guid instructorId);
+    /// <summary>
+    /// Calculates the average rating for a specific instructor.
+    /// </summary>
+    Task<decimal> GetAverageRatingAsync(Guid instructorId, CancellationToken cancellationToken);
 
-    Task<Instructor> GetInstructorWithCoursesAsync(Guid instructorId);
+    /// <summary>
+    /// Retrieves an instructor along with their courses.
+    /// </summary>
+    Task<Instructor?> GetInstructorWithCoursesAsync(Guid instructorId, CancellationToken cancellationToken);
 }

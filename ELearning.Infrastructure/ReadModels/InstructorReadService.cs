@@ -14,7 +14,7 @@ public class InstructorReadService(DaprClient daprClient, ILogger<InstructorRead
 {
     private const string StateStoreName = "userstore";
 
-    public async Task<InstructorDto> GetByIdAsync(Guid id)
+    public async Task<InstructorDto> GetByIdAsync(Guid id, CancellationToken cancellationToken)
     {
         try
         {
@@ -36,7 +36,7 @@ public class InstructorReadService(DaprClient daprClient, ILogger<InstructorRead
         }
     }
 
-    public async Task<InstructorDto> GetInstructorByIdAsync(Guid id)
+    public async Task<InstructorDto> GetInstructorByIdAsync(Guid id, CancellationToken cancellationToken)
     {
         try
         {
@@ -59,7 +59,7 @@ public class InstructorReadService(DaprClient daprClient, ILogger<InstructorRead
         }
     }
 
-    public async Task<InstructorCoursesDto> GetInstructorWithCoursesAsync(Guid instructorId)
+    public async Task<InstructorCoursesDto> GetInstructorWithCoursesAsync(Guid instructorId, CancellationToken cancellationToken)
     {
         try
         {
@@ -82,7 +82,7 @@ public class InstructorReadService(DaprClient daprClient, ILogger<InstructorRead
         }
     }
 
-    public async Task<PaginatedList<InstructorDto>> ListAsync(PaginationParameters pagination)
+    public async Task<PaginatedList<InstructorDto>> ListAsync(PaginationParameters pagination, CancellationToken cancellationToken)
     {
         try
         {
