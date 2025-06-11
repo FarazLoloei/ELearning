@@ -1,6 +1,7 @@
 ﻿using ELearning.Domain.Entities.UserAggregate;
 using ELearning.Domain.Entities.UserAggregate.Abstractions.Repositories;
 using ELearning.Domain.Entities.UserAggregate.Enums;
+using ELearning.SharedKernel.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace ELearning.Infrastructure.Data.Repositories;
@@ -61,7 +62,7 @@ public class UserRepository : IUserRepository
             .ToListAsync();
     }
 
-    public async Task<IReadOnlyList<User>> SearchUsersAsync(string searchTerm, int pageNumber, int pageSize)
+    public async Task<IReadOnlyList<User>> SearchUsersAsync(string searchTerm, PaginationParameters pagination)
     {
         var query = _context.Users.AsQueryable();
 

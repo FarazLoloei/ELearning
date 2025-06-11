@@ -34,7 +34,7 @@ public class CourseReadService(DaprClient daprClient, ILogger<CourseReadService>
         }
     }
 
-    public async Task<PaginatedList<CourseDetailDto>> ListAsync(int pageNumber, int pageSize)
+    public async Task<PaginatedList<CourseDetailDto>> ListAsync(PaginationParameters pagination)
     {
         try
         {

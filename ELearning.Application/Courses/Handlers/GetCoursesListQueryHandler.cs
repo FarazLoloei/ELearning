@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using ELearning.Application.Common.Exceptions;
 using ELearning.Application.Common.Model;
 using ELearning.Application.Courses.Dtos;
 using ELearning.Application.Courses.Queries;
@@ -18,8 +19,9 @@ public class GetCoursesListQueryHandler(
         // In a real application, you would use Dapr for read operations here
         var courses = await courseRepository.SearchCoursesAsync(
             request.SearchTerm,
-            request.PageNumber,
-            request.PageSize);
+            request.ToPaginationParameters(),
+            cancellationToken
+            );
 
         var courseDtos = mapper.Map<List<CourseListDto>>(courses);
 

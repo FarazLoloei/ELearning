@@ -1,6 +1,7 @@
 ﻿using ELearning.Application.Enrollments.Dtos;
 using ELearning.SharedKernel;
 using ELearning.SharedKernel.Abstractions;
+using ELearning.SharedKernel.Models;
 
 namespace ELearning.Application.Enrollments.Abstractions.ReadModels;
 
@@ -9,6 +10,10 @@ namespace ELearning.Application.Enrollments.Abstractions.ReadModels;
 /// </summary>
 public interface IEnrollmentReadService : IReadRepository<EnrollmentDetailDto, Guid>
 {
+    Task<EnrollmentDetailDto> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
+
+    Task<PaginatedList<EnrollmentDetailDto>> ListAsync(PaginationParameters pagination, CancellationToken cancellationToken = default);
+
     /// <summary>
     /// Retrieves a paginated list of enrollments for a specific student.
     /// </summary>
@@ -18,8 +23,7 @@ public interface IEnrollmentReadService : IReadRepository<EnrollmentDetailDto, G
     /// <param name="cancellationToken">Cancellation token for the async operation.</param>
     Task<PaginatedList<EnrollmentDto>> GetStudentEnrollmentsAsync(
         Guid studentId,
-        int pageNumber,
-        int pageSize,
+        PaginationParameters pagination,
         CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -31,8 +35,7 @@ public interface IEnrollmentReadService : IReadRepository<EnrollmentDetailDto, G
     /// <param name="cancellationToken">Cancellation token for the async operation.</param>
     Task<PaginatedList<EnrollmentDto>> GetCourseEnrollmentsAsync(
         Guid courseId,
-        int pageNumber,
-        int pageSize,
+        PaginationParameters pagination,
         CancellationToken cancellationToken = default);
 
     /// <summary>

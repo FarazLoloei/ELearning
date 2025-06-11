@@ -27,8 +27,8 @@ public class GetStudentEnrollmentsQueryHandler(
             // Try Dapr read service first
             var paginatedList = await enrollmentReadService.GetStudentEnrollmentsAsync(
                 request.StudentId,
-                request.PageNumber,
-                request.PageSize);
+                new SharedKernel.Models.PaginationParameters(request.PageNumber, request.PageSize),
+                cancellationToken);
 
             return Result.Success(paginatedList);
         }

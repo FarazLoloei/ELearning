@@ -35,7 +35,7 @@ public class SubmissionReadService(DaprClient daprClient, ILogger<SubmissionRead
         }
     }
 
-    public async Task<PaginatedList<SubmissionDetailDto>> ListAsync(int pageNumber, int pageSize)
+    public async Task<PaginatedList<SubmissionDetailDto>> ListAsync(PaginationParameters pagination)
     {
         try
         {
@@ -57,7 +57,7 @@ public class SubmissionReadService(DaprClient daprClient, ILogger<SubmissionRead
         }
     }
 
-    public async Task<PaginatedList<SubmissionDto>> GetPendingSubmissionsAsync(Guid instructorId, int pageNumber, int pageSize)
+    public async Task<PaginatedList<SubmissionDto>> GetPendingSubmissionsAsync(Guid instructorId, PaginationParameters pagination)
     {
         try
         {
@@ -79,7 +79,7 @@ public class SubmissionReadService(DaprClient daprClient, ILogger<SubmissionRead
         }
     }
 
-    public async Task<PaginatedList<SubmissionDto>> GetStudentSubmissionsAsync(Guid studentId, int pageNumber, int pageSize)
+    public async Task<PaginatedList<SubmissionDto>> GetStudentSubmissionsAsync(Guid studentId, PaginationParameters pagination)
     {
         try
         {
@@ -101,7 +101,7 @@ public class SubmissionReadService(DaprClient daprClient, ILogger<SubmissionRead
         }
     }
 
-    public async Task<PaginatedList<SubmissionDto>> GetAssignmentSubmissionsAsync(Guid assignmentId, int pageNumber, int pageSize)
+    public async Task<PaginatedList<SubmissionDto>> GetAssignmentSubmissionsAsync(Guid assignmentId, PaginationParameters pagination)
     {
         try
         {
