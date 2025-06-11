@@ -65,7 +65,7 @@ public class SubmissionReadService(DaprClient daprClient, ILogger<SubmissionRead
             var data = await daprClient.InvokeMethodAsync<PaginatedResponse<SubmissionDto>>(
                 httpMethod: HttpMethod.Get,
                 "submissionservice",
-                $"api/instructors/{instructorId}/pending-submissions?pageNumber={pagination.PageNumber}&pageSize={pagination.PageSize}");
+                 $"api/instructors/{instructorId}/pending-submissions?pageNumber={pagination.PageNumber}&pageSize={pagination.PageSize}");
 
             return new PaginatedList<SubmissionDto>(
                 data.Items,

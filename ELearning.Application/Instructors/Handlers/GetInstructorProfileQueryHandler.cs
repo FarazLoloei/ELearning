@@ -33,8 +33,8 @@ public class GetInstructorProfileQueryHandler(
                 throw new NotFoundException(nameof(Instructor), request.InstructorId);
 
             // Get additional data for instructor profile
-            var totalStudents = await instructorRepository.GetTotalStudentsCountByInstructorIdAsync(request.InstructorId);
-            var averageRating = await instructorRepository.GetAverageRatingByInstructorIdAsync(request.InstructorId);
+            var totalStudents = await instructorRepository.GetTotalStudentCountAsync(request.InstructorId, cancellationToken);
+            var averageRating = await instructorRepository.GetAverageRatingAsync(request.InstructorId, cancellationToken);
 
             // Map to DTO and enrich with calculated data
             var instructorDto = mapper.Map<InstructorDto>(instructor);

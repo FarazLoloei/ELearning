@@ -43,13 +43,13 @@ public class EnrollmentReadService(DaprClient daprClient, ILogger<EnrollmentRead
             var data = await daprClient.InvokeMethodAsync<PaginatedResponse<EnrollmentDetailDto>>(
                  httpMethod: HttpMethod.Get,
                 "enrollmentservice",
-                $"api/enrollments?pageNumber={pageNumber}&pageSize={pageSize}");
+                $"api/enrollments?pageNumber={pagination.PageNumber}&pageSize={pagination.PageSize}");
 
             return new PaginatedList<EnrollmentDetailDto>(
                 data.Items,
                 data.TotalCount,
-                pageNumber,
-                pageSize);
+                pagination.PageNumber,
+                pagination.PageSize);
         }
         catch (Exception ex)
         {
@@ -65,13 +65,13 @@ public class EnrollmentReadService(DaprClient daprClient, ILogger<EnrollmentRead
             var data = await daprClient.InvokeMethodAsync<PaginatedResponse<EnrollmentDto>>(
                  httpMethod: HttpMethod.Get,
                 "enrollmentservice",
-                $"api/students/{studentId}/enrollments?pageNumber={pageNumber}&pageSize={pageSize}");
+                $"api/students/{studentId}/enrollments?pageNumber={pagination.PageNumber}&pageSize={pagination.PageSize}");
 
             return new PaginatedList<EnrollmentDto>(
                 data.Items,
                 data.TotalCount,
-                pageNumber,
-                pageSize);
+                pagination.PageNumber,
+                pagination.PageSize);
         }
         catch (Exception ex)
         {
@@ -87,13 +87,13 @@ public class EnrollmentReadService(DaprClient daprClient, ILogger<EnrollmentRead
             var data = await daprClient.InvokeMethodAsync<PaginatedResponse<EnrollmentDto>>(
                  httpMethod: HttpMethod.Get,
                 "enrollmentservice",
-                $"api/courses/{courseId}/enrollments?pageNumber={pageNumber}&pageSize={pageSize}");
+                $"api/courses/{courseId}/enrollments?pageNumber={pagination.PageNumber}&pageSize={pagination.PageSize}");
 
             return new PaginatedList<EnrollmentDto>(
                 data.Items,
                 data.TotalCount,
-                pageNumber,
-                pageSize);
+                pagination.PageNumber,
+                pagination.PageSize);
         }
         catch (Exception ex)
         {

@@ -24,7 +24,7 @@ public class GetInstructorCoursesQueryHandler(
         try
         {
             // Try Dapr read service first
-            var instructor = await instructorRepository.GetInstructorWithCoursesAsync(request.InstructorId);
+            var instructor = await instructorRepository.GetInstructorWithCoursesAsync(request.InstructorId, cancellationToken);
             var instructorCoursesDto = mapper.Map<InstructorCoursesDto>(instructor);
             return Result.Success(instructorCoursesDto);
         }
@@ -35,8 +35,8 @@ public class GetInstructorCoursesQueryHandler(
                 throw new NotFoundException(nameof(Instructor), request.InstructorId);
 
             // Get instructor statistics
-            var totalStudents = await instructorRepository.GetTotalStudentsCountByInstructorIdAsync(request.InstructorId);
-            var averageRating = await instructorRepository.GetAverageRatingByInstructorIdAsync(request.InstructorId);
+            var totalStudents = await instructorRepository.GetTotalStudentCountAsync(request.InstructorId, cancellationToken);
+            var averageRating = await instructorRepository.GetAverageRatingAsync(request.InstructorId, cancellationToken);
 
             // Map to DTO
             var instructorCoursesDto = mapper.Map<InstructorCoursesDto>(instructor);
