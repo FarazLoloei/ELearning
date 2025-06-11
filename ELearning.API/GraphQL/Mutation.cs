@@ -24,15 +24,15 @@ public class Mutation
         CreateCourseInput input)
     {
         var command = new CreateCourseCommand
-        {
-            Title = input.Title,
-            Description = input.Description,
-            CategoryId = input.CategoryId,
-            LevelId = input.LevelId,
-            Price = input.Price,
-            DurationHours = input.DurationHours,
-            DurationMinutes = input.DurationMinutes
-        };
+        (
+            Title: input.Title,
+            Description: input.Description,
+            CategoryId: input.CategoryId,
+            LevelId: input.LevelId,
+            Price: input.Price,
+            DurationHours: input.DurationHours,
+            DurationMinutes: input.DurationMinutes
+        );
 
         var result = await mediator.Send(command);
 

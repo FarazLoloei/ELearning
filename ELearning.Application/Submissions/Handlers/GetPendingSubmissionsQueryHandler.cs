@@ -8,6 +8,7 @@ using ELearning.Domain.Entities.CourseAggregate.Abstractions.Repositories;
 using ELearning.Domain.Entities.EnrollmentAggregate;
 using ELearning.Domain.Entities.EnrollmentAggregate.Abstractions.Repositories;
 using ELearning.SharedKernel;
+using ELearning.SharedKernel.Models;
 using MediatR;
 
 namespace ELearning.Application.Submissions.Handlers;
@@ -39,8 +40,7 @@ public class GetPendingSubmissionsQueryHandler(
             // Try Dapr read service first
             var paginatedList = await submissionReadService.GetPendingSubmissionsAsync(
                 request.InstructorId,
-                request.PageNumber,
-                request.PageSize);
+                new PaginationParameters(request.PageNumber, request.PageSize));
 
             return Result.Success(paginatedList);
         }
