@@ -129,16 +129,12 @@ public class CoursesController : ControllerBase
     public async Task<IActionResult> UpdateCourse(Guid id, UpdateCourseCommand command)
     {
         if (id != command.CourseId)
-        {
             return BadRequest();
-        }
 
         var result = await _mediator.Send(command);
 
         if (result.IsSuccess)
-        {
             return NoContent();
-        }
 
         return result.Error.StartsWith("Course not found")
             ? NotFound(result.Error)
@@ -151,13 +147,10 @@ public class CoursesController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> DeleteCourse(Guid id)
     {
-        var command = new DeleteCourseCommand { CourseId = id };
-        var result = await _mediator.Send(command);
+        var result = await _mediator.Send(new DeleteCourseCommand(id));
 
         if (result.IsSuccess)
-        {
             return NoContent();
-        }
 
         return NotFound(result.Error);
     }
