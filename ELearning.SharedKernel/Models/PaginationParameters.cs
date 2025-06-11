@@ -5,9 +5,21 @@
 /// </summary>
 public class PaginationParameters
 {
-    public int PageNumber { get; set; } = 1; // Default to page 1
+    private int _pageNumber = 1;
+    private int _pageSize = 10;
+    private const int MaxPageSize = 100; // Define a maximum page size to prevent abuse
 
-    public int PageSize { get; set; } = 10;  // Default to 10 items
+    public int PageNumber
+    {
+        get => _pageNumber;
+        set => _pageNumber = (value < 1) ? 1 : value; // Ensure PageNumber is at least 1
+    }
+
+    public int PageSize
+    {
+        get => _pageSize;
+        set => _pageSize = (value > MaxPageSize) ? MaxPageSize : (value < 1) ? 1 : value; // Ensure PageSize is positive and within max
+    }
 
     public PaginationParameters()
     { }
@@ -17,4 +29,9 @@ public class PaginationParameters
         PageNumber = pageNumber;
         PageSize = pageSize;
     }
+
+    /// <summary>
+    /// Gets the number of items to skip for the current page.
+    /// </summary>
+    public int SkipCount => (PageNumber - 1) * PageSize; // Changed to a readonly property
 }
