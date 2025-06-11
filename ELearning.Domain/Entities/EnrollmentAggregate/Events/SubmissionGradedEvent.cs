@@ -2,15 +2,15 @@
 
 namespace ELearning.Domain.Entities.EnrollmentAggregate.Events;
 
-public class SubmissionGradedEvent : IDomainEvent
+public sealed class SubmissionGradedEvent : IDomainEvent
 {
     public Submission Submission { get; }
 
-    public DateTime OccurredOn { get; }
+    public DateTime OccurredOnUTC { get; }
 
     public SubmissionGradedEvent(Submission submission)
     {
-        Submission = submission;
-        OccurredOn = DateTime.UtcNow;
+        Submission = submission ?? throw new ArgumentNullException(nameof(submission)); ;
+        OccurredOnUTC = DateTime.UtcNow;
     }
 }

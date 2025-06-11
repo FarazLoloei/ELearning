@@ -40,7 +40,7 @@ public class GetStudentProgressQueryHandler(
                 throw new NotFoundException(nameof(Student), request.StudentId);
             }
 
-            var enrollments = await enrollmentRepository.GetByStudentIdAsync(request.StudentId);
+            var enrollments = await enrollmentRepository.GetByStudentIdAsync(request.StudentId, cancellationToken);
             var completedEnrollments = enrollments.Where(e => e.Status == EnrollmentStatus.Completed).ToList();
             var inProgressEnrollments = enrollments.Where(e => e.Status == EnrollmentStatus.Active).ToList();
 
@@ -71,8 +71,8 @@ public class GetStudentProgressQueryHandler(
                     CourseId = course.Id,
                     CourseTitle = course.Title,
                     Status = enrollment.Status.Name,
-                    EnrollmentDate = enrollment.CreatedAt,
-                    CompletedDate = enrollment.CompletedDate,
+                    EnrollmentDate = enrollment.CreatedAt(),
+                    CompletedDate = enrollment.CompletedDateUTC,
                     CompletionPercentage = completionPercentage,
                     CompletedLessons = completedLessons,
                     TotalLessons = totalLessons,

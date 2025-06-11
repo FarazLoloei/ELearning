@@ -4,15 +4,15 @@ namespace ELearning.Domain.Entities.EnrollmentAggregate.Abstractions.Repositorie
 
 public interface IEnrollmentRepository : IEntityFrameworkRepository<Enrollment>
 {
-    Task<Enrollment> GetByStudentAndCourseIdAsync(Guid studentId, Guid courseId);
+    Task<Enrollment?> GetByStudentAndCourseIdAsync(Guid studentId, Guid courseId, CancellationToken cancellationToken);
 
-    Task<IReadOnlyList<Enrollment>> GetByStudentIdAsync(Guid studentId);
+    Task<IReadOnlyList<Enrollment>> GetByStudentIdAsync(Guid studentId, CancellationToken cancellationToken);
 
-    Task<IReadOnlyList<Enrollment>> GetByCourseIdAsync(Guid courseId);
+    Task<IReadOnlyList<Enrollment>> GetByCourseIdAsync(Guid courseId, CancellationToken cancellationToken);
 
-    Task<IReadOnlyList<Enrollment>> GetRecentEnrollmentsAsync(int count);
+    Task<IReadOnlyList<Enrollment>> GetRecentEnrollmentsAsync(int count, CancellationToken cancellationToken);
 
-    Task<int> GetEnrollmentsCountAsync();
+    Task<int> GetEnrollmentsCountAsync(CancellationToken cancellationToken);
 
-    Task<IReadOnlyList<Enrollment>> GetCompletedEnrollmentsAsync(Guid studentId);
+    Task<IReadOnlyList<Enrollment>> GetCompletedEnrollmentsAsync(Guid studentId, CancellationToken cancellationToken);
 }

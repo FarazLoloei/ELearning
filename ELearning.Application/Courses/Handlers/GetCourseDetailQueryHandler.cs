@@ -16,9 +16,7 @@ public class GetCourseDetailQueryHandler(
 {
     public async Task<Result<CourseDetailDto>> Handle(GetCourseDetailQuery request, CancellationToken cancellationToken)
     {
-        var course = await courseRepository.GetByIdAsync(request.CourseId);
-
-        if (course is null)
+        var course = await courseRepository.GetByIdAsync(request.CourseId) ??
             throw new NotFoundException(nameof(Course), request.CourseId);
 
         var courseDto = mapper.Map<CourseDetailDto>(course);

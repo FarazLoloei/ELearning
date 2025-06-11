@@ -5,7 +5,9 @@ namespace ELearning.Domain.ValueObjects;
 
 public class Email : ValueObject
 {
-    public string Value { get; private set; }
+    private static readonly Regex EmailAddressRegex = new(@"^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$", RegexOptions.Compiled);
+
+    public string Value { get; init; }
 
     private Email()
     { }
@@ -33,14 +35,14 @@ public class Email : ValueObject
 
     private static bool IsValidEmail(string email)
     {
-        var regex = new Regex(@"^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$");
-        return regex.IsMatch(email);
+        return EmailAddressRegex.IsMatch(email);
     }
 
     public override string ToString() => Value;
 
     protected override IEnumerable<object> GetEqualityComponents()
     {
-        yield return Value.ToLower();
+        // Ensuring case-insensitivity using string.Equals
+        yield return Value.ToLowerInvariant();
     }
 }

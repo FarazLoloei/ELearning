@@ -20,38 +20,23 @@ public class CreateEnrollmentCommandHandler(
 {
     public async Task<Result> Handle(CreateEnrollmentCommand request, CancellationToken cancellationToken)
     {
-        if (!currentUserService.IsAuthenticated || currentUserService.UserId == null)
-        {
+        if (!currentUserService.IsAuthenticated || currentUserService.UserId is null)
             throw new ForbiddenAccessException();
-        }
 
         var studentId = currentUserService.UserId.Value;
-        var student = await studentRepository.GetByIdAsync(studentId);
-
-        if (student == null)
-        {
+        var student = await studentRepository.GetByIdAsync(studentId) ??
             throw new NotFoundException(nameof(Student), studentId);
-        }
 
-        var course = await courseRepository.GetByIdAsync(request.CourseId);
-
-        if (course == null)
-        {
+        var course = await courseRepository.GetByIdAsync(request.CourseId) ??
             throw new NotFoundException(nameof(Course), request.CourseId);
-        }
 
         // Check if student is already enrolled
-        var existingEnrollment = await enrollmentRepository.GetByStudentAndCourseIdAsync(studentId, request.CourseId);
-        if (existingEnrollment != null)
-        {
+        var alreadyEnrolled = await enrollmentRepository.GetByStudentAndCourseIdAsync(studentId, request.CourseId, cancellationToken) is not null;
+        if (alreadyEnrolled)
             return Result.Failure("You are already enrolled in this course.");
-        }
 
         // Enroll student in course
         student.EnrollInCourse(course);
-
-        // Get the enrollment that was just created
-        var enrollment = student.Enrollments.Last();
 
         // Save to repository
         await studentRepository.UpdateAsync(student);

@@ -2,7 +2,7 @@
 
 namespace ELearning.Domain.Entities.EnrollmentAggregate.Enums;
 
-public class EnrollmentStatus : Enumeration
+public sealed class EnrollmentStatus : Enumeration
 {
     public static EnrollmentStatus Active = new EnrollmentStatus(1, nameof(Active));
     public static EnrollmentStatus Paused = new EnrollmentStatus(2, nameof(Paused));

@@ -46,7 +46,7 @@ public class Progress : BaseEntity
         if (Status == ProgressStatus.NotStarted)
         {
             Status = ProgressStatus.InProgress;
-            UpdatedAt = DateTime.UtcNow;
+            UpdatedAt(DateTime.UtcNow);
         }
     }
 
@@ -54,7 +54,7 @@ public class Progress : BaseEntity
     {
         Status = ProgressStatus.Completed;
         CompletedDate = DateTime.UtcNow;
-        UpdatedAt = DateTime.UtcNow;
+        UpdatedAt(DateTime.UtcNow);
     }
 
     public void AddTimeSpent(int seconds)
@@ -63,6 +63,6 @@ public class Progress : BaseEntity
             throw new ArgumentException("Time spent must be positive", nameof(seconds));
 
         TimeSpentSeconds += seconds;
-        UpdatedAt = DateTime.UtcNow;
+        UpdatedAt(DateTime.UtcNow);
     }
 }

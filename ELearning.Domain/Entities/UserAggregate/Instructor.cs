@@ -6,7 +6,7 @@ namespace ELearning.Domain.Entities.UserAggregate;
 
 public class Instructor : User
 {
-    private readonly List<Course> _courses = new List<Course>();
+    private readonly HashSet<Course> _courses = new();
 
     /// <summary>
     /// Professional biography
@@ -21,7 +21,7 @@ public class Instructor : User
     /// <summary>
     /// Collection of courses created by this instructor
     /// </summary>
-    public IReadOnlyCollection<Course> Courses => _courses.AsReadOnly();
+    public IReadOnlyCollection<Course> Courses => _courses.ToList().AsReadOnly();
 
     private Instructor() : base()
     {
@@ -32,33 +32,33 @@ public class Instructor : User
         string lastName,
         Email email,
         string passwordHash,
-        string bio = null,
-        string expertise = null)
+        string bio = "",
+        string expertise = "")
         : base(firstName, lastName, email, passwordHash, UserRole.Instructor)
     {
-        Bio = bio;
-        Expertise = expertise;
+        Bio = bio ?? string.Empty;
+        Expertise = expertise ?? string.Empty;
     }
 
     public void UpdateBio(string bio)
     {
-        Bio = bio;
-        UpdatedAt = DateTime.UtcNow;
+        if (!string.IsNullOrWhiteSpace(bio))
+        {
+            Bio = bio;
+            UpdatedAt(DateTime.UtcNow);
+        }
     }
 
     public void UpdateExpertise(string expertise)
     {
-        Expertise = expertise;
-        UpdatedAt = DateTime.UtcNow;
+        if (!string.IsNullOrWhiteSpace(expertise))
+        {
+            Expertise = expertise;
+            UpdatedAt(DateTime.UtcNow);
+        }
     }
 
-    public void AddCourse(Course course)
-    {
-        _courses.Add(course);
-    }
+    public bool AddCourse(Course course) => _courses.Add(course); // HashSet prevents duplicates and returns success status
 
-    public void RemoveCourse(Course course)
-    {
-        _courses.Remove(course);
-    }
+    public bool RemoveCourse(Course course) => _courses.Remove(course);
 }

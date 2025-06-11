@@ -21,48 +21,30 @@ public class CreateSubmissionCommandHandler(
 {
     public async Task<Result> Handle(CreateSubmissionCommand request, CancellationToken cancellationToken)
     {
-        if (!currentUserService.IsAuthenticated || currentUserService.UserId == null)
-        {
+        if (!currentUserService.IsAuthenticated || currentUserService.UserId is null)
             throw new ForbiddenAccessException();
-        }
-
-        // Ensure the assignment exists
-        var assignment = await assignmentRepository.GetByIdAsync(request.AssignmentId);
-        if (assignment == null)
-        {
-            throw new NotFoundException(nameof(Assignment), request.AssignmentId);
-        }
 
         var studentId = currentUserService.UserId.Value;
 
-        // Check if the student can submit to this assignment (this may involve checking if they're enrolled in the course)
-        var canSubmit = await assignmentService.CanSubmitAssignmentAsync(studentId, request.AssignmentId);
-        if (!canSubmit)
-        {
+        // Ensure the assignment exists
+        var assignment = await assignmentRepository.GetByIdAsync(request.AssignmentId)
+            ?? throw new NotFoundException(nameof(Assignment), request.AssignmentId);
+
+        // Verify submission eligibility
+        if (!await assignmentService.CanSubmitAssignmentAsync(studentId, request.AssignmentId))
             return Result.Failure("You are not enrolled in the course or the assignment is not available.");
-        }
 
-        // Check if the student has already submitted this assignment
-        var hasSubmitted = await assignmentService.HasStudentSubmittedAsync(studentId, request.AssignmentId);
-        if (hasSubmitted)
-        {
+        if (await assignmentService.HasStudentSubmittedAsync(studentId, request.AssignmentId))
             return Result.Failure("You have already submitted this assignment.");
-        }
 
-        // Get the enrollment ID for this student and course
-        var module = await assignmentRepository.GetModuleForAssignmentAsync(request.AssignmentId);
-        if (module == null)
-        {
-            throw new NotFoundException("Module for assignment", request.AssignmentId);
-        }
+        // Get module and enrollment
+        var module = await assignmentRepository.GetModuleForAssignmentAsync(request.AssignmentId)
+            ?? throw new NotFoundException("Module for assignment", request.AssignmentId);
 
-        var enrollment = await enrollmentRepository.GetByStudentAndCourseIdAsync(studentId, module.CourseId);
-        if (enrollment == null)
-        {
-            throw new StudentNotEnrolledException(studentId, module.CourseId);
-        }
+        var enrollment = await enrollmentRepository.GetByStudentAndCourseIdAsync(studentId, module.CourseId, cancellationToken)
+            ?? throw new StudentNotEnrolledException(studentId, module.CourseId);
 
-        // Check if the assignment is overdue
+        // (Optional) Handle late submissions
         var isOverdue = await assignmentService.IsAssignmentOverdueAsync(request.AssignmentId, DateTime.UtcNow);
         if (isOverdue)
         {
@@ -71,7 +53,6 @@ public class CreateSubmissionCommandHandler(
             // return Result.Failure<Guid>("The deadline for this assignment has passed.");
         }
 
-        // Create and store the submission
         var submission = new Submission(
             enrollment.Id,
             request.AssignmentId,
@@ -80,7 +61,7 @@ public class CreateSubmissionCommandHandler(
 
         await submissionRepository.AddAsync(submission);
 
-        // Add the submission to the enrollment
+        // Link submission to enrollment
         enrollment.AddSubmission(submission);
         await enrollmentRepository.UpdateAsync(enrollment);
 

@@ -27,15 +27,15 @@ public class GetStudentEnrollmentsQueryHandler(
             // Try Dapr read service first
             var paginatedList = await enrollmentReadService.GetStudentEnrollmentsAsync(
                 request.StudentId,
-                request.PageNumber,
-                request.PageSize);
+                new SharedKernel.Models.PaginationParameters(request.PageNumber, request.PageSize),
+                cancellationToken);
 
             return Result.Success(paginatedList);
         }
         catch (Exception)
         {
             // Fall back to repository
-            var enrollments = await enrollmentRepository.GetByStudentIdAsync(request.StudentId);
+            var enrollments = await enrollmentRepository.GetByStudentIdAsync(request.StudentId, cancellationToken);
 
             // Manual pagination
             var totalCount = enrollments.Count;
@@ -59,8 +59,8 @@ public class GetStudentEnrollmentsQueryHandler(
                     CourseId = enrollment.CourseId,
                     CourseTitle = course.Title,
                     Status = enrollment.Status.Name,
-                    EnrollmentDate = enrollment.CreatedAt,
-                    CompletedDate = enrollment.CompletedDate,
+                    EnrollmentDate = enrollment.CreatedAt(),
+                    CompletedDate = enrollment.CompletedDateUTC,
                     CompletionPercentage = completionPercentage
                 };
 

@@ -4,28 +4,27 @@ using ELearning.Application.Courses.Abstractions.ReadModels;
 using ELearning.Application.Courses.Dtos;
 using ELearning.Domain.Entities.CourseAggregate;
 using ELearning.SharedKernel;
+using ELearning.SharedKernel.Models;
 using Microsoft.Extensions.Logging;
+using System.Web;
 
 namespace ELearning.Infrastructure.ReadModels;
 
 public class CourseReadService(DaprClient daprClient, ILogger<CourseReadService> logger) : ICourseReadService
 {
     private const string StateStoreName = "coursestore";
+    private const string CourseServiceAppId = "courseservice";
 
-    public async Task<CourseDetailDto> GetByIdAsync(Guid id)
+    public async Task<CourseDetailDto> GetByIdAsync(Guid id, CancellationToken cancellationToken)
     {
         try
         {
             var course = await daprClient.GetStateAsync<CourseDetailDto>(
                 StateStoreName,
-                id.ToString());
+                id.ToString(),
+                cancellationToken: cancellationToken);
 
-            if (course == null)
-            {
-                throw new NotFoundException(nameof(Course), id);
-            }
-
-            return course;
+            return course == null ? throw new NotFoundException(nameof(Course), id) : course;
         }
         catch (Exception ex) when (ex is not NotFoundException)
         {
@@ -34,28 +33,17 @@ public class CourseReadService(DaprClient daprClient, ILogger<CourseReadService>
         }
     }
 
-    public async Task<PaginatedList<CourseDetailDto>> ListAsync(int pageNumber, int pageSize)
+    public async Task<PaginatedList<CourseDetailDto>> ListAsync(PaginationParameters pagination, CancellationToken cancellationToken)
     {
-        try
-        {
-            // In a real implementation, you would use Dapr queries or bulk get operations
-            // For simplicity, we're simulating with a direct state get
-            var data = await daprClient.InvokeMethodAsync<PaginatedResponse<CourseDetailDto>>(
-                httpMethod: HttpMethod.Get,
-                "courseservice",
-                $"api/courses?pageNumber={pageNumber}&pageSize={pageSize}");
+        var query = HttpUtility.ParseQueryString(string.Empty);
+        query["pageNumber"] = pagination.PageNumber.ToString();
+        query["pageSize"] = pagination.PageSize.ToString();
 
-            return new PaginatedList<CourseDetailDto>(
-                data.Items,
-                data.TotalCount,
-                pageNumber,
-                pageSize);
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Error listing courses");
-            throw;
-        }
+        return await InvokePaginatedService<CourseDetailDto>(
+            $"api/courses?{query}",
+            "listing courses",
+            pagination,
+            cancellationToken);
     }
 
     public async Task<PaginatedList<CourseListDto>> SearchCoursesAsync(
@@ -64,57 +52,38 @@ public class CourseReadService(DaprClient daprClient, ILogger<CourseReadService>
         int? levelId,
         bool? isFeatured,
         int pageNumber,
-        int pageSize)
+        int pageSize,
+        CancellationToken cancellationToken)
     {
-        try
-        {
-            var queryParams = new Dictionary<string, string>();
+        var query = HttpUtility.ParseQueryString(string.Empty);
+        query["pageNumber"] = pageNumber.ToString();
+        query["pageSize"] = pageSize.ToString();
 
-            if (!string.IsNullOrEmpty(searchTerm))
-                queryParams.Add("searchTerm", searchTerm);
+        if (!string.IsNullOrWhiteSpace(searchTerm))
+            query["searchTerm"] = searchTerm;
+        if (categoryId.HasValue)
+            query["categoryId"] = categoryId.Value.ToString();
+        if (levelId.HasValue)
+            query["levelId"] = levelId.Value.ToString();
+        if (isFeatured.HasValue)
+            query["isFeatured"] = isFeatured.Value.ToString();
 
-            if (categoryId.HasValue)
-                queryParams.Add("categoryId", categoryId.Value.ToString());
-
-            if (levelId.HasValue)
-                queryParams.Add("levelId", levelId.Value.ToString());
-
-            if (isFeatured.HasValue)
-                queryParams.Add("isFeatured", isFeatured.Value.ToString());
-
-            queryParams.Add("pageNumber", pageNumber.ToString());
-            queryParams.Add("pageSize", pageSize.ToString());
-
-            var queryString = string.Join("&", queryParams.Select(p => $"{p.Key}={Uri.EscapeDataString(p.Value)}"));
-
-            var data = await daprClient.InvokeMethodAsync<PaginatedResponse<CourseListDto>>(
-                HttpMethod.Get,
-                "courseservice",
-                $"api/courses/search?{queryString}");
-
-            return new PaginatedList<CourseListDto>(
-                data.Items,
-                data.TotalCount,
-                pageNumber,
-                pageSize);
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Error searching courses");
-            throw;
-        }
+        return await InvokePaginatedService<CourseListDto>(
+            $"api/courses/search?{query}",
+            "searching courses",
+            new PaginationParameters(pageNumber, pageSize),
+            cancellationToken);
     }
 
-    public async Task<List<CourseListDto>> GetFeaturedCoursesAsync(int count)
+    public async Task<List<CourseListDto>> GetFeaturedCoursesAsync(int count, CancellationToken cancellationToken)
     {
         try
         {
-            var featuredCourses = await daprClient.InvokeMethodAsync<List<CourseListDto>>(
+            return await daprClient.InvokeMethodAsync<List<CourseListDto>>(
                 HttpMethod.Get,
-                "courseservice",
-                $"api/courses/featured?count={count}");
-
-            return featuredCourses;
+                CourseServiceAppId,
+                $"api/courses/featured?count={count}",
+                cancellationToken: cancellationToken);
         }
         catch (Exception ex)
         {
@@ -123,16 +92,15 @@ public class CourseReadService(DaprClient daprClient, ILogger<CourseReadService>
         }
     }
 
-    public async Task<List<CourseListDto>> GetCoursesByInstructorAsync(Guid instructorId)
+    public async Task<List<CourseListDto>> GetCoursesByInstructorAsync(Guid instructorId, CancellationToken cancellationToken)
     {
         try
         {
-            var courses = await daprClient.InvokeMethodAsync<List<CourseListDto>>(
+            return await daprClient.InvokeMethodAsync<List<CourseListDto>>(
                 HttpMethod.Get,
-                "courseservice",
-                $"api/instructors/{instructorId}/courses");
-
-            return courses;
+                CourseServiceAppId,
+                $"api/instructors/{instructorId}/courses",
+                cancellationToken: cancellationToken);
         }
         catch (Exception ex)
         {
@@ -141,20 +109,46 @@ public class CourseReadService(DaprClient daprClient, ILogger<CourseReadService>
         }
     }
 
-    public async Task<List<CourseListDto>> GetCoursesByCategoryAsync(int categoryId)
+    public async Task<List<CourseListDto>> GetCoursesByCategoryAsync(int categoryId, CancellationToken cancellationToken)
     {
         try
         {
-            var courses = await daprClient.InvokeMethodAsync<List<CourseListDto>>(
+            return await daprClient.InvokeMethodAsync<List<CourseListDto>>(
                 HttpMethod.Get,
-                "courseservice",
-                $"api/courses/category/{categoryId}");
-
-            return courses;
+                CourseServiceAppId,
+                $"api/courses/category/{categoryId}",
+                cancellationToken);
         }
         catch (Exception ex)
         {
             logger.LogError(ex, "Error getting courses for category {CategoryId}", categoryId);
+            throw;
+        }
+    }
+
+    private async Task<PaginatedList<T>> InvokePaginatedService<T>(
+        string endpoint,
+        string operationName,
+        PaginationParameters pagination,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            var data = await daprClient.InvokeMethodAsync<PaginatedResponse<T>>(
+                HttpMethod.Get,
+                CourseServiceAppId,
+                endpoint,
+                cancellationToken: cancellationToken);
+
+            return new PaginatedList<T>(
+                data.Items,
+                data.TotalCount,
+                pagination.PageNumber,
+                pagination.PageSize);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error {OperationName}", operationName);
             throw;
         }
     }

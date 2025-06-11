@@ -4,6 +4,7 @@ using ELearning.Application.Enrollments.Abstractions.ReadModels;
 using ELearning.Application.Enrollments.Dtos;
 using ELearning.Domain.Entities.EnrollmentAggregate;
 using ELearning.SharedKernel;
+using ELearning.SharedKernel.Models;
 using Microsoft.Extensions.Logging;
 
 namespace ELearning.Infrastructure.ReadModels;
@@ -13,7 +14,7 @@ public class EnrollmentReadService(DaprClient daprClient, ILogger<EnrollmentRead
 {
     private const string StateStoreName = "enrollmentstore";
 
-    public async Task<EnrollmentDetailDto> GetByIdAsync(Guid id)
+    public async Task<EnrollmentDetailDto> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
         try
         {
@@ -35,20 +36,20 @@ public class EnrollmentReadService(DaprClient daprClient, ILogger<EnrollmentRead
         }
     }
 
-    public async Task<PaginatedList<EnrollmentDetailDto>> ListAsync(int pageNumber, int pageSize)
+    public async Task<PaginatedList<EnrollmentDetailDto>> ListAsync(PaginationParameters pagination, CancellationToken cancellationToken = default)
     {
         try
         {
             var data = await daprClient.InvokeMethodAsync<PaginatedResponse<EnrollmentDetailDto>>(
                  httpMethod: HttpMethod.Get,
                 "enrollmentservice",
-                $"api/enrollments?pageNumber={pageNumber}&pageSize={pageSize}");
+                $"api/enrollments?pageNumber={pagination.PageNumber}&pageSize={pagination.PageSize}");
 
             return new PaginatedList<EnrollmentDetailDto>(
                 data.Items,
                 data.TotalCount,
-                pageNumber,
-                pageSize);
+                pagination.PageNumber,
+                pagination.PageSize);
         }
         catch (Exception ex)
         {
@@ -57,20 +58,20 @@ public class EnrollmentReadService(DaprClient daprClient, ILogger<EnrollmentRead
         }
     }
 
-    public async Task<PaginatedList<EnrollmentDto>> GetStudentEnrollmentsAsync(Guid studentId, int pageNumber, int pageSize)
+    public async Task<PaginatedList<EnrollmentDto>> GetStudentEnrollmentsAsync(Guid studentId, PaginationParameters pagination, CancellationToken cancellationToken = default)
     {
         try
         {
             var data = await daprClient.InvokeMethodAsync<PaginatedResponse<EnrollmentDto>>(
                  httpMethod: HttpMethod.Get,
                 "enrollmentservice",
-                $"api/students/{studentId}/enrollments?pageNumber={pageNumber}&pageSize={pageSize}");
+                $"api/students/{studentId}/enrollments?pageNumber={pagination.PageNumber}&pageSize={pagination.PageSize}");
 
             return new PaginatedList<EnrollmentDto>(
                 data.Items,
                 data.TotalCount,
-                pageNumber,
-                pageSize);
+                pagination.PageNumber,
+                pagination.PageSize);
         }
         catch (Exception ex)
         {
@@ -79,20 +80,20 @@ public class EnrollmentReadService(DaprClient daprClient, ILogger<EnrollmentRead
         }
     }
 
-    public async Task<PaginatedList<EnrollmentDto>> GetCourseEnrollmentsAsync(Guid courseId, int pageNumber, int pageSize)
+    public async Task<PaginatedList<EnrollmentDto>> GetCourseEnrollmentsAsync(Guid courseId, PaginationParameters pagination, CancellationToken cancellationToken = default)
     {
         try
         {
             var data = await daprClient.InvokeMethodAsync<PaginatedResponse<EnrollmentDto>>(
                  httpMethod: HttpMethod.Get,
                 "enrollmentservice",
-                $"api/courses/{courseId}/enrollments?pageNumber={pageNumber}&pageSize={pageSize}");
+                $"api/courses/{courseId}/enrollments?pageNumber={pagination.PageNumber}&pageSize={pagination.PageSize}");
 
             return new PaginatedList<EnrollmentDto>(
                 data.Items,
                 data.TotalCount,
-                pageNumber,
-                pageSize);
+                pagination.PageNumber,
+                pagination.PageSize);
         }
         catch (Exception ex)
         {
@@ -101,7 +102,7 @@ public class EnrollmentReadService(DaprClient daprClient, ILogger<EnrollmentRead
         }
     }
 
-    public async Task<EnrollmentDetailDto> GetByStudentAndCourseIdAsync(Guid studentId, Guid courseId)
+    public async Task<EnrollmentDetailDto> GetByStudentAndCourseIdAsync(Guid studentId, Guid courseId, CancellationToken cancellationToken = default)
     {
         try
         {

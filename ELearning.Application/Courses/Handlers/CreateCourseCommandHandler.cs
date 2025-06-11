@@ -18,26 +18,20 @@ public class CreateCourseCommandHandler(ICourseRepository courseRepository,
 {
     public async Task<Result> Handle(CreateCourseCommand request, CancellationToken cancellationToken)
     {
-        if (!currentUserService.IsAuthenticated || currentUserService.UserId == null)
-        {
+        if (!currentUserService.IsAuthenticated || currentUserService.UserId is null)
             throw new ForbiddenAccessException();
-        }
 
         var instructorId = currentUserService.UserId.Value;
-        var instructor = await instructorRepository.GetByIdAsync(instructorId);
-
-        if (instructor == null)
-        {
+        var instructor = await instructorRepository.GetByIdAsync(instructorId) ??
             throw new ForbiddenAccessException();
-        }
 
         // Get category and level from enumeration values
         var category = CourseCategory.GetAll<CourseCategory>().FirstOrDefault(c => c.Id == request.CategoryId);
         var level = CourseLevel.GetAll<CourseLevel>().FirstOrDefault(l => l.Id == request.LevelId);
 
-        if (category == null || level == null)
+        if (category is null || level is null)
         {
-            return Result.Failure("Invalid category or level.");
+            return Result.Failure($"Invalid category or level. Category: {(category?.Name ?? "null")}, Level: {(level?.Name ?? "null")}");
         }
 
         // Create duration value object

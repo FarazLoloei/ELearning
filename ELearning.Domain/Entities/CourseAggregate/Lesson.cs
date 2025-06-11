@@ -6,39 +6,18 @@ namespace ELearning.Domain.Entities.CourseAggregate;
 
 public class Lesson : BaseEntity
 {
-    /// <summary>
-    /// Name of the lesson
-    /// </summary>
     public string Title { get; private set; }
 
-    /// <summary>
-    /// The actual lesson content (text/HTML)
-    /// </summary>
     public string Content { get; private set; }
 
-    /// <summary>
-    /// Format of lesson (Video, Text, Presentation, Interactive)
-    /// </summary>
     public LessonType Type { get; private set; }
 
-    /// <summary>
-    /// Link to video content (for video-type lessons)
-    /// </summary>
-    public string VideoUrl { get; private set; }
+    public string? VideoUrl { get; private set; }
 
-    /// <summary>
-    /// Estimated time to complete the lesson
-    /// </summary>
     public Duration Duration { get; private set; }
 
-    /// <summary>
-    /// Sequence number within the module
-    /// </summary>
     public int Order { get; private set; }
 
-    /// <summary>
-    /// Reference to the parent module
-    /// </summary>
     public Guid ModuleId { get; private set; }
 
     private Lesson()
@@ -50,11 +29,20 @@ public class Lesson : BaseEntity
         LessonType type,
         int order,
         Guid moduleId,
-        Duration duration = null,
-        string videoUrl = null)
+        Duration? duration = null,
+        string? videoUrl = null)
     {
         if (string.IsNullOrWhiteSpace(title))
             throw new ArgumentException("Lesson title cannot be empty", nameof(title));
+
+        if (type == LessonType.Video)
+        {
+            if (string.IsNullOrWhiteSpace(videoUrl))
+                throw new ArgumentException("Video URL must be provided for video lessons", nameof(videoUrl));
+
+            if (duration == null)
+                throw new ArgumentException("Duration must be provided for video lessons", nameof(duration));
+        }
 
         Title = title;
         Content = content;
@@ -70,19 +58,28 @@ public class Lesson : BaseEntity
         Title = title;
         Content = content;
         Type = type;
-        UpdatedAt = DateTime.UtcNow;
+        UpdatedAt(DateTime.UtcNow);
     }
 
-    public void UpdateVideo(string videoUrl, Duration duration)
+    public void UpdateVideo(string? videoUrl, Duration duration)
     {
+        if (Type == LessonType.Video)
+        {
+            if (string.IsNullOrWhiteSpace(videoUrl))
+                throw new ArgumentException("Video URL must be provided for video lessons", nameof(videoUrl));
+
+            if (duration == null)
+                throw new ArgumentException("Duration must be provided for video lessons", nameof(duration));
+        }
+
         VideoUrl = videoUrl;
         Duration = duration;
-        UpdatedAt = DateTime.UtcNow;
+        UpdatedAt(DateTime.UtcNow);
     }
 
     public void UpdateOrder(int order)
     {
         Order = order;
-        UpdatedAt = DateTime.UtcNow;
+        UpdatedAt(DateTime.UtcNow);
     }
 }

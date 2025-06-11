@@ -5,7 +5,6 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ELearning.Infrastructure.Data.Repositories;
 
-// Student Repository Implementation
 public class StudentRepository : IStudentRepository
 {
     private readonly ApplicationDbContext _context;
@@ -15,62 +14,59 @@ public class StudentRepository : IStudentRepository
         _context = context;
     }
 
-    public async Task<Student> GetByIdAsync(Guid id)
-    {
-        return await _context.Students
+    public async Task<Student?> GetByIdAsync(Guid id, CancellationToken cancellationToken) =>
+        await _context.Students
+            .AsNoTracking()
             .Include(s => s.Enrollments)
-            .SingleOrDefaultAsync(s => s.Id == id);
-    }
+            .SingleOrDefaultAsync(s => s.Id == id, cancellationToken);
 
-    public async Task<IReadOnlyList<Student>> ListAllAsync()
+    public async Task<IReadOnlyList<Student>> ListAllAsync(CancellationToken cancellationToken) =>
+        await _context.Students
+        .AsNoTracking()
+        .ToListAsync(cancellationToken);
+
+    public async Task AddAsync(Student entity, CancellationToken cancellationToken)
     {
-        return await _context.Students.ToListAsync();
+        await _context.Students.AddAsync(entity, cancellationToken);
+        await _context.SaveChangesAsync(cancellationToken);
     }
 
-    public async Task AddAsync(Student entity)
-    {
-        await _context.Students.AddAsync(entity);
-        await _context.SaveChangesAsync();
-    }
-
-    public async Task UpdateAsync(Student entity)
+    public async Task UpdateAsync(Student entity, CancellationToken cancellationToken)
     {
         _context.Entry(entity).State = EntityState.Modified;
-        await _context.SaveChangesAsync();
+        await _context.SaveChangesAsync(cancellationToken);
     }
 
-    public async Task DeleteAsync(Student entity)
+    public async Task DeleteAsync(Student entity, CancellationToken cancellationToken)
     {
         _context.Students.Remove(entity);
-        await _context.SaveChangesAsync();
+        await _context.SaveChangesAsync(cancellationToken);
     }
 
-    public async Task<IReadOnlyList<Student>> GetByEnrolledCourseIdAsync(Guid courseId)
-    {
-        return await _context.Students
-            .Include(s => s.Enrollments)
-            .Where(s => s.Enrollments.Any(e => e.CourseId == courseId))
-            .ToListAsync();
-    }
+    public async Task<IReadOnlyList<Student>> GetStudentsByCourseIdAsync(Guid courseId, CancellationToken cancellationToken)
+    => await _context.Students
+        .AsNoTracking()
+        .Include(s => s.Enrollments)
+        .Where(s => s.Enrollments.Any(e => e.CourseId == courseId))
+        .ToListAsync(cancellationToken);
 
-    public async Task<IReadOnlyList<Course>> GetEnrolledCoursesAsync(Guid studentId)
+    public async Task<IReadOnlyList<Course>> GetCoursesByStudentIdAsync(Guid studentId, CancellationToken cancellationToken)
     {
         var enrollments = await _context.Enrollments
+            .AsNoTracking()
             .Where(e => e.StudentId == studentId)
             .Select(e => e.CourseId)
-            .ToListAsync();
+            .ToListAsync(cancellationToken);
 
         return await _context.Courses
             .Where(c => enrollments.Contains(c.Id))
-            .ToListAsync();
+            .ToListAsync(cancellationToken);
     }
 
-    public async Task<int> GetEnrolledStudentsCountByCourseIdAsync(Guid courseId)
-    {
-        return await _context.Enrollments
+    public async Task<int> GetEnrolledStudentCountAsync(Guid courseId, CancellationToken cancellationToken) => await _context.Enrollments
+            .AsNoTracking()
             .Where(e => e.CourseId == courseId)
             .Select(e => e.StudentId)
             .Distinct()
-            .CountAsync();
-    }
+            .CountAsync(cancellationToken);
 }

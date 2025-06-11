@@ -2,14 +2,15 @@
 
 namespace ELearning.Domain.Entities.CourseAggregate.Events;
 
-public class CoursePublishedEvent : IDomainEvent
+public sealed class CoursePublishedEvent : IDomainEvent
 {
     public Course Course { get; }
-    public DateTime OccurredOn { get; }
+
+    public DateTime OccurredOnUTC { get; }
 
     public CoursePublishedEvent(Course course)
     {
-        Course = course;
-        OccurredOn = DateTime.UtcNow;
+        Course = course ?? throw new ArgumentNullException(nameof(course));
+        OccurredOnUTC = DateTime.UtcNow;
     }
 }

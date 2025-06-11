@@ -30,7 +30,7 @@ public class User : BaseEntity, IAggregateRoot<User>
     /// <summary>
     /// Link to profile image
     /// </summary>
-    public string ProfilePictureUrl { get; protected set; }
+    public string? ProfilePictureUrl { get; protected set; }
 
     /// <summary>
     /// Type of user (Student, Instructor, Admin)
@@ -75,13 +75,13 @@ public class User : BaseEntity, IAggregateRoot<User>
     {
         FirstName = firstName;
         LastName = lastName;
-        UpdatedAt = DateTime.UtcNow;
+        UpdatedAt(DateTime.UtcNow);
     }
 
     public void UpdateEmail(Email email)
     {
         Email = email ?? throw new ArgumentNullException(nameof(email));
-        UpdatedAt = DateTime.UtcNow;
+        UpdatedAt(DateTime.UtcNow);
     }
 
     public void UpdatePassword(string passwordHash)
@@ -90,24 +90,24 @@ public class User : BaseEntity, IAggregateRoot<User>
             throw new ArgumentException("Password hash cannot be empty", nameof(passwordHash));
 
         PasswordHash = passwordHash;
-        UpdatedAt = DateTime.UtcNow;
+        UpdatedAt(DateTime.UtcNow);
     }
 
     public void UpdateProfilePicture(string profilePictureUrl)
     {
         ProfilePictureUrl = profilePictureUrl;
-        UpdatedAt = DateTime.UtcNow;
+        UpdatedAt(DateTime.UtcNow);
     }
 
     public void SetActive(bool isActive)
     {
         IsActive = isActive;
-        UpdatedAt = DateTime.UtcNow;
+        UpdatedAt(DateTime.UtcNow);
     }
 
     public void RecordLogin()
     {
         LastLoginDate = DateTime.UtcNow;
-        UpdatedAt = DateTime.UtcNow;
+        UpdatedAt(DateTime.UtcNow);
     }
 }

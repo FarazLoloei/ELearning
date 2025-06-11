@@ -4,57 +4,54 @@ namespace ELearning.Domain.ValueObjects;
 
 public class Rating : ValueObject
 {
-    public decimal Value { get; private set; }
+    private const byte RatingMaxValue = 5;
 
-    public int NumberOfRatings { get; private set; }
+    private const byte RatingMinValue = 0;
 
-    private Rating()
-    { }
+    private const int DecimalPrecision = 1;
+
+    public decimal Value { get; }
+
+    public int NumberOfRatings { get; }
 
     private Rating(decimal value, int numberOfRatings)
     {
-        if (value < 0 || value > 5)
-            throw new ArgumentException("Rating must be between 0 and 5", nameof(value));
+        ValidateRating(value);
+        ValidateNumberOfRatings(numberOfRatings);
 
-        if (numberOfRatings < 0)
-            throw new ArgumentException("Number of ratings cannot be negative", nameof(numberOfRatings));
-
-        Value = Math.Round(value, 1);
+        Value = Math.Round(value, DecimalPrecision); // Round to 1 decimal place during creation
         NumberOfRatings = numberOfRatings;
     }
 
-    public static Rating Create(decimal value, int numberOfRatings)
+    public static Rating Create(decimal value, int numberOfRatings) => new Rating(value, numberOfRatings);
+
+    public static Rating CreateDefault() => new Rating(0, 0);
+
+    public Rating AddRating(decimal newRating) => AdjustRating(newRating, 1);
+
+    public Rating RemoveRating(decimal oldRating) => AdjustRating(-oldRating, -1);
+
+    private Rating AdjustRating(decimal ratingChange, int ratingCountChange)
     {
-        return new Rating(value, numberOfRatings);
+        ValidateRating(ratingChange);
+
+        var newNumberOfRatings = NumberOfRatings + ratingCountChange;
+        var newTotalValue = Value * NumberOfRatings + ratingChange;
+        var newAverageValue = newTotalValue / newNumberOfRatings;
+
+        return new Rating(Math.Round(newAverageValue, DecimalPrecision), newNumberOfRatings);
     }
 
-    public static Rating CreateDefault()
+    private static void ValidateRating(decimal rating)
     {
-        return new Rating(0, 0);
+        if (rating < RatingMinValue || rating > RatingMaxValue)
+            throw new ArgumentException($"Rating must be between {RatingMinValue} and {RatingMaxValue}", nameof(rating));
     }
 
-    public Rating AddRating(decimal newRating)
+    private static void ValidateNumberOfRatings(int numberOfRatings)
     {
-        if (newRating < 0 || newRating > 5)
-            throw new ArgumentException("Rating must be between 0 and 5", nameof(newRating));
-
-        var totalValue = Value * NumberOfRatings;
-        var newNumberOfRatings = NumberOfRatings + 1;
-        var newAverageValue = (totalValue + newRating) / newNumberOfRatings;
-
-        return new Rating(newAverageValue, newNumberOfRatings);
-    }
-
-    public Rating RemoveRating(decimal oldRating)
-    {
-        if (NumberOfRatings <= 1)
-            return CreateDefault();
-
-        var totalValue = Value * NumberOfRatings;
-        var newNumberOfRatings = NumberOfRatings - 1;
-        var newAverageValue = (totalValue - oldRating) / newNumberOfRatings;
-
-        return new Rating(newAverageValue, newNumberOfRatings);
+        if (numberOfRatings < 0)
+            throw new ArgumentException("Number of ratings cannot be negative", nameof(numberOfRatings));
     }
 
     public override string ToString() => $"{Value:0.0}";

@@ -19,35 +19,24 @@ public class GradeSubmissionCommandHandler(
 {
     public async Task<Result> Handle(GradeSubmissionCommand request, CancellationToken cancellationToken)
     {
-        if (!currentUserService.IsAuthenticated || currentUserService.UserId == null)
+        if (!currentUserService.IsAuthenticated || currentUserService.UserId is null)
         {
             throw new ForbiddenAccessException();
         }
 
         var instructorId = currentUserService.UserId.Value;
-        var submission = await submissionRepository.GetByIdAsync(request.SubmissionId);
-
-        if (submission == null)
-        {
-            throw new NotFoundException(nameof(Submission), request.SubmissionId);
-        }
+        var submission = await submissionRepository.GetByIdAsync(request.SubmissionId)
+            ?? throw new NotFoundException(nameof(Submission), request.SubmissionId);
 
         if (submission.IsGraded)
-        {
             return Result.Failure("Submission is already graded.");
-        }
 
         // Get the assignment to check max points
-        var assignment = await assignmentRepository.GetByIdAsync(submission.AssignmentId);
-        if (assignment == null)
-        {
-            throw new NotFoundException(nameof(Assignment), submission.AssignmentId);
-        }
+        var assignment = await assignmentRepository.GetByIdAsync(submission.AssignmentId)
+            ?? throw new NotFoundException(nameof(Assignment), submission.AssignmentId);
 
         if (request.Score > assignment.MaxPoints)
-        {
             return Result.Failure($"Score cannot exceed maximum points ({assignment.MaxPoints}).");
-        }
 
         // Grade the submission
         submission.Grade(request.Score, request.Feedback, instructorId);

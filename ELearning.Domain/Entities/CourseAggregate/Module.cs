@@ -5,6 +5,7 @@ namespace ELearning.Domain.Entities.CourseAggregate;
 public class Module : BaseEntity
 {
     private readonly List<Lesson> _lessons = new List<Lesson>();
+
     private readonly List<Assignment> _assignments = new List<Assignment>();
 
     /// <summary>
@@ -54,25 +55,25 @@ public class Module : BaseEntity
     public void AddLesson(Lesson lesson)
     {
         _lessons.Add(lesson);
-        UpdatedAt = DateTime.UtcNow;
+        UpdatedAt(DateTime.UtcNow);
     }
 
     public void RemoveLesson(Lesson lesson)
     {
         _lessons.Remove(lesson);
-        UpdatedAt = DateTime.UtcNow;
+        UpdatedAt(DateTime.UtcNow);
     }
 
     public void AddAssignment(Assignment assignment)
     {
         _assignments.Add(assignment);
-        UpdatedAt = DateTime.UtcNow;
+        UpdatedAt(DateTime.UtcNow);
     }
 
     public void RemoveAssignment(Assignment assignment)
     {
         _assignments.Remove(assignment);
-        UpdatedAt = DateTime.UtcNow;
+        UpdatedAt(DateTime.UtcNow);
     }
 
     public void UpdateDetails(string title, string description, int order)
@@ -80,6 +81,6 @@ public class Module : BaseEntity
         Title = title;
         Description = description;
         Order = order;
-        UpdatedAt = DateTime.UtcNow;
+        UpdatedAt(DateTime.UtcNow);
     }
 }

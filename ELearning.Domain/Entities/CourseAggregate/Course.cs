@@ -10,6 +10,7 @@ namespace ELearning.Domain.Entities.CourseAggregate;
 public class Course : BaseEntity, IAggregateRoot<Course>
 {
     private readonly List<Module> _modules = new List<Module>();
+
     private readonly List<Enrollment> _enrollments = new List<Enrollment>();
 
     /// <summary>
@@ -112,13 +113,13 @@ public class Course : BaseEntity, IAggregateRoot<Course>
     public void AddModule(Module module)
     {
         _modules.Add(module);
-        UpdatedAt = DateTime.UtcNow;
+        UpdatedAt(DateTime.UtcNow);
     }
 
     public void RemoveModule(Module module)
     {
         _modules.Remove(module);
-        UpdatedAt = DateTime.UtcNow;
+        UpdatedAt(DateTime.UtcNow);
     }
 
     public void UpdateDetails(string title, string description, CourseCategory category, CourseLevel level)
@@ -127,7 +128,7 @@ public class Course : BaseEntity, IAggregateRoot<Course>
         Description = description;
         Category = category;
         Level = level;
-        UpdatedAt = DateTime.UtcNow;
+        UpdatedAt(DateTime.UtcNow);
     }
 
     public void UpdatePrice(decimal price)
@@ -136,7 +137,7 @@ public class Course : BaseEntity, IAggregateRoot<Course>
             throw new ArgumentException("Price cannot be negative", nameof(price));
 
         Price = price;
-        UpdatedAt = DateTime.UtcNow;
+        UpdatedAt(DateTime.UtcNow);
     }
 
     public void Publish()
@@ -146,24 +147,24 @@ public class Course : BaseEntity, IAggregateRoot<Course>
 
         Status = CourseStatus.Published;
         PublishedDate = DateTime.UtcNow;
-        UpdatedAt = DateTime.UtcNow;
+        UpdatedAt(DateTime.UtcNow);
     }
 
     public void Unpublish()
     {
         Status = CourseStatus.Unpublished;
-        UpdatedAt = DateTime.UtcNow;
+        UpdatedAt(DateTime.UtcNow);
     }
 
     public void ToggleFeatured()
     {
         IsFeatured = !IsFeatured;
-        UpdatedAt = DateTime.UtcNow;
+        UpdatedAt(DateTime.UtcNow);
     }
 
     public void UpdateRating(Rating newRating)
     {
         AverageRating = newRating;
-        UpdatedAt = DateTime.UtcNow;
+        UpdatedAt(DateTime.UtcNow);
     }
 }

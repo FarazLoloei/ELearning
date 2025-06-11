@@ -29,16 +29,12 @@ public class GetInstructorProfileQueryHandler(
         catch (Exception)
         {
             // If Dapr service fails, fall back to direct repository access
-            var instructor = await instructorRepository.GetByIdAsync(request.InstructorId);
-
-            if (instructor == null)
-            {
+            var instructor = await instructorRepository.GetByIdAsync(request.InstructorId) ??
                 throw new NotFoundException(nameof(Instructor), request.InstructorId);
-            }
 
             // Get additional data for instructor profile
-            var totalStudents = await instructorRepository.GetTotalStudentsCountByInstructorIdAsync(request.InstructorId);
-            var averageRating = await instructorRepository.GetAverageRatingByInstructorIdAsync(request.InstructorId);
+            var totalStudents = await instructorRepository.GetTotalStudentCountAsync(request.InstructorId, cancellationToken);
+            var averageRating = await instructorRepository.GetAverageRatingAsync(request.InstructorId, cancellationToken);
 
             // Map to DTO and enrich with calculated data
             var instructorDto = mapper.Map<InstructorDto>(instructor);

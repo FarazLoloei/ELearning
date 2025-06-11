@@ -2,7 +2,7 @@
 
 namespace ELearning.Domain.Entities.CourseAggregate.Enums;
 
-public class AssignmentType : Enumeration
+public sealed class AssignmentType : Enumeration
 {
     public static AssignmentType Quiz = new AssignmentType(1, nameof(Quiz));
     public static AssignmentType Essay = new AssignmentType(2, nameof(Essay));

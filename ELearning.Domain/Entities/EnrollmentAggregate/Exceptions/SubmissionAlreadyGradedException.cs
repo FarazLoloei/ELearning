@@ -2,9 +2,9 @@
 
 namespace ELearning.Domain.Entities.EnrollmentAggregate.Exceptions;
 
-public class SubmissionAlreadyGradedException : DomainException
+public sealed class SubmissionAlreadyGradedException : DomainException
 {
     public SubmissionAlreadyGradedException(Guid submissionId)
-        : base($"Submission with ID {submissionId} has already been graded.")
+        : base($"Submission with ID '{submissionId}' has already been graded.")
     { }
 }

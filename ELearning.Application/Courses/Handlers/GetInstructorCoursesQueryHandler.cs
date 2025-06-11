@@ -24,23 +24,19 @@ public class GetInstructorCoursesQueryHandler(
         try
         {
             // Try Dapr read service first
-            throw new NotImplementedException();
-            //var instructorCoursesDto = await instructorRepository.GetInstructorWithCoursesAsync(request.InstructorId);
-            //return Result.Success(instructorCoursesDto);
+            var instructor = await instructorRepository.GetInstructorWithCoursesAsync(request.InstructorId, cancellationToken);
+            var instructorCoursesDto = mapper.Map<InstructorCoursesDto>(instructor);
+            return Result.Success(instructorCoursesDto);
         }
         catch (Exception)
         {
             // Fall back to repository
-            var instructor = await instructorRepository.GetByIdAsync(request.InstructorId);
-
-            if (instructor == null)
-            {
+            var instructor = await instructorRepository.GetByIdAsync(request.InstructorId) ??
                 throw new NotFoundException(nameof(Instructor), request.InstructorId);
-            }
 
             // Get instructor statistics
-            var totalStudents = await instructorRepository.GetTotalStudentsCountByInstructorIdAsync(request.InstructorId);
-            var averageRating = await instructorRepository.GetAverageRatingByInstructorIdAsync(request.InstructorId);
+            var totalStudents = await instructorRepository.GetTotalStudentCountAsync(request.InstructorId, cancellationToken);
+            var averageRating = await instructorRepository.GetAverageRatingAsync(request.InstructorId, cancellationToken);
 
             // Map to DTO
             var instructorCoursesDto = mapper.Map<InstructorCoursesDto>(instructor);
@@ -52,7 +48,7 @@ public class GetInstructorCoursesQueryHandler(
             // Get course details
             foreach (var course in instructor.Courses)
             {
-                var enrollments = await enrollmentRepository.GetByCourseIdAsync(course.Id);
+                var enrollments = await enrollmentRepository.GetByCourseIdAsync(course.Id, cancellationToken);
 
                 var courseDto = new InstructorCourseDto
                 {
@@ -61,7 +57,7 @@ public class GetInstructorCoursesQueryHandler(
                     Category = course.Category.Name,
                     Status = course.Status.Name,
                     EnrollmentsCount = enrollments.Count,
-                    CreatedAt = course.CreatedAt,
+                    CreatedAt = course.CreatedAt(),
                     PublishedDate = course.PublishedDate
                 };
 

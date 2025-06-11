@@ -29,9 +29,7 @@ public class GetSubmissionDetailQueryHandler(
     public async Task<Result<SubmissionDetailDto>> Handle(GetSubmissionDetailQuery request, CancellationToken cancellationToken)
     {
         if (!currentUserService.IsAuthenticated || currentUserService.UserId == null)
-        {
             throw new ForbiddenAccessException();
-        }
 
         try
         {
@@ -46,30 +44,27 @@ public class GetSubmissionDetailQueryHandler(
         catch (Exception)
         {
             // Fall back to repository
-            var submission = await submissionRepository.GetByIdAsync(request.SubmissionId);
-
-            if (submission == null)
-            {
-                throw new NotFoundException(nameof(Submission), request.SubmissionId);
-            }
+            var submission = await submissionRepository.GetByIdAsync(request.SubmissionId)
+                ?? throw new NotFoundException(nameof(Submission), request.SubmissionId);
 
             // Get enrollment for this submission to find student ID
-            var enrollment = await enrollmentRepository.GetByIdAsync(submission.EnrollmentId);
+            var enrollment = await enrollmentRepository.GetByIdAsync(submission.EnrollmentId)
+                ?? throw new NotFoundException(nameof(Enrollment), submission.EnrollmentId);
 
             // Verify permission
             await VerifyPermission(enrollment.StudentId, submission.AssignmentId);
 
             // Get assignment
-            var assignment = await assignmentRepository.GetByIdAsync(submission.AssignmentId);
+            var assignment = await assignmentRepository.GetByIdAsync(submission.AssignmentId)
+                ?? throw new NotFoundException("Assignment", submission.AssignmentId);
 
             // Get student and grader (if applicable)
-            var student = await userRepository.GetByIdAsync(enrollment.StudentId);
-            User grader = null;
+            var student = await userRepository.GetByIdAsync(enrollment.StudentId)
+                ?? throw new NotFoundException(nameof(Student), enrollment.StudentId);
 
-            if (submission.GradedById.HasValue)
-            {
-                grader = await userRepository.GetByIdAsync(submission.GradedById.Value);
-            }
+            var grader = submission.GradedById.HasValue
+                ? await userRepository.GetByIdAsync(submission.GradedById.Value)
+                : null;
 
             var submissionDto = new SubmissionDetailDto
             {
@@ -97,7 +92,7 @@ public class GetSubmissionDetailQueryHandler(
     private async Task VerifyPermission(Guid studentId, Guid assignmentId)
     {
         // Check if current user is the student who submitted, the instructor, or an admin
-        var currentUserId = currentUserService.UserId.Value;
+        var currentUserId = currentUserService.UserId!.Value;
         var isStudent = currentUserId == studentId;
         var isInstructor = false;
 
@@ -112,8 +107,6 @@ public class GetSubmissionDetailQueryHandler(
         var isAdmin = currentUserService.IsInRole("Admin");
 
         if (!isStudent && !isInstructor && !isAdmin)
-        {
             throw new ForbiddenAccessException();
-        }
     }
 }

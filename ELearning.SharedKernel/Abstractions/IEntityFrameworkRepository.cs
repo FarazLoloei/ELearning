@@ -2,13 +2,13 @@
 
 public interface IEntityFrameworkRepository<T> where T : BaseEntity
 {
-    Task<T> GetByIdAsync(Guid id);
+    Task<T?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
 
-    Task<IReadOnlyList<T>> ListAllAsync();
+    Task<IReadOnlyList<T>> ListAllAsync(CancellationToken cancellationToken = default);
 
-    Task AddAsync(T entity);
+    Task AddAsync(T entity, CancellationToken cancellationToken = default);
 
-    Task UpdateAsync(T entity);
+    Task UpdateAsync(T entity, CancellationToken cancellationToken = default);
 
-    Task DeleteAsync(T entity);
+    Task DeleteAsync(T entity, CancellationToken cancellationToken = default);
 }

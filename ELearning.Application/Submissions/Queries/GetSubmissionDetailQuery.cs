@@ -7,7 +7,7 @@ namespace ELearning.Application.Submissions.Queries;
 /// <summary>
 /// Query to get details of a submission
 /// </summary>
-public class GetSubmissionDetailQuery : IRequest<Result<SubmissionDetailDto>>
+public record GetSubmissionDetailQuery : IRequest<Result<SubmissionDetailDto>>
 {
     public Guid SubmissionId { get; set; }
 }
