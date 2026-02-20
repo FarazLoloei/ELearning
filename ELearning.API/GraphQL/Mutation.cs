@@ -12,7 +12,7 @@ namespace ELearning.API.GraphQL;
 /// GraphQL mutation root type
 /// </summary>
 [GraphQLDescription("The mutation root type for the E-Learning API")]
-public class Mutation
+public class Mutation(ILogger<Mutation> logger)
 {
     /// <summary>
     /// Create a new course
@@ -23,25 +23,29 @@ public class Mutation
         [Service] IMediator mediator,
         CreateCourseInput input)
     {
-        var command = new CreateCourseCommand
-        (
-            Title: input.Title,
-            Description: input.Description,
-            CategoryId: input.CategoryId,
-            LevelId: input.LevelId,
-            Price: input.Price,
-            DurationHours: input.DurationHours,
-            DurationMinutes: input.DurationMinutes
-        );
-
-        var result = await mediator.Send(command);
-
-        if (result.IsSuccess)
+        try
         {
-            return new CoursePayload();
-        }
+            var command = new CreateCourseCommand(
+                Title: input.Title,
+                Description: input.Description,
+                CategoryId: input.CategoryId,
+                LevelId: input.LevelId,
+                Price: input.Price,
+                DurationHours: input.DurationHours,
+                DurationMinutes: input.DurationMinutes
+            );
 
-        return new CoursePayload(result.Error);
+            var result = await mediator.Send(command);
+
+            return result.IsSuccess
+                ? new CoursePayload()
+                : new CoursePayload(result.Error);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error creating course: {Title}", input.Title);
+            return new CoursePayload(new Error("CREATION_FAILED", "Failed to create course"));
+        }
     }
 
     /// <summary>
