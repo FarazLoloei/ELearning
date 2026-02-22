@@ -1,4 +1,6 @@
-﻿namespace ELearning.Application.Students.Dtos;
+﻿using ELearning.SharedKernel.Abstractions;
+
+namespace ELearning.Application.Students.Dtos;
 
 public readonly record struct StudentProgressDto(
     Guid StudentId,
@@ -6,4 +8,4 @@ public readonly record struct StudentProgressDto(
     int CompletedCourses,
     int InProgressCourses,
     List<EnrollmentProgressDto> Enrollments
-);
+) : IDto;
