@@ -1,6 +1,7 @@
+
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 18
-VisualStudioVersion = 18.3.11505.172
+VisualStudioVersion = 18.3.11505.172 d18.3
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ELearning.Domain", "ELearning.Domain\ELearning.Domain.csproj", "{35B31FE2-7D93-4266-B9D8-CF81622EF47C}"
 EndProject
@@ -14,7 +15,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ELearning.API", "ELearning.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ELearning.SharedKernel", "ELearning.SharedKernel\ELearning.SharedKernel.csproj", "{21FA0250-F701-4939-B6C5-F1C04F80DBA8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ELearning.API.Tests", "ELearning.API.Tests\ELearning.API.Tests.csproj", "{D8AF04C9-6E92-4E2B-9AC2-B25D27B21ED4}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ELearning.Application.Tests", "ELearning.Application.Tests\\ELearning.Application.Tests.csproj", "{D8AF04C9-6E92-4E2B-9AC2-B25D27B21ED4}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ELearning.IntegrationTests", "ELearning.IntegrationTests\ELearning.IntegrationTests.csproj", "{5B0C8A5B-78D3-4789-A78D-18312E824832}"
 EndProject
@@ -138,3 +139,4 @@ Global
 		SolutionGuid = {9594A825-8D6B-4DF9-9489-70869CC2067B}
 	EndGlobalSection
 EndGlobal
+
