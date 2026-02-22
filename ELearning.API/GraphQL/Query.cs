@@ -26,7 +26,7 @@ public class Query
     [GraphQLDescription("Get a paginated list of courses")]
     public async Task<IEnumerable<CourseListDto>> GetCourses(
         [Service] IMediator mediator,
-        string searchTerm = null,
+        string searchTerm,
         int? categoryId = null,
         int? levelId = null,
         bool? isFeatured = null,

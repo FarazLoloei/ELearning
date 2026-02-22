@@ -1,6 +1,7 @@
-﻿using AutoMapper;
+using AutoMapper;
 using ELearning.Application.Common.Exceptions;
 using ELearning.Application.Common.Model;
+using ELearning.Application.Common.Resilience;
 using ELearning.Application.Courses.Queries;
 using ELearning.Application.Instructors.Dtos;
 using ELearning.Domain.Entities.EnrollmentAggregate.Abstractions.Repositories;
@@ -28,22 +29,13 @@ public class GetInstructorCoursesQueryHandler(
             var instructorCoursesDto = mapper.Map<InstructorCoursesDto>(instructor);
             return Result.Success(instructorCoursesDto);
         }
-        catch (Exception)
+        catch (Exception ex) when (ReadModelFallbackPolicy.ShouldFallback(ex, cancellationToken))
         {
             // Fall back to repository
             var instructor = await instructorRepository.GetByIdAsync(request.InstructorId) ??
                 throw new NotFoundException(nameof(Instructor), request.InstructorId);
 
-            // Get instructor statistics
-            var totalStudents = await instructorRepository.GetTotalStudentCountAsync(request.InstructorId, cancellationToken);
-            var averageRating = await instructorRepository.GetAverageRatingAsync(request.InstructorId, cancellationToken);
-
-            // Map to DTO
             var mappedInstructorCoursesDto = mapper.Map<InstructorCoursesDto>(instructor);
-            //instructorCoursesDto.TotalStudents = totalStudents;
-            //instructorCoursesDto.AverageRating = averageRating;
-            //instructorCoursesDto.TotalCourses = instructor.Courses.Count;
-            //instructorCoursesDto.Courses = new List<InstructorCourseDto>();
 
             // Get course details
             var courses = new List<InstructorCourseDto>();
@@ -68,3 +60,4 @@ public class GetInstructorCoursesQueryHandler(
         }
     }
 }
+

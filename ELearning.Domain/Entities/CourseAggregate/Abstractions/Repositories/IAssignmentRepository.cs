@@ -2,13 +2,13 @@
 
 public interface IAssignmentRepository
 {
-    Task<Assignment> GetByIdAsync(Guid id);
+    Task<Assignment?> GetByIdAsync(Guid id);
 
     Task<IReadOnlyList<Assignment>> GetByModuleIdAsync(Guid moduleId);
 
     Task<IReadOnlyList<Assignment>> GetByCourseIdAsync(Guid courseId);
 
-    Task<Module> GetModuleForAssignmentAsync(Guid assignmentId);
+    Task<Module?> GetModuleForAssignmentAsync(Guid assignmentId);
 
     Task AddAsync(Assignment assignment);
 

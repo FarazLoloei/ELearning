@@ -14,7 +14,7 @@ public class AssignmentRepository : IAssignmentRepository
         _context = context;
     }
 
-    public async Task<Assignment> GetByIdAsync(Guid id)
+    public async Task<Assignment?> GetByIdAsync(Guid id)
     {
         return await _context.Assignments
             .SingleOrDefaultAsync(a => a.Id == id);
@@ -39,7 +39,7 @@ public class AssignmentRepository : IAssignmentRepository
             .ToListAsync();
     }
 
-    public async Task<Module> GetModuleForAssignmentAsync(Guid assignmentId)
+    public async Task<Module?> GetModuleForAssignmentAsync(Guid assignmentId)
     {
         var assignment = await _context.Assignments
             .FindAsync(assignmentId);

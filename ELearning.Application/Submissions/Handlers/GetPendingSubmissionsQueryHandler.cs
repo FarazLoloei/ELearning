@@ -1,6 +1,7 @@
-﻿using ELearning.Application.Common.Exceptions;
+using ELearning.Application.Common.Exceptions;
 using ELearning.Application.Common.Interfaces;
 using ELearning.Application.Common.Model;
+using ELearning.Application.Common.Resilience;
 using ELearning.Application.Submissions.Abstractions.ReadModels;
 using ELearning.Application.Submissions.Dtos;
 using ELearning.Application.Submissions.Queries;
@@ -44,7 +45,7 @@ public class GetPendingSubmissionsQueryHandler(
 
             return Result.Success(paginatedList);
         }
-        catch (Exception)
+        catch (Exception ex) when (ReadModelFallbackPolicy.ShouldFallback(ex, cancellationToken))
         {
             // Fall back to repositories
 
@@ -106,3 +107,4 @@ public class GetPendingSubmissionsQueryHandler(
         }
     }
 }
+

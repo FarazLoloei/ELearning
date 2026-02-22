@@ -1,6 +1,7 @@
-﻿using AutoMapper;
+using AutoMapper;
 using ELearning.Application.Common.Exceptions;
 using ELearning.Application.Common.Model;
+using ELearning.Application.Common.Resilience;
 using ELearning.Application.Instructors.Abstractions.ReadModels;
 using ELearning.Application.Instructors.Dtos;
 using ELearning.Application.Instructors.Queries;
@@ -26,21 +27,13 @@ public class GetInstructorProfileQueryHandler(
             var instructorDto = await instructorReadService.GetInstructorByIdAsync(request.InstructorId);
             return Result.Success(instructorDto);
         }
-        catch (Exception)
+        catch (Exception ex) when (ReadModelFallbackPolicy.ShouldFallback(ex, cancellationToken))
         {
             // If Dapr service fails, fall back to direct repository access
             var instructor = await instructorRepository.GetByIdAsync(request.InstructorId) ??
                 throw new NotFoundException(nameof(Instructor), request.InstructorId);
 
-            // Get additional data for instructor profile
-            var totalStudents = await instructorRepository.GetTotalStudentCountAsync(request.InstructorId, cancellationToken);
-            var averageRating = await instructorRepository.GetAverageRatingAsync(request.InstructorId, cancellationToken);
-
-            // Map to DTO and enrich with calculated data
             var instructorDto = mapper.Map<InstructorDto>(instructor);
-            //instructorDto.TotalStudents = totalStudents;
-            //instructorDto.AverageRating = averageRating;
-            //instructorDto.TotalCourses = instructor.Courses.Count;
 
             return Result.Success(instructorDto);
         }

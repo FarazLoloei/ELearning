@@ -3,11 +3,11 @@ using MediatR;
 
 namespace ELearning.Application.Submissions.Commands;
 
-public class GradeSubmissionCommand : IRequest<Result>
+public sealed record GradeSubmissionCommand : IRequest<Result>
 {
-    public Guid SubmissionId { get; set; }
+    public Guid SubmissionId { get; init; }
 
-    public int Score { get; set; }
+    public int Score { get; init; }
 
-    public string Feedback { get; set; }
+    public string Feedback { get; init; } = string.Empty;
 }
