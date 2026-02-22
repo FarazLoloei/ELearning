@@ -1,7 +1,9 @@
 ﻿using ELearning.Application.Common.Interfaces;
 using ELearning.Domain.Entities.CourseAggregate.Abstractions.Repositories;
+using ELearning.Domain.Entities.CourseAggregate.Abstractions.Services;
 using ELearning.Domain.Entities.EnrollmentAggregate.Abstractions.Repositories;
 using ELearning.Domain.Entities.UserAggregate.Abstractions.Repositories;
+using ELearning.Domain.Entities.UserAggregate.Abstractions.Services;
 using ELearning.Infrastructure.Data;
 using ELearning.Infrastructure.Data.Repositories;
 using ELearning.Infrastructure.Services;
@@ -37,6 +39,9 @@ public static class DependencyInjection
         services.AddTransient<IDateTime, DateTimeService>();
         services.AddTransient<IEmailService, EmailService>();
         services.AddTransient<IFileStorageService, FileStorageService>();
+        services.AddScoped<IAuthService, AuthService>();
+        services.AddScoped<IUserService, UserService>();
+        services.AddScoped<IAssignmentService, AssignmentService>();
 
         // Register CurrentUserService if HttpContextAccessor is available
         services.AddHttpContextAccessor();

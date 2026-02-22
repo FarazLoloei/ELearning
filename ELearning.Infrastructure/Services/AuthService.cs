@@ -28,19 +28,16 @@ public class AuthService(
             var user = await userRepository.GetByEmailAsync(email);
 
             if (user == null)
-            {
+
                 return new AuthResult { Success = false, ErrorMessage = "User not found." };
-            }
 
             if (!await userService.VerifyPasswordAsync(user.PasswordHash, password))
-            {
+
                 return new AuthResult { Success = false, ErrorMessage = "Invalid password." };
-            }
 
             if (!user.IsActive)
-            {
+
                 return new AuthResult { Success = false, ErrorMessage = "User account is inactive." };
-            }
 
             // Record login
             user.RecordLogin();
@@ -71,12 +68,9 @@ public class AuthService(
         {
             // Check if email is already in use
             if (!await userService.IsEmailUniqueAsync(email))
-            {
                 return new AuthResult { Success = false, ErrorMessage = "Email is already in use." };
-            }
 
-            // Hash password
-            var passwordHash = await userService.HashPasswordAsync(password);
+            var passwordHash = userService.HashPassword(password);
 
             // Create student entity
             var student = new Student(
@@ -114,14 +108,10 @@ public class AuthService(
         {
             // Check if email is already in use
             if (!await userService.IsEmailUniqueAsync(email))
-            {
                 return new AuthResult { Success = false, ErrorMessage = "Email is already in use." };
-            }
 
-            // Hash password
-            var passwordHash = await userService.HashPasswordAsync(password);
+            var passwordHash = userService.HashPassword(password);
 
-            // Create instructor entity
             var instructor = new Instructor(
                 firstName,
                 lastName,
@@ -130,10 +120,8 @@ public class AuthService(
                 bio,
                 expertise);
 
-            // Save instructor
             await instructorRepository.AddAsync(instructor);
 
-            // Generate token
             var token = await GenerateJwtToken(instructor);
 
             return new AuthResult
