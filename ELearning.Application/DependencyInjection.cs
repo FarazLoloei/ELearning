@@ -16,7 +16,7 @@ public static class DependencyInjection
         });
 
         // Register AutoMapper
-        services.AddAutoMapper(Assembly.GetExecutingAssembly());
+        services.AddAutoMapper(_ => { }, Assembly.GetExecutingAssembly());
 
         // Register FluentValidation
         //services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
