@@ -19,6 +19,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ELearning.API.Tests", "ELea
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ELearning.IntegrationTests", "ELearning.IntegrationTests\ELearning.IntegrationTests.csproj", "{5B0C8A5B-78D3-4789-A78D-18312E824832}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{5EA21EF8-1411-42DA-AA46-AF46FD211943}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -128,6 +130,10 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{D8AF04C9-6E92-4E2B-9AC2-B25D27B21ED4} = {5EA21EF8-1411-42DA-AA46-AF46FD211943}
+		{5B0C8A5B-78D3-4789-A78D-18312E824832} = {5EA21EF8-1411-42DA-AA46-AF46FD211943}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {9594A825-8D6B-4DF9-9489-70869CC2067B}
