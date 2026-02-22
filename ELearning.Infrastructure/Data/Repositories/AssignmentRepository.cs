@@ -45,9 +45,7 @@ public class AssignmentRepository : IAssignmentRepository
             .FindAsync(assignmentId);
 
         if (assignment == null)
-        {
             return null;
-        }
 
         return await _context.Modules
             .FindAsync(assignment.ModuleId);

@@ -82,8 +82,10 @@ public class InstructorRepository : IInstructorRepository
         return ratings.Sum(r => r.Rating * r.Count) / ratings.Sum(r => r.Count);
     }
 
-    public Task<Instructor> GetInstructorWithCoursesAsync(Guid instructorId, CancellationToken cancellationToken)
+    public async Task<Instructor?> GetInstructorWithCoursesAsync(Guid instructorId, CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        return await _context.Instructors
+            .Include(i => i.Courses)
+            .SingleOrDefaultAsync(i => i.Id == instructorId, cancellationToken);
     }
 }

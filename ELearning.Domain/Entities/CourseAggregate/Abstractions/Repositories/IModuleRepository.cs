@@ -2,7 +2,7 @@
 
 public interface IModuleRepository
 {
-    Task<Module> GetByIdAsync(Guid id);
+    Task<Module?> GetByIdAsync(Guid id);
 
     Task<IReadOnlyList<Module>> GetByCourseIdAsync(Guid courseId);
 

@@ -136,9 +136,16 @@ public class AuthService(
     public Task<string> GenerateJwtToken(User user)
     {
         var jwtSettings = configuration.GetSection("JwtSettings");
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["Secret"]));
+        var secret = jwtSettings["Secret"] ?? throw new InvalidOperationException("JwtSettings:Secret is not configured.");
+        var expiryInDaysValue = jwtSettings["ExpiryInDays"] ?? throw new InvalidOperationException("JwtSettings:ExpiryInDays is not configured.");
+        if (!double.TryParse(expiryInDaysValue, out var expiryInDays))
+        {
+            throw new InvalidOperationException("JwtSettings:ExpiryInDays is invalid.");
+        }
+
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret));
         var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-        var expiry = DateTime.Now.AddDays(double.Parse(jwtSettings["ExpiryInDays"]));
+        var expiry = DateTime.Now.AddDays(expiryInDays);
 
         var claims = new[]
         {

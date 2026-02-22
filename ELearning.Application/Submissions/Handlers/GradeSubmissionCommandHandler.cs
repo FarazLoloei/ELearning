@@ -13,8 +13,7 @@ namespace ELearning.Application.Submissions.Handlers;
 public class GradeSubmissionCommandHandler(
         ISubmissionRepository submissionRepository,
         IAssignmentRepository assignmentRepository,
-        ICurrentUserService currentUserService,
-        IEmailService emailService)
+        ICurrentUserService currentUserService)
     : IRequestHandler<GradeSubmissionCommand, Result>
 {
     public async Task<Result> Handle(GradeSubmissionCommand request, CancellationToken cancellationToken)
@@ -43,14 +42,6 @@ public class GradeSubmissionCommandHandler(
 
         // Save to repository
         await submissionRepository.UpdateAsync(submission);
-
-        // Notify student
-        // In a real application, you'd get the student email and name
-        // await emailService.SendAssignmentGradedAsync(
-        //     studentEmail,
-        //     studentName,
-        //     assignment.Title,
-        //     request.Score);
 
         return Result.Success();
     }

@@ -1,4 +1,4 @@
-using AutoMapper;
+using ELearning.Application.Common.Exceptions;
 using ELearning.Application.Common.Model;
 using ELearning.Application.Common.Resilience;
 using ELearning.Application.Enrollments.Abstractions.ReadModels;
@@ -17,8 +17,7 @@ public class GetStudentEnrollmentsQueryHandler(
         IEnrollmentRepository enrollmentRepository,
         ICourseRepository courseRepository,
         IStudentReadService studentReadService,
-        IProgressRepository progressRepository,
-        IMapper mapper)
+        IProgressRepository progressRepository)
     : IRequestHandler<GetStudentEnrollmentsQuery, Result<PaginatedList<EnrollmentDto>>>
 {
     public async Task<Result<PaginatedList<EnrollmentDto>>> Handle(GetStudentEnrollmentsQuery request, CancellationToken cancellationToken)
@@ -48,7 +47,8 @@ public class GetStudentEnrollmentsQueryHandler(
             var enrollmentDtos = new List<EnrollmentDto>();
             foreach (var enrollment in items)
             {
-                var course = await courseRepository.GetByIdAsync(enrollment.CourseId);
+                var course = await courseRepository.GetByIdAsync(enrollment.CourseId)
+                    ?? throw new NotFoundException("Course", enrollment.CourseId);
                 var student = await studentReadService.GetByIdAsync(enrollment.StudentId);
                 var completionPercentage = await progressRepository.GetCourseProgressPercentageAsync(enrollment.Id);
 

@@ -81,7 +81,7 @@ public class GetSubmissionDetailQueryHandler(
                 submission.FileUrl,
                 submission.Feedback,
                 submission.GradedById,
-                grader?.FullName,
+                grader?.FullName ?? string.Empty,
                 submission.GradedDate);
 
             return Result.Success(submissionDto);
@@ -98,8 +98,10 @@ public class GetSubmissionDetailQueryHandler(
         if (!isStudent)
         {
             // Check if user is instructor of course that contains this assignment
-            var module = await assignmentRepository.GetModuleForAssignmentAsync(assignmentId);
-            var course = await courseRepository.GetByIdAsync(module.CourseId);
+            var module = await assignmentRepository.GetModuleForAssignmentAsync(assignmentId)
+                ?? throw new NotFoundException("Module", assignmentId);
+            var course = await courseRepository.GetByIdAsync(module.CourseId)
+                ?? throw new NotFoundException("Course", module.CourseId);
             isInstructor = course.InstructorId == currentUserId;
         }
 
@@ -109,6 +111,3 @@ public class GetSubmissionDetailQueryHandler(
             throw new ForbiddenAccessException();
     }
 }
-
-
-

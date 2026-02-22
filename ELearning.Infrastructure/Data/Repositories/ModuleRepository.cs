@@ -14,7 +14,7 @@ public class ModuleRepository : IModuleRepository
         _context = context;
     }
 
-    public async Task<Module> GetByIdAsync(Guid id)
+    public async Task<Module?> GetByIdAsync(Guid id)
     {
         return await _context.Modules
             .Include(m => m.Lessons)

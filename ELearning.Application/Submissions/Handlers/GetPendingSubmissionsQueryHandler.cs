@@ -85,7 +85,8 @@ public class GetPendingSubmissionsQueryHandler(
             var submissionDtos = new List<SubmissionDto>();
             foreach (var submission in paginatedSubmissions)
             {
-                var assignment = await assignmentRepository.GetByIdAsync(submission.AssignmentId);
+                var assignment = await assignmentRepository.GetByIdAsync(submission.AssignmentId)
+                    ?? throw new NotFoundException("Assignment", submission.AssignmentId);
 
                 submissionDtos.Add(new SubmissionDto(
                     submission.Id,

@@ -14,7 +14,7 @@ public class SubmissionRepository : ISubmissionRepository
         _context = context;
     }
 
-    public async Task<Submission> GetByIdAsync(Guid id)
+    public async Task<Submission?> GetByIdAsync(Guid id)
     {
         return await _context.Submissions
             .SingleOrDefaultAsync(s => s.Id == id);
@@ -41,7 +41,7 @@ public class SubmissionRepository : ISubmissionRepository
             .ToListAsync();
     }
 
-    public async Task<Submission> GetByStudentAndAssignmentIdAsync(Guid studentId, Guid assignmentId)
+    public async Task<Submission?> GetByStudentAndAssignmentIdAsync(Guid studentId, Guid assignmentId)
     {
         return await _context.Submissions
             .Join(_context.Enrollments,

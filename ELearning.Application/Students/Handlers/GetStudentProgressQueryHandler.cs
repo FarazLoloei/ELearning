@@ -1,4 +1,3 @@
-using AutoMapper;
 using ELearning.Application.Common.Exceptions;
 using ELearning.Application.Common.Model;
 using ELearning.Application.Common.Resilience;
@@ -19,8 +18,7 @@ public class GetStudentProgressQueryHandler(
         IStudentRepository studentRepository,
         IEnrollmentRepository enrollmentRepository,
         IProgressRepository progressRepository,
-        ICourseRepository courseRepository,
-        IMapper mapper)
+        ICourseRepository courseRepository)
     : IRequestHandler<GetStudentProgressQuery, Result<StudentProgressDto>>
 {
     public async Task<Result<StudentProgressDto>> Handle(GetStudentProgressQuery request, CancellationToken cancellationToken)
@@ -49,7 +47,8 @@ public class GetStudentProgressQueryHandler(
 
             foreach (var enrollment in enrollments)
             {
-                var course = await courseRepository.GetByIdAsync(enrollment.CourseId);
+                var course = await courseRepository.GetByIdAsync(enrollment.CourseId)
+                    ?? throw new NotFoundException("Course", enrollment.CourseId);
                 var completionPercentage = await progressRepository.GetCourseProgressPercentageAsync(enrollment.Id);
 
                 var lessonProgress = await progressRepository.GetByEnrollmentIdAsync(enrollment.Id);

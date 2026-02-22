@@ -2,7 +2,7 @@
 
 public interface ILessonRepository
 {
-    Task<Lesson> GetByIdAsync(Guid id);
+    Task<Lesson?> GetByIdAsync(Guid id);
 
     Task<IReadOnlyList<Lesson>> GetByModuleIdAsync(Guid moduleId);
 

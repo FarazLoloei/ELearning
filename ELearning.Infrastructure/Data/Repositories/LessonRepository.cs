@@ -14,7 +14,7 @@ public class LessonRepository : ILessonRepository
         _context = context;
     }
 
-    public async Task<Lesson> GetByIdAsync(Guid id)
+    public async Task<Lesson?> GetByIdAsync(Guid id)
     {
         return await _context.Lessons
             .SingleOrDefaultAsync(l => l.Id == id);

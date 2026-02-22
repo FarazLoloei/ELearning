@@ -2,13 +2,13 @@
 
 public interface ISubmissionRepository
 {
-    Task<Submission> GetByIdAsync(Guid id);
+    Task<Submission?> GetByIdAsync(Guid id);
 
     Task<IReadOnlyList<Submission>> GetByAssignmentIdAsync(Guid assignmentId);
 
     Task<IReadOnlyList<Submission>> GetByStudentIdAsync(Guid studentId);
 
-    Task<Submission> GetByStudentAndAssignmentIdAsync(Guid studentId, Guid assignmentId);
+    Task<Submission?> GetByStudentAndAssignmentIdAsync(Guid studentId, Guid assignmentId);
 
     Task<IReadOnlyList<Submission>> GetUngradedSubmissionsAsync();
 

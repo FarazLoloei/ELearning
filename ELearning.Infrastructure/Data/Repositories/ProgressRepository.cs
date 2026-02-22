@@ -15,7 +15,7 @@ public class ProgressRepository : IProgressRepository
         _context = context;
     }
 
-    public async Task<Progress> GetByIdAsync(Guid id)
+    public async Task<Progress?> GetByIdAsync(Guid id)
     {
         return await _context.Progresses
             .SingleOrDefaultAsync(p => p.Id == id);
@@ -28,7 +28,7 @@ public class ProgressRepository : IProgressRepository
             .ToListAsync();
     }
 
-    public async Task<Progress> GetByEnrollmentAndLessonIdAsync(Guid enrollmentId, Guid lessonId)
+    public async Task<Progress?> GetByEnrollmentAndLessonIdAsync(Guid enrollmentId, Guid lessonId)
     {
         return await _context.Progresses
             .SingleOrDefaultAsync(p => p.EnrollmentId == enrollmentId && p.LessonId == lessonId);

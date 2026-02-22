@@ -10,9 +10,9 @@ namespace ELearning.Application.Enrollments.Abstractions.ReadModels;
 /// </summary>
 public interface IEnrollmentReadService : IReadRepository<EnrollmentDetailDto, Guid>
 {
-    Task<EnrollmentDetailDto> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
+    new Task<EnrollmentDetailDto> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
 
-    Task<PaginatedList<EnrollmentDetailDto>> ListAsync(PaginationParameters pagination, CancellationToken cancellationToken = default);
+    new Task<PaginatedList<EnrollmentDetailDto>> ListAsync(PaginationParameters pagination, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Retrieves a paginated list of enrollments for a specific student.

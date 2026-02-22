@@ -38,8 +38,10 @@ public class GetEnrollmentDetailQueryHandler(
             var enrollment = await enrollmentRepository.GetByIdAsync(request.EnrollmentId) ??
                 throw new NotFoundException(nameof(Enrollment), request.EnrollmentId);
 
-            var course = await courseRepository.GetByIdAsync(enrollment.CourseId);
-            var student = await studentRepository.GetByIdAsync(enrollment.StudentId);
+            var course = await courseRepository.GetByIdAsync(enrollment.CourseId)
+                ?? throw new NotFoundException("Course", enrollment.CourseId);
+            var student = await studentRepository.GetByIdAsync(enrollment.StudentId)
+                ?? throw new NotFoundException("Student", enrollment.StudentId);
             var progressRecords = await progressRepository.GetByEnrollmentIdAsync(enrollment.Id);
             var completionPercentage = await progressRepository.GetCourseProgressPercentageAsync(enrollment.Id);
 
@@ -47,7 +49,8 @@ public class GetEnrollmentDetailQueryHandler(
             foreach (var progress in progressRecords)
             {
                 // Get lesson info
-                var lesson = await lessonRepository.GetByIdAsync(progress.LessonId);
+                var lesson = await lessonRepository.GetByIdAsync(progress.LessonId)
+                    ?? throw new NotFoundException("Lesson", progress.LessonId);
 
                 lessonProgress.Add(new LessonProgressDto(
                     progress.LessonId,

@@ -68,7 +68,7 @@ public class CourseRepository : ICourseRepository
             .Take(count)
             .ToListAsync(cancellationToken);
 
-    public async Task<IReadOnlyList<Course>> SearchCoursesAsync(string searchTerm, PaginationParameters pagination, CancellationToken cancellationToken)
+    public async Task<IReadOnlyList<Course>> SearchCoursesAsync(string? searchTerm, PaginationParameters pagination, CancellationToken cancellationToken)
     {
         var query = _context.Courses
             .AsNoTracking()
