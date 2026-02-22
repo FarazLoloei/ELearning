@@ -1,6 +1,7 @@
-﻿using AutoMapper;
+using AutoMapper;
 using ELearning.Application.Common.Exceptions;
 using ELearning.Application.Common.Model;
+using ELearning.Application.Common.Resilience;
 using ELearning.Application.Enrollments.Abstractions.ReadModels;
 using ELearning.Application.Enrollments.Dtos;
 using ELearning.Application.Enrollments.Queries;
@@ -31,7 +32,7 @@ public class GetEnrollmentDetailQueryHandler(
             var enrollmentDto = await enrollmentReadService.GetByIdAsync(request.EnrollmentId);
             return Result.Success(enrollmentDto);
         }
-        catch (Exception)
+        catch (Exception ex) when (ReadModelFallbackPolicy.ShouldFallback(ex, cancellationToken))
         {
             // Fall back to repository
             var enrollment = await enrollmentRepository.GetByIdAsync(request.EnrollmentId) ??
@@ -77,3 +78,6 @@ public class GetEnrollmentDetailQueryHandler(
         }
     }
 }
+
+
+
