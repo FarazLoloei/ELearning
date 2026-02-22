@@ -6,15 +6,15 @@ namespace ELearning.Domain.Entities.CourseAggregate;
 
 public class Lesson : BaseEntity
 {
-    public string Title { get; private set; }
+    public string Title { get; private set; } = string.Empty;
 
-    public string Content { get; private set; }
+    public string Content { get; private set; } = string.Empty;
 
-    public LessonType Type { get; private set; }
+    public LessonType Type { get; private set; } = null!;
 
     public string? VideoUrl { get; private set; }
 
-    public Duration Duration { get; private set; }
+    public Duration Duration { get; private set; } = null!;
 
     public int Order { get; private set; }
 

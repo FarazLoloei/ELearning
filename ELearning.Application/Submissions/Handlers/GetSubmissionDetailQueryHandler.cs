@@ -35,7 +35,7 @@ public class GetSubmissionDetailQueryHandler(
         try
         {
             // Try Dapr read service first
-            var submissionDto = await submissionReadService.GetByIdAsync(request.SubmissionId);
+            var submissionDto = await submissionReadService.GetByIdAsync(request.SubmissionId, cancellationToken);
 
             // Verify permission
             await VerifyPermission(submissionDto.StudentId, submissionDto.AssignmentId);
@@ -49,7 +49,7 @@ public class GetSubmissionDetailQueryHandler(
                 ?? throw new NotFoundException(nameof(Submission), request.SubmissionId);
 
             // Get enrollment for this submission to find student ID
-            var enrollment = await enrollmentRepository.GetByIdAsync(submission.EnrollmentId)
+            var enrollment = await enrollmentRepository.GetByIdAsync(submission.EnrollmentId, cancellationToken)
                 ?? throw new NotFoundException(nameof(Enrollment), submission.EnrollmentId);
 
             // Verify permission
@@ -60,11 +60,11 @@ public class GetSubmissionDetailQueryHandler(
                 ?? throw new NotFoundException("Assignment", submission.AssignmentId);
 
             // Get student and grader (if applicable)
-            var student = await userRepository.GetByIdAsync(enrollment.StudentId)
+            var student = await userRepository.GetByIdAsync(enrollment.StudentId, cancellationToken)
                 ?? throw new NotFoundException(nameof(Student), enrollment.StudentId);
 
             var grader = submission.GradedById.HasValue
-                ? await userRepository.GetByIdAsync(submission.GradedById.Value)
+                ? await userRepository.GetByIdAsync(submission.GradedById.Value, cancellationToken)
                 : null;
 
             var submissionDto = new SubmissionDetailDto(

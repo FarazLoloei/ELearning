@@ -18,7 +18,7 @@ public class Progress : BaseEntity
     /// <summary>
     /// Completion state (NotStarted, InProgress, Completed)
     /// </summary>
-    public ProgressStatus Status { get; private set; }
+    public ProgressStatus Status { get; private set; } = ProgressStatus.NotStarted;
 
     /// <summary>
     /// When student finished the lesson

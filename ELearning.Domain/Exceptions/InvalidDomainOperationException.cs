@@ -26,8 +26,4 @@ public class InvalidDomainOperationException : DomainException
         Operation = operation;
     }
 
-    // Constructor for serialization
-    protected InvalidDomainOperationException(System.Runtime.Serialization.SerializationInfo info, System.Runtime.Serialization.StreamingContext context)
-        : base(info, context)
-    { }
 }

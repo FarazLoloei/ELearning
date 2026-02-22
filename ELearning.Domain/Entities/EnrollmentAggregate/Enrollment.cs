@@ -11,7 +11,7 @@ public class Enrollment : BaseEntity, IAggregateRoot<Enrollment>
 
     public Guid CourseId { get; private set; }
 
-    public EnrollmentStatus Status { get; private set; }
+    public EnrollmentStatus Status { get; private set; } = EnrollmentStatus.Active;
 
     public DateTime? CompletedDateUTC { get; private set; }
 

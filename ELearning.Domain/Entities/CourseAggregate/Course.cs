@@ -16,12 +16,12 @@ public class Course : BaseEntity, IAggregateRoot<Course>
     /// <summary>
     /// Name of the course.
     /// </summary>
-    public string Title { get; private set; }
+    public string Title { get; private set; } = string.Empty;
 
     /// <summary>
     /// Detailed explanation of course content and objectives.
     /// </summary>
-    public string Description { get; private set; }
+    public string Description { get; private set; } = string.Empty;
 
     /// <summary>
     /// Reference to the instructor who created/teaches the course.
@@ -31,27 +31,27 @@ public class Course : BaseEntity, IAggregateRoot<Course>
     /// <summary>
     /// Current state of the course (Draft, Published, Unpublished, Archived).
     /// </summary>
-    public CourseStatus Status { get; private set; }
+    public CourseStatus Status { get; private set; } = null!;
 
     /// <summary>
     /// Difficulty level of the course (Beginner, Intermediate, Advanced, AllLevels).
     /// </summary>
-    public CourseLevel Level { get; private set; }
+    public CourseLevel Level { get; private set; } = null!;
 
     /// <summary>
     /// Total estimated time to complete the course.
     /// </summary>
-    public Duration Duration { get; private set; }
+    public Duration Duration { get; private set; } = null!;
 
     /// <summary>
     /// Calculated average rating from all student reviews.
     /// </summary>
-    public Rating AverageRating { get; private set; }
+    public Rating AverageRating { get; private set; } = null!;
 
     /// <summary>
     /// Subject category of the course (e.g., Programming, Design, Business, etc.).
     /// </summary>
-    public CourseCategory Category { get; private set; }
+    public CourseCategory Category { get; private set; } = null!;
 
     /// <summary>
     /// The date when the course was made available to students.

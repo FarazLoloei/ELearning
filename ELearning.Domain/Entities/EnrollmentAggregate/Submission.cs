@@ -18,12 +18,12 @@ public class Submission : BaseEntity
     /// <summary>
     /// Text content of submission (if text-based)
     /// </summary>
-    public string Content { get; private set; }
+    public string Content { get; private set; } = string.Empty;
 
     /// <summary>
     /// Link to uploaded file (if file-based)
     /// </summary>
-    public string FileUrl { get; private set; }
+    public string FileUrl { get; private set; } = string.Empty;
 
     /// <summary>
     /// Whether submission has been evaluated
@@ -38,7 +38,7 @@ public class Submission : BaseEntity
     /// <summary>
     /// Instructor comments on submission
     /// </summary>
-    public string Feedback { get; private set; }
+    public string Feedback { get; private set; } = string.Empty;
 
     /// <summary>
     /// When student submitted the assignment

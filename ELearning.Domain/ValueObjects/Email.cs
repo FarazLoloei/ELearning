@@ -7,7 +7,7 @@ public class Email : ValueObject
 {
     private static readonly Regex EmailAddressRegex = new(@"^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$", RegexOptions.Compiled);
 
-    public string Value { get; init; }
+    public string Value { get; init; } = string.Empty;
 
     private Email()
     { }

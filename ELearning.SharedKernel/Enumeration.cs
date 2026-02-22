@@ -22,7 +22,7 @@ public abstract class Enumeration : IComparable
         return fields.Select(f => f.GetValue(null)).Cast<T>();
     }
 
-    public override bool Equals(object obj)
+    public override bool Equals(object? obj)
     {
         if (obj is not Enumeration otherValue)
         {
@@ -37,5 +37,18 @@ public abstract class Enumeration : IComparable
 
     public override int GetHashCode() => Id.GetHashCode();
 
-    public int CompareTo(object obj) => Id.CompareTo(((Enumeration)obj).Id);
+    public int CompareTo(object? obj)
+    {
+        if (obj is null)
+        {
+            return 1;
+        }
+
+        if (obj is not Enumeration other)
+        {
+            throw new ArgumentException($"Object must be of type {GetType().Name}", nameof(obj));
+        }
+
+        return Id.CompareTo(other.Id);
+    }
 }
