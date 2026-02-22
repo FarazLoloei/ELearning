@@ -51,7 +51,7 @@ public class Query
     /// Get course details by ID
     /// </summary>
     [GraphQLDescription("Get course details by ID")]
-    public async Task<CourseDetailDto?> GetCourse(
+    public async Task<CourseDto?> GetCourse(
         [Service] IMediator mediator,
         Guid id)
     {

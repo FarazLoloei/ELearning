@@ -3,7 +3,7 @@ using ELearning.SharedKernel.Abstractions;
 
 namespace ELearning.Application.Courses.Dtos;
 
-public readonly record struct CourseDto(
+public sealed record CourseDto(
     Guid Id,
     string Title,
     string Description,
@@ -16,6 +16,6 @@ public readonly record struct CourseDto(
     DateTime? PublishedDate,
     decimal AverageRating,
     int NumberOfRatings,
-    List<ModuleDto> Modules,
-    List<ReviewDto> Reviews
+    IReadOnlyList<ModuleDto> Modules,
+    IReadOnlyList<ReviewDto> Reviews
 ) : IDto;

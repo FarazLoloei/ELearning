@@ -15,11 +15,11 @@ public class CourseReadService(DaprClient daprClient, ILogger<CourseReadService>
     private const string StateStoreName = "coursestore";
     private const string CourseServiceAppId = "courseservice";
 
-    public async Task<CourseDetailDto> GetByIdAsync(Guid id, CancellationToken cancellationToken)
+    public async Task<CourseDto> GetByIdAsync(Guid id, CancellationToken cancellationToken)
     {
         try
         {
-            var course = await daprClient.GetStateAsync<CourseDetailDto>(
+            var course = await daprClient.GetStateAsync<CourseDto>(
                 StateStoreName,
                 id.ToString(),
                 cancellationToken: cancellationToken);
@@ -33,13 +33,13 @@ public class CourseReadService(DaprClient daprClient, ILogger<CourseReadService>
         }
     }
 
-    public async Task<PaginatedList<CourseDetailDto>> ListAsync(PaginationParameters pagination, CancellationToken cancellationToken)
+    public async Task<PaginatedList<CourseDto>> ListAsync(PaginationParameters pagination, CancellationToken cancellationToken)
     {
         var query = HttpUtility.ParseQueryString(string.Empty);
         query["pageNumber"] = pagination.PageNumber.ToString();
         query["pageSize"] = pagination.PageSize.ToString();
 
-        return await InvokePaginatedService<CourseDetailDto>(
+        return await InvokePaginatedService<CourseDto>(
             $"api/courses?{query}",
             "listing courses",
             pagination,

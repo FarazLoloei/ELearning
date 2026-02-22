@@ -2,9 +2,9 @@
 
 namespace ELearning.API.GraphQL.ObjectTypes;
 
-public class CourseType : ObjectType<CourseDetailDto>
+public class CourseType : ObjectType<CourseDto>
 {
-    protected override void Configure(IObjectTypeDescriptor<CourseDetailDto> descriptor)
+    protected override void Configure(IObjectTypeDescriptor<CourseDto> descriptor)
     {
         descriptor.Description("A course in the e-learning platform");
 

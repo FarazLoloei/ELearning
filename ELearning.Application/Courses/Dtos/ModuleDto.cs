@@ -1,12 +1,12 @@
-﻿using ELearning.SharedKernel.Abstractions;
+using ELearning.SharedKernel.Abstractions;
 
 namespace ELearning.Application.Courses.Dtos;
 
-public readonly record struct ModuleDto(
+public sealed record ModuleDto(
     Guid Id,
     string Title,
     string Description,
     int Order,
-    List<LessonDto> Lessons,
-    List<AssignmentDto> Assignments
+    IReadOnlyList<LessonDto> Lessons,
+    IReadOnlyList<AssignmentDto> Assignments
 ) : IDto;
