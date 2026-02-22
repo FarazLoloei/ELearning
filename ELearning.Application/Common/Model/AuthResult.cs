@@ -3,50 +3,34 @@ namespace ELearning.Application.Common.Model;
 public sealed record AuthResult
 {
     public bool Success { get; }
-    public string Token { get; }
-    public Guid UserId { get; }
-    public string Email { get; }
-    public string FullName { get; }
-    public string Role { get; }
-    public string ErrorMessage { get; }
+    public AuthPayload? Data { get; }
+    public string? ErrorMessage { get; }
 
-    private AuthResult(
-        bool success,
-        string token,
-        Guid userId,
-        string email,
-        string fullName,
-        string role,
-        string errorMessage)
+    public string? Token => Data?.Token;
+    public Guid? UserId => Data?.UserId;
+    public string? Email => Data?.Email;
+    public string? FullName => Data?.FullName;
+    public string? Role => Data?.Role;
+
+    private AuthResult(bool success, AuthPayload? data, string? errorMessage)
     {
-        if (success)
+        var isValidSuccess = success && data is not null && string.IsNullOrWhiteSpace(errorMessage);
+        var isValidFailure = !success && data is null && !string.IsNullOrWhiteSpace(errorMessage);
+
+        if (!isValidSuccess && !isValidFailure)
         {
-            if (string.IsNullOrWhiteSpace(token))
-                throw new ArgumentException("Token is required for successful auth.", nameof(token));
-            if (userId == Guid.Empty)
-                throw new ArgumentException("UserId is required for successful auth.", nameof(userId));
-            if (string.IsNullOrWhiteSpace(email))
-                throw new ArgumentException("Email is required for successful auth.", nameof(email));
-            if (string.IsNullOrWhiteSpace(fullName))
-                throw new ArgumentException("FullName is required for successful auth.", nameof(fullName));
-            if (string.IsNullOrWhiteSpace(role))
-                throw new ArgumentException("Role is required for successful auth.", nameof(role));
-            if (!string.IsNullOrEmpty(errorMessage))
-                throw new ArgumentException("ErrorMessage must be empty for successful auth.", nameof(errorMessage));
-        }
-        else
-        {
-            if (string.IsNullOrWhiteSpace(errorMessage))
-                throw new ArgumentException("ErrorMessage is required for failed auth.", nameof(errorMessage));
+            throw new InvalidOperationException("AuthResult must be either a success with data or a failure with error.");
         }
 
         Success = success;
-        Token = token;
-        UserId = userId;
-        Email = email;
-        FullName = fullName;
-        Role = role;
+        Data = data;
         ErrorMessage = errorMessage;
+    }
+
+    public static AuthResult Succeeded(AuthPayload payload)
+    {
+        ArgumentNullException.ThrowIfNull(payload);
+        return new AuthResult(true, payload, null);
     }
 
     public static AuthResult Succeeded(
@@ -55,8 +39,11 @@ public sealed record AuthResult
         string email,
         string fullName,
         string role)
-        => new(true, token, userId, email, fullName, role, string.Empty);
+        => Succeeded(new AuthPayload(token, userId, email, fullName, role));
 
     public static AuthResult Failed(string errorMessage)
-        => new(false, string.Empty, Guid.Empty, string.Empty, string.Empty, string.Empty, errorMessage);
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(errorMessage);
+        return new AuthResult(false, null, errorMessage);
+    }
 }
