@@ -66,24 +66,22 @@ public class GetSubmissionDetailQueryHandler(
                 ? await userRepository.GetByIdAsync(submission.GradedById.Value)
                 : null;
 
-            var submissionDto = new SubmissionDetailDto
-            {
-                Id = submission.Id,
-                AssignmentId = submission.AssignmentId,
-                AssignmentTitle = assignment.Title,
-                StudentId = enrollment.StudentId,
-                StudentName = student.FullName,
-                SubmittedDate = submission.SubmittedDate,
-                Content = submission.Content,
-                FileUrl = submission.FileUrl,
-                IsGraded = submission.IsGraded,
-                Score = submission.Score,
-                MaxPoints = assignment.MaxPoints,
-                Feedback = submission.Feedback,
-                GradedById = submission.GradedById,
-                GradedByName = grader?.FullName,
-                GradedDate = submission.GradedDate
-            };
+            var submissionDto = new SubmissionDetailDto(
+                submission.Id,
+                submission.AssignmentId,
+                assignment.Title,
+                submission.SubmittedDate,
+                submission.IsGraded,
+                submission.Score,
+                assignment.MaxPoints,
+                enrollment.StudentId,
+                student.FullName,
+                submission.Content,
+                submission.FileUrl,
+                submission.Feedback,
+                submission.GradedById,
+                grader?.FullName,
+                submission.GradedDate);
 
             return Result.Success(submissionDto);
         }

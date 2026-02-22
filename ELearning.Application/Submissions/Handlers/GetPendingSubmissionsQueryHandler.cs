@@ -86,16 +86,14 @@ public class GetPendingSubmissionsQueryHandler(
             {
                 var assignment = await assignmentRepository.GetByIdAsync(submission.AssignmentId);
 
-                submissionDtos.Add(new SubmissionDto
-                {
-                    Id = submission.Id,
-                    AssignmentId = submission.AssignmentId,
-                    AssignmentTitle = assignment.Title,
-                    SubmittedDate = submission.SubmittedDate,
-                    IsGraded = submission.IsGraded,
-                    Score = submission.Score,
-                    MaxPoints = assignment.MaxPoints
-                });
+                submissionDtos.Add(new SubmissionDto(
+                    submission.Id,
+                    submission.AssignmentId,
+                    assignment.Title,
+                    submission.SubmittedDate,
+                    submission.IsGraded,
+                    submission.Score,
+                    assignment.MaxPoints));
             }
 
             var paginatedList = new PaginatedList<SubmissionDto>(

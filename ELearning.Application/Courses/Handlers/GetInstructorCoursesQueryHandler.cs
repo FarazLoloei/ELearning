@@ -39,31 +39,31 @@ public class GetInstructorCoursesQueryHandler(
             var averageRating = await instructorRepository.GetAverageRatingAsync(request.InstructorId, cancellationToken);
 
             // Map to DTO
-            var instructorCoursesDto = mapper.Map<InstructorCoursesDto>(instructor);
+            var mappedInstructorCoursesDto = mapper.Map<InstructorCoursesDto>(instructor);
             //instructorCoursesDto.TotalStudents = totalStudents;
             //instructorCoursesDto.AverageRating = averageRating;
             //instructorCoursesDto.TotalCourses = instructor.Courses.Count;
             //instructorCoursesDto.Courses = new List<InstructorCourseDto>();
 
             // Get course details
+            var courses = new List<InstructorCourseDto>();
             foreach (var course in instructor.Courses)
             {
                 var enrollments = await enrollmentRepository.GetByCourseIdAsync(course.Id, cancellationToken);
 
-                var courseDto = new InstructorCourseDto
-                {
-                    Id = course.Id,
-                    Title = course.Title,
-                    Category = course.Category.Name,
-                    Status = course.Status.Name,
-                    EnrollmentsCount = enrollments.Count,
-                    CreatedAt = course.CreatedAt(),
-                    PublishedDate = course.PublishedDate
-                };
+                var courseDto = new InstructorCourseDto(
+                    course.Id,
+                    course.Title,
+                    course.Category.Name,
+                    enrollments.Count,
+                    course.Status.Name,
+                    course.CreatedAt(),
+                    course.PublishedDate);
 
-                instructorCoursesDto.Courses.Add(courseDto);
+                courses.Add(courseDto);
             }
 
+            var instructorCoursesDto = mappedInstructorCoursesDto with { Courses = courses };
             return Result.Success(instructorCoursesDto);
         }
     }

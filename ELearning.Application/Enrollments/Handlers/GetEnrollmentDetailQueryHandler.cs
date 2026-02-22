@@ -48,34 +48,30 @@ public class GetEnrollmentDetailQueryHandler(
                 // Get lesson info
                 var lesson = await lessonRepository.GetByIdAsync(progress.LessonId);
 
-                lessonProgress.Add(new LessonProgressDto
-                {
-                    LessonId = progress.LessonId,
-                    LessonTitle = lesson.Title,
-                    Status = progress.Status.Name,
-                    CompletedDate = progress.CompletedDate,
-                    TimeSpentSeconds = progress.TimeSpentSeconds
-                });
+                lessonProgress.Add(new LessonProgressDto(
+                    progress.LessonId,
+                    lesson.Title,
+                    progress.Status.Name,
+                    progress.CompletedDate,
+                    progress.TimeSpentSeconds));
             }
 
             var submissionDtos = mapper.Map<List<SubmissionDto>>(enrollment.Submissions);
 
-            var enrollmentDetailDto = new EnrollmentDetailDto
-            {
-                Id = enrollment.Id,
-                StudentId = enrollment.StudentId,
-                StudentName = student.FullName,
-                CourseId = enrollment.CourseId,
-                CourseTitle = course.Title,
-                Status = enrollment.Status.Name,
-                EnrollmentDate = enrollment.CreatedAt(),
-                CompletedDate = enrollment.CompletedDateUTC,
-                CompletionPercentage = completionPercentage,
-                LessonProgress = lessonProgress,
-                Submissions = submissionDtos,
-                CourseRating = enrollment.CourseRating?.Value,
-                Review = enrollment.Review
-            };
+            var enrollmentDetailDto = new EnrollmentDetailDto(
+                enrollment.Id,
+                enrollment.StudentId,
+                student.FullName,
+                enrollment.CourseId,
+                course.Title,
+                enrollment.Status.Name,
+                enrollment.CreatedAt(),
+                enrollment.CompletedDateUTC,
+                completionPercentage,
+                lessonProgress,
+                submissionDtos,
+                enrollment.CourseRating?.Value,
+                enrollment.Review);
 
             return Result.Success(enrollmentDetailDto);
         }

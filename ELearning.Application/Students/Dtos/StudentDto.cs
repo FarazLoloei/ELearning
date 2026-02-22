@@ -1,8 +1,8 @@
-﻿using ELearning.SharedKernel.Abstractions;
+using ELearning.SharedKernel.Abstractions;
 
 namespace ELearning.Application.Students.Dtos;
 
-public readonly record struct StudentDto(
+public sealed record StudentDto(
     Guid Id,
     string FullName,
     string Email,

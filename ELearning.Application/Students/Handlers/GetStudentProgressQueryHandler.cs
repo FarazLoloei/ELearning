@@ -44,14 +44,7 @@ public class GetStudentProgressQueryHandler(
             var completedEnrollments = enrollments.Where(e => e.Status == EnrollmentStatus.Completed).ToList();
             var inProgressEnrollments = enrollments.Where(e => e.Status == EnrollmentStatus.Active).ToList();
 
-            var progressDto = new StudentProgressDto
-            {
-                StudentId = student.Id,
-                StudentName = student.FullName,
-                CompletedCourses = completedEnrollments.Count,
-                InProgressCourses = inProgressEnrollments.Count,
-                Enrollments = new List<EnrollmentProgressDto>()
-            };
+            var enrollmentProgressDtos = new List<EnrollmentProgressDto>();
 
             foreach (var enrollment in enrollments)
             {
@@ -65,23 +58,28 @@ public class GetStudentProgressQueryHandler(
                 var assignmentCount = course.Modules.Sum(m => m.Assignments.Count);
                 var submissionCount = enrollment.Submissions.Count;
 
-                var enrollmentProgressDto = new EnrollmentProgressDto
-                {
-                    EnrollmentId = enrollment.Id,
-                    CourseId = course.Id,
-                    CourseTitle = course.Title,
-                    Status = enrollment.Status.Name,
-                    EnrollmentDate = enrollment.CreatedAt(),
-                    CompletedDate = enrollment.CompletedDateUTC,
-                    CompletionPercentage = completionPercentage,
-                    CompletedLessons = completedLessons,
-                    TotalLessons = totalLessons,
-                    CompletedAssignments = submissionCount,
-                    TotalAssignments = assignmentCount
-                };
+                var enrollmentProgressDto = new EnrollmentProgressDto(
+                    enrollment.Id,
+                    course.Id,
+                    course.Title,
+                    enrollment.Status.Name,
+                    enrollment.CreatedAt(),
+                    enrollment.CompletedDateUTC,
+                    completionPercentage,
+                    completedLessons,
+                    totalLessons,
+                    submissionCount,
+                    assignmentCount);
 
-                progressDto.Enrollments.Add(enrollmentProgressDto);
+                enrollmentProgressDtos.Add(enrollmentProgressDto);
             }
+
+            var progressDto = new StudentProgressDto(
+                student.Id,
+                student.FullName,
+                completedEnrollments.Count,
+                inProgressEnrollments.Count,
+                enrollmentProgressDtos);
 
             return Result.Success(progressDto);
         }

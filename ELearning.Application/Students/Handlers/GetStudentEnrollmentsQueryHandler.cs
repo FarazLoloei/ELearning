@@ -51,18 +51,16 @@ public class GetStudentEnrollmentsQueryHandler(
                 var student = await studentReadService.GetByIdAsync(enrollment.StudentId);
                 var completionPercentage = await progressRepository.GetCourseProgressPercentageAsync(enrollment.Id);
 
-                var enrollmentDto = new EnrollmentDto
-                {
-                    Id = enrollment.Id,
-                    StudentId = enrollment.StudentId,
-                    StudentName = student.FullName,
-                    CourseId = enrollment.CourseId,
-                    CourseTitle = course.Title,
-                    Status = enrollment.Status.Name,
-                    EnrollmentDate = enrollment.CreatedAt(),
-                    CompletedDate = enrollment.CompletedDateUTC,
-                    CompletionPercentage = completionPercentage
-                };
+                var enrollmentDto = new EnrollmentDto(
+                    enrollment.Id,
+                    enrollment.StudentId,
+                    student.FullName,
+                    enrollment.CourseId,
+                    course.Title,
+                    enrollment.Status.Name,
+                    enrollment.CreatedAt(),
+                    enrollment.CompletedDateUTC,
+                    completionPercentage);
 
                 enrollmentDtos.Add(enrollmentDto);
             }

@@ -1,9 +1,9 @@
-﻿using ELearning.Application.Submissions.Dtos;
+using ELearning.Application.Submissions.Dtos;
 using ELearning.SharedKernel.Abstractions;
 
 namespace ELearning.Application.Enrollments.Dtos;
 
-public readonly record struct EnrollmentDetailDto(
+public sealed record EnrollmentDetailDto(
     Guid Id,
     Guid StudentId,
     string StudentName,
@@ -13,8 +13,8 @@ public readonly record struct EnrollmentDetailDto(
     DateTime EnrollmentDate,
     DateTime? CompletedDate,
     double CompletionPercentage,
-    List<LessonProgressDto> LessonProgress,
-    List<SubmissionDto> Submissions,
+    IReadOnlyList<LessonProgressDto> LessonProgress,
+    IReadOnlyList<SubmissionDto> Submissions,
     decimal? CourseRating,
     string? Review
 ) : IDto;

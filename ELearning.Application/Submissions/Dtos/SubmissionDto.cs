@@ -1,8 +1,8 @@
-﻿using ELearning.SharedKernel.Abstractions;
+using ELearning.SharedKernel.Abstractions;
 
 namespace ELearning.Application.Submissions.Dtos;
 
-public readonly record struct SubmissionDto(
+public sealed record SubmissionDto(
     Guid Id,
     Guid AssignmentId,
     string AssignmentTitle,
