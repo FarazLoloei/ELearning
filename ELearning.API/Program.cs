@@ -171,3 +171,5 @@ app.MapGraphQL();     // GraphQL endpoint at /graphql
 
 // Run the app
 app.Run();
+
+public partial class Program;
