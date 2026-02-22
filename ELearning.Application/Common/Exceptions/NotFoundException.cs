@@ -1,10 +1,13 @@
-﻿namespace ELearning.Application.Common.Exceptions;
+namespace ELearning.Application.Common.Exceptions;
 
-// Exception for when an entity is not found
-public class NotFoundException : ApplicationException
+// Exception for when an entity is not found.
+public class NotFoundException : DomainApplicationException
 {
+    public string? EntityName { get; }
+    public object? Key { get; }
+
     public NotFoundException()
-        : base()
+        : base("The requested resource was not found.")
     {
     }
 
@@ -13,8 +16,10 @@ public class NotFoundException : ApplicationException
     {
     }
 
-    public NotFoundException(string name, object key)
-        : base($"Entity '{name}' ({key}) was not found.")
+    public NotFoundException(string entityName, object key)
+        : base($"Entity '{entityName}' ({key}) was not found.")
     {
+        EntityName = entityName;
+        Key = key;
     }
 }

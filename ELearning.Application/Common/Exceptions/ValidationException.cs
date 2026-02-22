@@ -1,7 +1,7 @@
 ﻿namespace ELearning.Application.Common.Exceptions;
 
 // Exception for validation errors
-public class ValidationException : ApplicationException
+public class ValidationException : DomainApplicationException
 {
     public IDictionary<string, string[]> Errors { get; }
 
