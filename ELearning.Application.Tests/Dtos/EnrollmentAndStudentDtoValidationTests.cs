@@ -45,6 +45,20 @@ public class EnrollmentAndStudentDtoValidationTests
     }
 
     [Fact]
+    public void EnrollmentDetailDto_NullLessonProgress_FailsValidation()
+    {
+        var dto = DtoFactory.CreateEnrollmentDetailDto() with { LessonProgress = null! };
+        DtoValidationTestHelper.AssertInvalidFor(EnrollmentDetailValidator, dto, x => x.LessonProgress);
+    }
+
+    [Fact]
+    public void EnrollmentDetailDto_NullSubmissions_FailsValidation()
+    {
+        var dto = DtoFactory.CreateEnrollmentDetailDto() with { Submissions = null! };
+        DtoValidationTestHelper.AssertInvalidFor(EnrollmentDetailValidator, dto, x => x.Submissions);
+    }
+
+    [Fact]
     public void LessonProgressDto_ValidModel_PassesValidation()
     {
         var dto = DtoFactory.CreateLessonProgressDto();
@@ -108,6 +122,21 @@ public class EnrollmentAndStudentDtoValidationTests
     {
         var dto = DtoFactory.CreateStudentProgressDto();
         DtoValidationTestHelper.AssertValid(StudentProgressValidator, dto);
+    }
+
+    [Theory]
+    [InlineData(-1)]
+    public void StudentProgressDto_InvalidCompletedCourses_FailsValidation(int completedCourses)
+    {
+        var dto = DtoFactory.CreateStudentProgressDto() with { CompletedCourses = completedCourses };
+        DtoValidationTestHelper.AssertInvalidFor(StudentProgressValidator, dto, x => x.CompletedCourses);
+    }
+
+    [Fact]
+    public void StudentProgressDto_NullEnrollments_FailsValidation()
+    {
+        var dto = DtoFactory.CreateStudentProgressDto() with { Enrollments = null! };
+        DtoValidationTestHelper.AssertInvalidFor(StudentProgressValidator, dto, x => x.Enrollments);
     }
 }
 

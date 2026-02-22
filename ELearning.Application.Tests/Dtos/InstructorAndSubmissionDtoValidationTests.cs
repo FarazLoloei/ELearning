@@ -43,11 +43,26 @@ public class InstructorAndSubmissionDtoValidationTests
         DtoValidationTestHelper.AssertInvalidFor(InstructorCourseValidator, dto, x => x.Title);
     }
 
+    [Theory]
+    [InlineData(-1)]
+    public void InstructorCourseDto_InvalidEnrollmentsCount_FailsValidation(int enrollmentsCount)
+    {
+        var dto = DtoFactory.CreateInstructorCourseDto() with { EnrollmentsCount = enrollmentsCount };
+        DtoValidationTestHelper.AssertInvalidFor(InstructorCourseValidator, dto, x => x.EnrollmentsCount);
+    }
+
     [Fact]
     public void InstructorCoursesDto_ValidModel_PassesValidation()
     {
         var dto = DtoFactory.CreateInstructorCoursesDto();
         DtoValidationTestHelper.AssertValid(InstructorCoursesValidator, dto);
+    }
+
+    [Fact]
+    public void InstructorCoursesDto_NullCourses_FailsValidation()
+    {
+        var dto = DtoFactory.CreateInstructorCoursesDto() with { Courses = null! };
+        DtoValidationTestHelper.AssertInvalidFor(InstructorCoursesValidator, dto, x => x.Courses);
     }
 
     [Fact]
@@ -74,6 +89,15 @@ public class InstructorAndSubmissionDtoValidationTests
         DtoValidationTestHelper.AssertInvalidFor(SubmissionValidator, dto, x => x.MaxPoints);
     }
 
+    [Theory]
+    [InlineData("")]
+    [InlineData(" ")]
+    public void SubmissionDto_InvalidAssignmentTitle_FailsValidation(string assignmentTitle)
+    {
+        var dto = DtoFactory.CreateSubmissionDto() with { AssignmentTitle = assignmentTitle };
+        DtoValidationTestHelper.AssertInvalidFor(SubmissionValidator, dto, x => x.AssignmentTitle);
+    }
+
     [Fact]
     public void SubmissionDetailDto_ValidModel_PassesValidation()
     {
@@ -88,6 +112,15 @@ public class InstructorAndSubmissionDtoValidationTests
     {
         var dto = DtoFactory.CreateSubmissionDetailDto(score: score, maxPoints: maxPoints);
         DtoValidationTestHelper.AssertInvalidFor(SubmissionDetailValidator, dto, x => x.Score);
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData(" ")]
+    public void SubmissionDetailDto_InvalidGradedByName_FailsValidation(string gradedByName)
+    {
+        var dto = DtoFactory.CreateSubmissionDetailDto() with { GradedByName = gradedByName };
+        DtoValidationTestHelper.AssertInvalidFor(SubmissionDetailValidator, dto, x => x.GradedByName);
     }
 }
 

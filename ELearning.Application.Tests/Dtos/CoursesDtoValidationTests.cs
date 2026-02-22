@@ -45,6 +45,28 @@ public class CoursesDtoValidationTests
         DtoValidationTestHelper.AssertInvalidFor(CourseValidator, dto, x => x.AverageRating);
     }
 
+    [Theory]
+    [InlineData(-1)]
+    public void CourseDto_InvalidNumberOfRatings_FailsValidation(int numberOfRatings)
+    {
+        var dto = DtoFactory.CreateCourseDto() with { NumberOfRatings = numberOfRatings };
+        DtoValidationTestHelper.AssertInvalidFor(CourseValidator, dto, x => x.NumberOfRatings);
+    }
+
+    [Fact]
+    public void CourseDto_NullModules_FailsValidation()
+    {
+        var dto = DtoFactory.CreateCourseDto() with { Modules = null! };
+        DtoValidationTestHelper.AssertInvalidFor(CourseValidator, dto, x => x.Modules);
+    }
+
+    [Fact]
+    public void CourseDto_NullReviews_FailsValidation()
+    {
+        var dto = DtoFactory.CreateCourseDto() with { Reviews = null! };
+        DtoValidationTestHelper.AssertInvalidFor(CourseValidator, dto, x => x.Reviews);
+    }
+
     [Fact]
     public void CourseListDto_ValidModel_PassesValidation()
     {
@@ -69,6 +91,14 @@ public class CoursesDtoValidationTests
         DtoValidationTestHelper.AssertInvalidFor(CourseListValidator, dto, x => x.Price);
     }
 
+    [Theory]
+    [InlineData(-1)]
+    public void CourseListDto_InvalidEnrollmentsCount_FailsValidation(int enrollmentsCount)
+    {
+        var dto = DtoFactory.CreateCourseListDto() with { EnrollmentsCount = enrollmentsCount };
+        DtoValidationTestHelper.AssertInvalidFor(CourseListValidator, dto, x => x.EnrollmentsCount);
+    }
+
     [Fact]
     public void ModuleDto_ValidModel_PassesValidation()
     {
@@ -91,6 +121,20 @@ public class CoursesDtoValidationTests
     {
         var dto = DtoFactory.CreateModuleDto(order: order);
         DtoValidationTestHelper.AssertInvalidFor(ModuleValidator, dto, x => x.Order);
+    }
+
+    [Fact]
+    public void ModuleDto_NullLessons_FailsValidation()
+    {
+        var dto = DtoFactory.CreateModuleDto() with { Lessons = null! };
+        DtoValidationTestHelper.AssertInvalidFor(ModuleValidator, dto, x => x.Lessons);
+    }
+
+    [Fact]
+    public void ModuleDto_NullAssignments_FailsValidation()
+    {
+        var dto = DtoFactory.CreateModuleDto() with { Assignments = null! };
+        DtoValidationTestHelper.AssertInvalidFor(ModuleValidator, dto, x => x.Assignments);
     }
 
     [Fact]
