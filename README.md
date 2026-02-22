@@ -1,178 +1,128 @@
 # E-Learning Platform API
 
-A GraphQL-based Web API for an e-learning platform built with .NET Core, following Clean Architecture and Domain-Driven Design principles.
+Clean Architecture + DDD sample for an e-learning platform built on .NET 10.
 
-## Project Overview
+The solution exposes:
+- REST API controllers
+- GraphQL endpoint
+- CQRS/MediatR application layer
+- EF Core write model
+- Dapr-based read model clients
 
-This project implements a modern e-learning platform where instructors can create courses with modules, lessons, and assignments, while students can enroll in courses, track their progress, and submit assignments for evaluation.
+## Solution Structure
 
-## Technology Stack
-
-- **.NET Core**: Backend framework
-- **GraphQL**: API query language for flexible data retrieval
-- **REST API**: Traditional endpoints for specific operations
-- **Dapr**: Distributed Application Runtime for read operations
-- **Entity Framework Core**: ORM for create, update, and delete operations
-- **Clean Architecture**: Architectural pattern
-- **Domain-Driven Design**: Design approach
-
-## Project Structure
-
-The solution follows Clean Architecture with these layers:
-
-```
-ELearning/
-├── Domain/              # Core business logic and entities
-├── Application/         # Use cases, commands, and queries
-├── Infrastructure/      # External concerns implementation
-│   ├── Data/            # EF Core repositories for CUD operations
-│   └── DaprServices/    # Dapr implementations for read operations
-├── WebApi/              # API endpoints and configuration
-│   ├── GraphQL/         # GraphQL schema, queries, and mutations
-│   └── Rest/            # REST controllers and endpoints
-└── ApiGateway/          # Gateway to route between GraphQL and REST
+```text
+ELearning.API                # API host (REST, GraphQL, middleware, auth, Ocelot)
+ELearning.Application        # Use cases, DTOs, validators, behaviors, interfaces
+ELearning.Domain             # Aggregates, entities, value objects, domain events, domain exceptions
+ELearning.Infrastructure     # Repositories, services, Dapr read-service implementations
+ELearning.Persistence        # Persistence project
+ELearning.SharedKernel       # Base abstractions (BaseEntity, ValueObject, Enumeration, etc.)
+ELearning.Application.Tests  # Unit/validation tests (xUnit v3)
+ELearning.IntegrationTests   # API integration tests (xUnit v3 + WebApplicationFactory)
 ```
 
-## Domain Model
+## Architecture
 
-The domain layer is fully implemented with the following key components:
+- **Domain layer**: pure business rules and invariants
+- **Application layer**: commands/queries, handlers, DTOs, validation pipeline, abstractions
+- **Infrastructure layer**: EF Core repositories and external service implementations
+- **API layer**: transport concerns (REST/GraphQL), auth middleware, serialization, versioning
 
-### Core Entities
+Dependency direction follows Clean Architecture rules:
+- API -> Application
+- Infrastructure -> Application + Domain
+- Application -> Domain + SharedKernel
+- Domain -> SharedKernel
 
-- **Course**: Main educational offering with modules and lessons
-- **User**: Base entity for authentication and authorization
-  - **Student**: User who enrolls in courses
-  - **Instructor**: User who creates and manages courses
-- **Enrollment**: Student's participation in a course
-- **Module**: Organizational unit within a course
-- **Lesson**: Individual learning unit
-- **Assignment**: Evaluation task for students
-- **Submission**: Student's completed assignment
-- **Progress**: Tracking of student advancement through lessons
+## Key Features
 
-### Value Objects
+- Course, module, lesson, assignment, enrollment, submission flows
+- JWT authentication endpoints
+- FluentValidation pipeline behavior
+- Read-model fallback policy for query handlers
+- DTO validation tests with helper/factory utilities
+- Integration test bootstrapping through `WebApplicationFactory`
 
-- **Email**: Validates email format
-- **Duration**: Represents time spans for courses and lessons
-- **Rating**: Manages course ratings with validation
-- **Various Enumerations**: CourseStatus, CourseLevel, UserRole, etc.
+## Prerequisites
 
-### Domain Events
+- .NET SDK 10.0+
+- SQL Server (or LocalDB) for full runtime scenarios
+- Optional: Dapr runtime for read-model endpoints that depend on Dapr services
 
-Events that trigger system responses, such as:
+## Configuration
 
-- CourseCreatedEvent
-- EnrollmentCreatedEvent
-- SubmissionGradedEvent
+Main API settings are loaded from:
+- `ELearning.API/appsettings.json`
+- `ELearning.API/appsettings.Development.json`
+- environment variables
 
-### Key Domain Rules
+Important keys:
+- `ConnectionStrings:DefaultConnection`
+- `JwtSettings:Issuer`
+- `JwtSettings:Audience`
+- `JwtSettings:Secret`
+- `JwtSettings:ExpiryInDays`
+- `Dapr:HttpPort`
+- `Dapr:GrpcPort`
 
-- Courses must have at least one module before publishing
-- Students can only submit assignments for courses they're enrolled in
-- Courses can only be rated after completion
-- Submissions cannot be updated after being graded
+## Run the API
 
-## Current Status
-
-- ✅ Domain layer fully implemented with entities, value objects, and interfaces
-- ✅ Design follows DDD aggregates, entities, value objects, and repositories
-- ✅ Business rules encapsulated within domain entities
-
-## Next Steps
-
-- [ ] Implement Infrastructure layer with database context and repositories
-- [ ] Implement Application layer with commands and queries
-- [ ] Set up GraphQL schema with queries and mutations
-- [ ] Configure REST API endpoints for alternative access
-- [ ] Implement Dapr integration for read operations
-- [ ] Configure Entity Framework Core for create, update, and delete operations
-- [ ] Set up dual API gateway to route between GraphQL and REST
-- [ ] Add authentication and authorization
-- [ ] Implement real-time notifications for course updates
-- [ ] Add file upload functionality for submissions
-
-## Getting Started
-
-### Prerequisites
-
-- .NET Core SDK 7.0 or higher
-- Visual Studio 2022 or VS Code
-
-### Setup
-
-1. Clone the repository
-
-```bash
-git clone https://github.com/yourusername/e-learning-platform.git
+```powershell
+dotnet run --project ELearning.API/ELearning.API.csproj
 ```
 
-2. Open the solution in Visual Studio or VS Code
+Default endpoints:
+- REST controllers under `/api/*`
+- GraphQL at `/graphql`
+- Swagger UI in Development environment
 
-3. Set up the database (instructions to be added)
+## Build and Test
 
-4. Run the application
+Build solution:
 
-```bash
-dotnet run --project src/WebApi
+```powershell
+dotnet build ELearning.sln -nologo /p:UseSharedCompilation=false
 ```
 
-## Project Structure Explanation
+Run all tests:
 
-The project follows Clean Architecture and Domain-Driven Design principles:
+```powershell
+dotnet test ELearning.sln -nologo /p:UseSharedCompilation=false
+```
 
-### Domain Layer (Implemented)
+Run application tests only:
 
-The core of the application containing:
+```powershell
+dotnet test ELearning.Application.Tests/ELearning.Application.Tests.csproj -nologo /p:UseSharedCompilation=false
+```
 
-- Business entities
-- Domain events
-- Repository interfaces
-- Value objects
-- Domain services
+Run integration tests only:
 
-This layer is independent of external frameworks and contains the core business logic.
+```powershell
+dotnet test ELearning.IntegrationTests/ELearning.IntegrationTests.csproj -nologo /p:UseSharedCompilation=false
+```
 
-### Application Layer (Coming Soon)
+## Testing Approach
 
-Will contain:
+- `ELearning.Application.Tests`:
+  - DTO and validation-focused tests
+  - shared helper patterns to avoid duplicated assertion logic
+- `ELearning.IntegrationTests`:
+  - API-level integration tests using `WebApplicationFactory`
+  - service replacement for controlled test doubles (for deterministic behavior)
 
-- Command/Query handlers
-- DTOs
-- Validation rules
-- Interface adapters
+## Notes for Sample-Code Use
 
-### Infrastructure Layer (Coming Soon)
+Current baseline:
+- Solution builds successfully
+- Tests pass successfully
+- Warning-clean baseline maintained in recent updates
 
-Will contain:
-
-- Database implementation
-- External service integrations
-- Repository implementations
-- Authentication providers
-
-### WebApi Layer (Coming Soon)
-
-Will contain:
-
-- GraphQL schema and resolvers for flexible queries
-- REST controllers for traditional API endpoints
-- Middleware configuration
-- API documentation
-
-### API Implementation Strategy
-
-The API follows a hybrid approach:
-
-- **Read Operations**: Implemented using Dapr for distributed, scalable queries
-- **Create, Update, Delete Operations**: Implemented using Entity Framework Core for transactional consistency
-- **Dual Interface**: Both GraphQL and REST APIs exposing the same underlying functionality
-  - GraphQL for flexible, client-specific data retrieval
-  - REST for simpler, resource-focused operations
-
-## Contributing
-
-Instructions for contributing to the project will be added here.
+If you present this repository as a sample, keep CI validating:
+- `dotnet build`
+- `dotnet test`
 
 ## License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+MIT - see `LICENSE.txt`.
