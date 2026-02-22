@@ -1,4 +1,6 @@
-﻿namespace ELearning.Application.Courses.Dtos;
+﻿using ELearning.SharedKernel.Abstractions;
+
+namespace ELearning.Application.Courses.Dtos;
 
 public readonly record struct ReviewDto(
     Guid Id,
@@ -6,4 +8,4 @@ public readonly record struct ReviewDto(
     decimal Rating,
     string Comment,
     DateTime CreatedAt
-);
+) : IDto;

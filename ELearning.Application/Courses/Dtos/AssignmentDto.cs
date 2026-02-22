@@ -1,4 +1,6 @@
-﻿namespace ELearning.Application.Courses.Dtos;
+﻿using ELearning.SharedKernel.Abstractions;
+
+namespace ELearning.Application.Courses.Dtos;
 
 public readonly record struct AssignmentDto(
     Guid Id,
@@ -7,4 +9,4 @@ public readonly record struct AssignmentDto(
     string Type,
     int MaxPoints,
     DateTime? DueDate
-);
+) : IDto;

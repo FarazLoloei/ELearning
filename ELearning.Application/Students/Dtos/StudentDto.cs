@@ -1,4 +1,6 @@
-﻿namespace ELearning.Application.Students.Dtos;
+﻿using ELearning.SharedKernel.Abstractions;
+
+namespace ELearning.Application.Students.Dtos;
 
 public readonly record struct StudentDto(
     Guid Id,
@@ -6,4 +8,4 @@ public readonly record struct StudentDto(
     string Email,
     string ProfilePictureUrl,
     DateTime? LastLoginDate
-);
+) : IDto;

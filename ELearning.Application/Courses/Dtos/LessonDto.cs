@@ -1,4 +1,6 @@
-﻿namespace ELearning.Application.Courses.Dtos;
+﻿using ELearning.SharedKernel.Abstractions;
+
+namespace ELearning.Application.Courses.Dtos;
 
 public readonly record struct LessonDto(
     Guid Id,
@@ -8,4 +10,4 @@ public readonly record struct LessonDto(
     string VideoUrl,
     string Duration,
     int Order
-);
+) : IDto;

@@ -1,4 +1,6 @@
-﻿namespace ELearning.Application.Instructors.Dtos;
+﻿using ELearning.SharedKernel.Abstractions;
+
+namespace ELearning.Application.Instructors.Dtos;
 
 public readonly record struct InstructorDto(
     Guid Id,
@@ -10,4 +12,4 @@ public readonly record struct InstructorDto(
     decimal AverageRating,
     int TotalStudents,
     int TotalCourses
-);
+) : IDto;

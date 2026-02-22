@@ -1,4 +1,5 @@
 ﻿using ELearning.Application.Instructors.Dtos;
+using ELearning.SharedKernel.Abstractions;
 
 namespace ELearning.Application.Courses.Dtos;
 
@@ -17,4 +18,4 @@ public readonly record struct CourseDetailDto(
     int NumberOfRatings,
     List<ModuleDto> Modules,
     List<ReviewDto> Reviews
-);
+) : IDto;

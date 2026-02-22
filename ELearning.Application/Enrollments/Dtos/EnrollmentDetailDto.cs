@@ -1,4 +1,5 @@
 ﻿using ELearning.Application.Submissions.Dtos;
+using ELearning.SharedKernel.Abstractions;
 
 namespace ELearning.Application.Enrollments.Dtos;
 
@@ -16,4 +17,4 @@ public readonly record struct EnrollmentDetailDto(
     List<SubmissionDto> Submissions,
     decimal? CourseRating,
     string? Review
-);
+) : IDto;

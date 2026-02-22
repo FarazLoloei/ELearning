@@ -1,4 +1,6 @@
-﻿namespace ELearning.Application.Enrollments.Dtos;
+﻿using ELearning.SharedKernel.Abstractions;
+
+namespace ELearning.Application.Enrollments.Dtos;
 
 // DTO for lesson progress
 public readonly record struct LessonProgressDto(
@@ -7,4 +9,4 @@ public readonly record struct LessonProgressDto(
     string Status,
     DateTime? CompletedDate,
     int TimeSpentSeconds
-);
+) : IDto;
