@@ -33,19 +33,18 @@ public class CourseRepository : ICourseRepository
     public async Task AddAsync(Course entity, CancellationToken cancellationToken)
     {
         await _context.Courses.AddAsync(entity, cancellationToken);
-        await _context.SaveChangesAsync(cancellationToken);
     }
 
-    public async Task UpdateAsync(Course entity, CancellationToken cancellationToken)
+    public Task UpdateAsync(Course entity, CancellationToken cancellationToken)
     {
         _context.Entry(entity).State = EntityState.Modified;
-        await _context.SaveChangesAsync(cancellationToken);
+        return Task.CompletedTask;
     }
 
-    public async Task DeleteAsync(Course entity, CancellationToken cancellationToken)
+    public Task DeleteAsync(Course entity, CancellationToken cancellationToken)
     {
         _context.Courses.Remove(entity);
-        await _context.SaveChangesAsync(cancellationToken);
+        return Task.CompletedTask;
     }
 
     public async Task<IReadOnlyList<Course>> GetByInstructorIdAsync(Guid instructorId, CancellationToken cancellationToken) =>

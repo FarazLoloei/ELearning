@@ -1,6 +1,5 @@
 ﻿using ELearning.Domain.Entities.EnrollmentAggregate;
 using ELearning.Domain.Entities.EnrollmentAggregate.Abstractions.Repositories;
-using ELearning.Domain.Entities.EnrollmentAggregate.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace ELearning.Infrastructure.Data.Repositories;
@@ -21,19 +20,18 @@ public class EnrollmentRepository(ApplicationDbContext context) : IEnrollmentRep
     public async Task AddAsync(Enrollment entity, CancellationToken cancellationToken)
     {
         await context.Enrollments.AddAsync(entity, cancellationToken);
-        await context.SaveChangesAsync(cancellationToken);
     }
 
-    public async Task UpdateAsync(Enrollment entity, CancellationToken cancellationToken)
+    public Task UpdateAsync(Enrollment entity, CancellationToken cancellationToken)
     {
         context.Entry(entity).State = EntityState.Modified;
-        await context.SaveChangesAsync(cancellationToken);
+        return Task.CompletedTask;
     }
 
-    public async Task DeleteAsync(Enrollment entity, CancellationToken cancellationToken)
+    public Task DeleteAsync(Enrollment entity, CancellationToken cancellationToken)
     {
         context.Enrollments.Remove(entity);
-        await context.SaveChangesAsync(cancellationToken);
+        return Task.CompletedTask;
     }
 
     public async Task<Enrollment?> GetByStudentAndCourseIdAsync(Guid studentId, Guid courseId, CancellationToken cancellationToken)
@@ -44,39 +42,8 @@ public class EnrollmentRepository(ApplicationDbContext context) : IEnrollmentRep
             .FirstOrDefaultAsync(cancellationToken);
     }
 
-    public async Task<IReadOnlyList<Enrollment>> GetByStudentIdAsync(Guid studentId, CancellationToken cancellationToken)
-    {
-        return await context.Enrollments
+    public async Task<bool> HasAnyForCourseAsync(Guid courseId, CancellationToken cancellationToken) =>
+        await context.Enrollments
             .AsNoTracking()
-            .Where(e => e.StudentId == studentId)
-            .ToListAsync(cancellationToken);
-    }
-
-    public async Task<IReadOnlyList<Enrollment>> GetByCourseIdAsync(Guid courseId, CancellationToken cancellationToken)
-    {
-        return await context.Enrollments
-            .AsNoTracking()
-            .Where(e => e.CourseId == courseId)
-            .ToListAsync(cancellationToken);
-    }
-
-    public async Task<IReadOnlyList<Enrollment>> GetRecentEnrollmentsAsync(int count, CancellationToken cancellationToken)
-    {
-        return await context.Enrollments
-            .AsNoTracking()
-            .OrderByDescending(e => e.CreatedAt())
-            .Take(count)
-            .ToListAsync(cancellationToken);
-    }
-
-    public async Task<int> GetEnrollmentsCountAsync(CancellationToken cancellationToken) =>
-        await context.Enrollments.CountAsync(cancellationToken);
-
-    public async Task<IReadOnlyList<Enrollment>> GetCompletedEnrollmentsAsync(Guid studentId, CancellationToken cancellationToken)
-    {
-        return await context.Enrollments
-            .AsNoTracking()
-            .Where(e => e.StudentId == studentId && e.Status == EnrollmentStatus.Completed)
-            .ToListAsync(cancellationToken);
-    }
+            .AnyAsync(e => e.CourseId == courseId, cancellationToken);
 }

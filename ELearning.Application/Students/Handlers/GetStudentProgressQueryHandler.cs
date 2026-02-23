@@ -1,6 +1,7 @@
 using ELearning.Application.Common.Exceptions;
 using ELearning.Application.Common.Model;
 using ELearning.Application.Common.Resilience;
+using ELearning.Application.Enrollments.Abstractions.ReadModels;
 using ELearning.Application.Students.Abstractions.ReadModels;
 using ELearning.Application.Students.Dtos;
 using ELearning.Application.Students.Queries;
@@ -16,7 +17,7 @@ namespace ELearning.Application.Students.Handlers;
 public class GetStudentProgressQueryHandler(
         IStudentReadService studentReadService,
         IStudentRepository studentRepository,
-        IEnrollmentRepository enrollmentRepository,
+        IEnrollmentReadRepository enrollmentReadRepository,
         IProgressRepository progressRepository,
         ICourseRepository courseRepository)
     : IRequestHandler<GetStudentProgressQuery, Result<StudentProgressDto>>
@@ -26,20 +27,20 @@ public class GetStudentProgressQueryHandler(
         try
         {
             // Try to get from Dapr read service first
-            var progressDto = await studentReadService.GetStudentProgressAsync(request.StudentId);
+            var progressDto = await studentReadService.GetStudentProgressAsync(request.StudentId, cancellationToken);
             return Result.Success(progressDto);
         }
         catch (Exception ex) when (ReadModelFallbackPolicy.ShouldFallback(ex, cancellationToken))
         {
             // Fall back to repositories if Dapr service fails
-            var student = await studentRepository.GetByIdAsync(request.StudentId);
+            var student = await studentRepository.GetByIdAsync(request.StudentId, cancellationToken);
 
             if (student == null)
             {
                 throw new NotFoundException(nameof(Student), request.StudentId);
             }
 
-            var enrollments = await enrollmentRepository.GetByStudentIdAsync(request.StudentId, cancellationToken);
+            var enrollments = await enrollmentReadRepository.GetByStudentIdAsync(request.StudentId, cancellationToken);
             var completedEnrollments = enrollments.Where(e => e.Status == EnrollmentStatus.Completed).ToList();
             var inProgressEnrollments = enrollments.Where(e => e.Status == EnrollmentStatus.Active).ToList();
 
@@ -47,11 +48,11 @@ public class GetStudentProgressQueryHandler(
 
             foreach (var enrollment in enrollments)
             {
-                var course = await courseRepository.GetByIdAsync(enrollment.CourseId)
+                var course = await courseRepository.GetByIdAsync(enrollment.CourseId, cancellationToken)
                     ?? throw new NotFoundException("Course", enrollment.CourseId);
-                var completionPercentage = await progressRepository.GetCourseProgressPercentageAsync(enrollment.Id);
+                var completionPercentage = await progressRepository.GetCourseProgressPercentageAsync(enrollment.Id, cancellationToken);
 
-                var lessonProgress = await progressRepository.GetByEnrollmentIdAsync(enrollment.Id);
+                var lessonProgress = await progressRepository.GetByEnrollmentIdAsync(enrollment.Id, cancellationToken);
                 var totalLessons = course.Modules.Sum(m => m.Lessons.Count);
                 var completedLessons = lessonProgress.Count(p => p.Status == ProgressStatus.Completed);
 

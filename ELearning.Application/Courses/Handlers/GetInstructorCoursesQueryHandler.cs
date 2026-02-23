@@ -3,8 +3,8 @@ using ELearning.Application.Common.Exceptions;
 using ELearning.Application.Common.Model;
 using ELearning.Application.Common.Resilience;
 using ELearning.Application.Courses.Queries;
+using ELearning.Application.Enrollments.Abstractions.ReadModels;
 using ELearning.Application.Instructors.Dtos;
-using ELearning.Domain.Entities.EnrollmentAggregate.Abstractions.Repositories;
 using ELearning.Domain.Entities.UserAggregate;
 using ELearning.Domain.Entities.UserAggregate.Abstractions.Repositories;
 using MediatR;
@@ -16,7 +16,7 @@ namespace ELearning.Application.Courses.Handlers;
 /// </summary>
 public class GetInstructorCoursesQueryHandler(
         IInstructorRepository instructorRepository,
-        IEnrollmentRepository enrollmentRepository,
+        IEnrollmentReadRepository enrollmentReadRepository,
         IMapper mapper)
     : IRequestHandler<GetInstructorCoursesQuery, Result<InstructorCoursesDto>>
 {
@@ -32,22 +32,25 @@ public class GetInstructorCoursesQueryHandler(
         catch (Exception ex) when (ReadModelFallbackPolicy.ShouldFallback(ex, cancellationToken))
         {
             // Fall back to repository
-            var instructor = await instructorRepository.GetByIdAsync(request.InstructorId) ??
+            var instructor = await instructorRepository.GetByIdAsync(request.InstructorId, cancellationToken) ??
                 throw new NotFoundException(nameof(Instructor), request.InstructorId);
 
             var mappedInstructorCoursesDto = mapper.Map<InstructorCoursesDto>(instructor);
+
+            var courseIds = instructor.Courses.Select(course => course.Id).ToList();
+            var enrollmentCountsByCourseId = await enrollmentReadRepository.GetCourseEnrollmentCountsAsync(courseIds, cancellationToken);
 
             // Get course details
             var courses = new List<InstructorCourseDto>();
             foreach (var course in instructor.Courses)
             {
-                var enrollments = await enrollmentRepository.GetByCourseIdAsync(course.Id, cancellationToken);
+                enrollmentCountsByCourseId.TryGetValue(course.Id, out var enrollmentCount);
 
                 var courseDto = new InstructorCourseDto(
                     course.Id,
                     course.Title,
                     course.Category.Name,
-                    enrollments.Count,
+                    enrollmentCount,
                     course.Status.Name,
                     course.CreatedAt(),
                     course.PublishedDate);

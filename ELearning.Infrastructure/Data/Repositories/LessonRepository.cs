@@ -14,35 +14,34 @@ public class LessonRepository : ILessonRepository
         _context = context;
     }
 
-    public async Task<Lesson?> GetByIdAsync(Guid id)
+    public async Task<Lesson?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
         return await _context.Lessons
-            .SingleOrDefaultAsync(l => l.Id == id);
+            .SingleOrDefaultAsync(l => l.Id == id, cancellationToken);
     }
 
-    public async Task<IReadOnlyList<Lesson>> GetByModuleIdAsync(Guid moduleId)
+    public async Task<IReadOnlyList<Lesson>> GetByModuleIdAsync(Guid moduleId, CancellationToken cancellationToken = default)
     {
         return await _context.Lessons
             .Where(l => l.ModuleId == moduleId)
             .OrderBy(l => l.Order)
-            .ToListAsync();
+            .ToListAsync(cancellationToken);
     }
 
-    public async Task AddAsync(Lesson lesson)
+    public async Task AddAsync(Lesson lesson, CancellationToken cancellationToken = default)
     {
-        await _context.Lessons.AddAsync(lesson);
-        await _context.SaveChangesAsync();
+        await _context.Lessons.AddAsync(lesson, cancellationToken);
     }
 
-    public async Task UpdateAsync(Lesson lesson)
+    public Task UpdateAsync(Lesson lesson, CancellationToken cancellationToken = default)
     {
         _context.Entry(lesson).State = EntityState.Modified;
-        await _context.SaveChangesAsync();
+        return Task.CompletedTask;
     }
 
-    public async Task DeleteAsync(Lesson lesson)
+    public Task DeleteAsync(Lesson lesson, CancellationToken cancellationToken = default)
     {
         _context.Lessons.Remove(lesson);
-        await _context.SaveChangesAsync();
+        return Task.CompletedTask;
     }
 }

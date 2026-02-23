@@ -14,21 +14,21 @@ public class SubmissionRepository : ISubmissionRepository
         _context = context;
     }
 
-    public async Task<Submission?> GetByIdAsync(Guid id)
+    public async Task<Submission?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
         return await _context.Submissions
-            .SingleOrDefaultAsync(s => s.Id == id);
+            .SingleOrDefaultAsync(s => s.Id == id, cancellationToken);
     }
 
-    public async Task<IReadOnlyList<Submission>> GetByAssignmentIdAsync(Guid assignmentId)
+    public async Task<IReadOnlyList<Submission>> GetByAssignmentIdAsync(Guid assignmentId, CancellationToken cancellationToken = default)
     {
         return await _context.Submissions
             .Where(s => s.AssignmentId == assignmentId)
             .OrderByDescending(s => s.SubmittedDate)
-            .ToListAsync();
+            .ToListAsync(cancellationToken);
     }
 
-    public async Task<IReadOnlyList<Submission>> GetByStudentIdAsync(Guid studentId)
+    public async Task<IReadOnlyList<Submission>> GetByStudentIdAsync(Guid studentId, CancellationToken cancellationToken = default)
     {
         return await _context.Submissions
             .Join(_context.Enrollments,
@@ -38,10 +38,10 @@ public class SubmissionRepository : ISubmissionRepository
             .Where(x => x.Enrollment.StudentId == studentId)
             .Select(x => x.Submission)
             .OrderByDescending(s => s.SubmittedDate)
-            .ToListAsync();
+            .ToListAsync(cancellationToken);
     }
 
-    public async Task<Submission?> GetByStudentAndAssignmentIdAsync(Guid studentId, Guid assignmentId)
+    public async Task<Submission?> GetByStudentAndAssignmentIdAsync(Guid studentId, Guid assignmentId, CancellationToken cancellationToken = default)
     {
         return await _context.Submissions
             .Join(_context.Enrollments,
@@ -50,26 +50,25 @@ public class SubmissionRepository : ISubmissionRepository
                 (s, e) => new { Submission = s, Enrollment = e })
             .Where(x => x.Enrollment.StudentId == studentId && x.Submission.AssignmentId == assignmentId)
             .Select(x => x.Submission)
-            .FirstOrDefaultAsync();
+            .FirstOrDefaultAsync(cancellationToken);
     }
 
-    public async Task<IReadOnlyList<Submission>> GetUngradedSubmissionsAsync()
+    public async Task<IReadOnlyList<Submission>> GetUngradedSubmissionsAsync(CancellationToken cancellationToken = default)
     {
         return await _context.Submissions
             .Where(s => !s.IsGraded)
             .OrderBy(s => s.SubmittedDate)
-            .ToListAsync();
+            .ToListAsync(cancellationToken);
     }
 
-    public async Task AddAsync(Submission submission)
+    public async Task AddAsync(Submission submission, CancellationToken cancellationToken = default)
     {
-        await _context.Submissions.AddAsync(submission);
-        await _context.SaveChangesAsync();
+        await _context.Submissions.AddAsync(submission, cancellationToken);
     }
 
-    public async Task UpdateAsync(Submission submission)
+    public Task UpdateAsync(Submission submission, CancellationToken cancellationToken = default)
     {
         _context.Entry(submission).State = EntityState.Modified;
-        await _context.SaveChangesAsync();
+        return Task.CompletedTask;
     }
 }

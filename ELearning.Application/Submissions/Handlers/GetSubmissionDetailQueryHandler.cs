@@ -38,14 +38,14 @@ public class GetSubmissionDetailQueryHandler(
             var submissionDto = await submissionReadService.GetByIdAsync(request.SubmissionId, cancellationToken);
 
             // Verify permission
-            await VerifyPermission(submissionDto.StudentId, submissionDto.AssignmentId);
+            await VerifyPermission(submissionDto.StudentId, submissionDto.AssignmentId, cancellationToken);
 
             return Result.Success(submissionDto);
         }
         catch (Exception ex) when (ReadModelFallbackPolicy.ShouldFallback(ex, cancellationToken))
         {
             // Fall back to repository
-            var submission = await submissionRepository.GetByIdAsync(request.SubmissionId)
+            var submission = await submissionRepository.GetByIdAsync(request.SubmissionId, cancellationToken)
                 ?? throw new NotFoundException(nameof(Submission), request.SubmissionId);
 
             // Get enrollment for this submission to find student ID
@@ -53,10 +53,10 @@ public class GetSubmissionDetailQueryHandler(
                 ?? throw new NotFoundException(nameof(Enrollment), submission.EnrollmentId);
 
             // Verify permission
-            await VerifyPermission(enrollment.StudentId, submission.AssignmentId);
+            await VerifyPermission(enrollment.StudentId, submission.AssignmentId, cancellationToken);
 
             // Get assignment
-            var assignment = await assignmentRepository.GetByIdAsync(submission.AssignmentId)
+            var assignment = await assignmentRepository.GetByIdAsync(submission.AssignmentId, cancellationToken)
                 ?? throw new NotFoundException("Assignment", submission.AssignmentId);
 
             // Get student and grader (if applicable)
@@ -88,7 +88,7 @@ public class GetSubmissionDetailQueryHandler(
         }
     }
 
-    private async Task VerifyPermission(Guid studentId, Guid assignmentId)
+    private async Task VerifyPermission(Guid studentId, Guid assignmentId, CancellationToken cancellationToken)
     {
         // Check if current user is the student who submitted, the instructor, or an admin
         var currentUserId = currentUserService.UserId!.Value;
@@ -98,9 +98,9 @@ public class GetSubmissionDetailQueryHandler(
         if (!isStudent)
         {
             // Check if user is instructor of course that contains this assignment
-            var module = await assignmentRepository.GetModuleForAssignmentAsync(assignmentId)
+            var module = await assignmentRepository.GetModuleForAssignmentAsync(assignmentId, cancellationToken)
                 ?? throw new NotFoundException("Module", assignmentId);
-            var course = await courseRepository.GetByIdAsync(module.CourseId)
+            var course = await courseRepository.GetByIdAsync(module.CourseId, cancellationToken)
                 ?? throw new NotFoundException("Course", module.CourseId);
             isInstructor = course.InstructorId == currentUserId;
         }

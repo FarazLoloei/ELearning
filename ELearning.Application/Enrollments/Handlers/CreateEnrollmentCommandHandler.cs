@@ -24,10 +24,10 @@ public class CreateEnrollmentCommandHandler(
             throw new ForbiddenAccessException();
 
         var studentId = currentUserService.UserId.Value;
-        var student = await studentRepository.GetByIdAsync(studentId) ??
+        var student = await studentRepository.GetByIdAsync(studentId, cancellationToken) ??
             throw new NotFoundException(nameof(Student), studentId);
 
-        var course = await courseRepository.GetByIdAsync(request.CourseId) ??
+        var course = await courseRepository.GetByIdAsync(request.CourseId, cancellationToken) ??
             throw new NotFoundException(nameof(Course), request.CourseId);
 
         // Check if student is already enrolled
@@ -39,7 +39,7 @@ public class CreateEnrollmentCommandHandler(
         student.EnrollInCourse(course);
 
         // Save to repository
-        await studentRepository.UpdateAsync(student);
+        await studentRepository.UpdateAsync(student, cancellationToken);
 
         return Result.Success();
     }

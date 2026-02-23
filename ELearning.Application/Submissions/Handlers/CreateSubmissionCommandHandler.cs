@@ -27,7 +27,7 @@ public class CreateSubmissionCommandHandler(
         var studentId = currentUserService.UserId.Value;
 
         // Ensure the assignment exists
-        var assignment = await assignmentRepository.GetByIdAsync(request.AssignmentId)
+        var assignment = await assignmentRepository.GetByIdAsync(request.AssignmentId, cancellationToken)
             ?? throw new NotFoundException(nameof(Assignment), request.AssignmentId);
 
         // Verify submission eligibility
@@ -38,7 +38,7 @@ public class CreateSubmissionCommandHandler(
             return Result.Failure("You have already submitted this assignment.");
 
         // Get module and enrollment
-        var module = await assignmentRepository.GetModuleForAssignmentAsync(request.AssignmentId)
+        var module = await assignmentRepository.GetModuleForAssignmentAsync(request.AssignmentId, cancellationToken)
             ?? throw new NotFoundException("Module for assignment", request.AssignmentId);
 
         var enrollment = await enrollmentRepository.GetByStudentAndCourseIdAsync(studentId, module.CourseId, cancellationToken)
@@ -59,11 +59,11 @@ public class CreateSubmissionCommandHandler(
             request.Content,
             request.FileUrl);
 
-        await submissionRepository.AddAsync(submission);
+        await submissionRepository.AddAsync(submission, cancellationToken);
 
         // Link submission to enrollment
         enrollment.AddSubmission(submission);
-        await enrollmentRepository.UpdateAsync(enrollment);
+        await enrollmentRepository.UpdateAsync(enrollment, cancellationToken);
 
         return Result.Success();
     }

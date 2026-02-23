@@ -58,7 +58,7 @@ public class GetPendingSubmissionsQueryHandler(
             var assignmentIds = new List<Guid>();
             foreach (var courseId in courseIds)
             {
-                var assignments = await assignmentRepository.GetByCourseIdAsync(courseId);
+                var assignments = await assignmentRepository.GetByCourseIdAsync(courseId, cancellationToken);
                 assignmentIds.AddRange(assignments.Select(a => a.Id));
             }
 
@@ -66,7 +66,7 @@ public class GetPendingSubmissionsQueryHandler(
             var ungradedSubmissions = new List<Submission>();
             foreach (var assignmentId in assignmentIds)
             {
-                var submissions = await submissionRepository.GetByAssignmentIdAsync(assignmentId);
+                var submissions = await submissionRepository.GetByAssignmentIdAsync(assignmentId, cancellationToken);
                 ungradedSubmissions.AddRange(submissions.Where(s => !s.IsGraded));
             }
 
@@ -85,7 +85,7 @@ public class GetPendingSubmissionsQueryHandler(
             var submissionDtos = new List<SubmissionDto>();
             foreach (var submission in paginatedSubmissions)
             {
-                var assignment = await assignmentRepository.GetByIdAsync(submission.AssignmentId)
+                var assignment = await assignmentRepository.GetByIdAsync(submission.AssignmentId, cancellationToken)
                     ?? throw new NotFoundException("Assignment", submission.AssignmentId);
 
                 submissionDtos.Add(new SubmissionDto(

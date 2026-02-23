@@ -12,7 +12,7 @@ public class AssignmentService(
 {
     public async Task<bool> CanSubmitAssignmentAsync(Guid studentId, Guid assignmentId)
     {
-        var module = await assignmentRepository.GetModuleForAssignmentAsync(assignmentId);
+        var module = await assignmentRepository.GetModuleForAssignmentAsync(assignmentId, CancellationToken.None);
         if (module is null)
             return false;
 
@@ -25,7 +25,7 @@ public class AssignmentService(
 
     public async Task<bool> IsAssignmentOverdueAsync(Guid assignmentId, DateTime submissionDate)
     {
-        var assignment = await assignmentRepository.GetByIdAsync(assignmentId);
+        var assignment = await assignmentRepository.GetByIdAsync(assignmentId, CancellationToken.None);
         if (assignment is null || !assignment.DueDate.HasValue)
             return false;
 
@@ -34,7 +34,7 @@ public class AssignmentService(
 
     public async Task<bool> HasStudentSubmittedAsync(Guid studentId, Guid assignmentId)
     {
-        var submission = await submissionRepository.GetByStudentAndAssignmentIdAsync(studentId, assignmentId);
+        var submission = await submissionRepository.GetByStudentAndAssignmentIdAsync(studentId, assignmentId, CancellationToken.None);
         return submission is not null;
     }
 }

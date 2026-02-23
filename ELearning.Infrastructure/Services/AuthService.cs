@@ -17,6 +17,7 @@ public class AuthService(
         IUserRepository userRepository,
         IStudentRepository studentRepository,
         IInstructorRepository instructorRepository,
+        IUnitOfWork unitOfWork,
         IConfiguration configuration,
         IUserService userService,
         ILogger<AuthService> logger) : IAuthService
@@ -44,6 +45,7 @@ public class AuthService(
 
             user.RecordLogin();
             await userRepository.UpdateAsync(user);
+            await unitOfWork.SaveChangesAsync();
 
             var token = await GenerateJwtToken(user);
 
@@ -79,6 +81,7 @@ public class AuthService(
                 passwordHash);
 
             await studentRepository.AddAsync(student);
+            await unitOfWork.SaveChangesAsync();
 
             var token = await GenerateJwtToken(student);
 
@@ -116,6 +119,7 @@ public class AuthService(
                 expertise);
 
             await instructorRepository.AddAsync(instructor);
+            await unitOfWork.SaveChangesAsync();
 
             var token = await GenerateJwtToken(instructor);
 

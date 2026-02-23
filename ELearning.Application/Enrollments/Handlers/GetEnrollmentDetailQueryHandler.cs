@@ -49,7 +49,7 @@ public class GetEnrollmentDetailQueryHandler(
             foreach (var progress in progressRecords)
             {
                 // Get lesson info
-                var lesson = await lessonRepository.GetByIdAsync(progress.LessonId)
+                var lesson = await lessonRepository.GetByIdAsync(progress.LessonId, cancellationToken)
                     ?? throw new NotFoundException("Lesson", progress.LessonId);
 
                 lessonProgress.Add(new LessonProgressDto(

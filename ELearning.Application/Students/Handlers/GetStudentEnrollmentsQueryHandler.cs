@@ -14,7 +14,7 @@ namespace ELearning.Application.Students.Handlers;
 
 public class GetStudentEnrollmentsQueryHandler(
         IEnrollmentReadService enrollmentReadService,
-        IEnrollmentRepository enrollmentRepository,
+        IEnrollmentReadRepository enrollmentReadRepository,
         ICourseRepository courseRepository,
         IStudentReadService studentReadService,
         IProgressRepository progressRepository)
@@ -34,23 +34,19 @@ public class GetStudentEnrollmentsQueryHandler(
         }
         catch (Exception ex) when (ReadModelFallbackPolicy.ShouldFallback(ex, cancellationToken))
         {
-            // Fall back to repository
-            var enrollments = await enrollmentRepository.GetByStudentIdAsync(request.StudentId, cancellationToken);
-
-            // Manual pagination
-            var totalCount = enrollments.Count;
-            var items = enrollments
-        .Skip((request.PageNumber - 1) * request.PageSize)
-        .Take(request.PageSize)
-        .ToList();
+            // Fall back to local read repository
+            var pagedEnrollments = await enrollmentReadRepository.GetStudentEnrollmentsAsync(
+                request.StudentId,
+                new SharedKernel.Models.PaginationParameters(request.PageNumber, request.PageSize),
+                cancellationToken);
 
             var enrollmentDtos = new List<EnrollmentDto>();
-            foreach (var enrollment in items)
+            foreach (var enrollment in pagedEnrollments.Items)
             {
-                var course = await courseRepository.GetByIdAsync(enrollment.CourseId)
+                var course = await courseRepository.GetByIdAsync(enrollment.CourseId, cancellationToken)
                     ?? throw new NotFoundException("Course", enrollment.CourseId);
-                var student = await studentReadService.GetByIdAsync(enrollment.StudentId);
-                var completionPercentage = await progressRepository.GetCourseProgressPercentageAsync(enrollment.Id);
+                var student = await studentReadService.GetByIdAsync(enrollment.StudentId, cancellationToken);
+                var completionPercentage = await progressRepository.GetCourseProgressPercentageAsync(enrollment.Id, cancellationToken);
 
                 var enrollmentDto = new EnrollmentDto(
                     enrollment.Id,
@@ -68,7 +64,7 @@ public class GetStudentEnrollmentsQueryHandler(
 
             var paginatedList = new PaginatedList<EnrollmentDto>(
                 enrollmentDtos,
-                totalCount,
+                pagedEnrollments.TotalCount,
                 request.PageNumber,
                 request.PageSize);
 

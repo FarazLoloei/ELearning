@@ -25,20 +25,19 @@ public class InstructorRepository : IInstructorRepository
 
     public async Task AddAsync(Instructor entity, CancellationToken cancellationToken)
     {
-        await _context.Instructors.AddAsync(entity);
-        await _context.SaveChangesAsync(cancellationToken);
+        await _context.Instructors.AddAsync(entity, cancellationToken);
     }
 
-    public async Task UpdateAsync(Instructor entity, CancellationToken cancellationToken)
+    public Task UpdateAsync(Instructor entity, CancellationToken cancellationToken)
     {
         _context.Entry(entity).State = EntityState.Modified;
-        await _context.SaveChangesAsync(cancellationToken);
+        return Task.CompletedTask;
     }
 
-    public async Task DeleteAsync(Instructor entity, CancellationToken cancellationToken)
+    public Task DeleteAsync(Instructor entity, CancellationToken cancellationToken)
     {
         _context.Instructors.Remove(entity);
-        await _context.SaveChangesAsync(cancellationToken);
+        return Task.CompletedTask;
     }
 
     public async Task<IReadOnlyList<Instructor>> GetTopInstructorsAsync(int count, CancellationToken cancellationToken) =>

@@ -14,39 +14,38 @@ public class ModuleRepository : IModuleRepository
         _context = context;
     }
 
-    public async Task<Module?> GetByIdAsync(Guid id)
+    public async Task<Module?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
         return await _context.Modules
             .Include(m => m.Lessons)
             .Include(m => m.Assignments)
-            .SingleOrDefaultAsync(m => m.Id == id);
+            .SingleOrDefaultAsync(m => m.Id == id, cancellationToken);
     }
 
-    public async Task<IReadOnlyList<Module>> GetByCourseIdAsync(Guid courseId)
+    public async Task<IReadOnlyList<Module>> GetByCourseIdAsync(Guid courseId, CancellationToken cancellationToken = default)
     {
         return await _context.Modules
             .Include(m => m.Lessons)
             .Include(m => m.Assignments)
             .Where(m => m.CourseId == courseId)
             .OrderBy(m => m.Order)
-            .ToListAsync();
+            .ToListAsync(cancellationToken);
     }
 
-    public async Task AddAsync(Module module)
+    public async Task AddAsync(Module module, CancellationToken cancellationToken = default)
     {
-        await _context.Modules.AddAsync(module);
-        await _context.SaveChangesAsync();
+        await _context.Modules.AddAsync(module, cancellationToken);
     }
 
-    public async Task UpdateAsync(Module module)
+    public Task UpdateAsync(Module module, CancellationToken cancellationToken = default)
     {
         _context.Entry(module).State = EntityState.Modified;
-        await _context.SaveChangesAsync();
+        return Task.CompletedTask;
     }
 
-    public async Task DeleteAsync(Module module)
+    public Task DeleteAsync(Module module, CancellationToken cancellationToken = default)
     {
         _context.Modules.Remove(module);
-        await _context.SaveChangesAsync();
+        return Task.CompletedTask;
     }
 }
