@@ -11,12 +11,12 @@ public class Instructor : User
     /// <summary>
     /// Professional biography
     /// </summary>
-    public string Bio { get; private set; }
+    public string Bio { get; private set; } = string.Empty;
 
     /// <summary>
     /// Areas of specialization
     /// </summary>
-    public string Expertise { get; private set; }
+    public string Expertise { get; private set; } = string.Empty;
 
     /// <summary>
     /// Collection of courses created by this instructor

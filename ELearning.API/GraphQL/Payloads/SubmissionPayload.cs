@@ -1,6 +1,6 @@
 ﻿namespace ELearning.API.GraphQL.Payloads;
 
-public class SubmissionPayload : Payload
+public class SubmissionPayload : PayloadBase
 {
     public Guid? SubmissionId { get; }
 
@@ -10,7 +10,7 @@ public class SubmissionPayload : Payload
     }
 
     public SubmissionPayload(string error)
-        : base(new[] { error })
+        : base(new Error("SUBMISSION_ERROR", error))
     {
     }
 }

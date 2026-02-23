@@ -1,6 +1,7 @@
-﻿using ELearning.Application.Common.Exceptions;
+using ELearning.Application.Common.Exceptions;
 using ELearning.Application.Common.Interfaces;
 using ELearning.Application.Common.Model;
+using ELearning.Application.Common.Resilience;
 using ELearning.Application.Submissions.Abstractions.ReadModels;
 using ELearning.Application.Submissions.Dtos;
 using ELearning.Application.Submissions.Queries;
@@ -44,7 +45,7 @@ public class GetPendingSubmissionsQueryHandler(
 
             return Result.Success(paginatedList);
         }
-        catch (Exception)
+        catch (Exception ex) when (ReadModelFallbackPolicy.ShouldFallback(ex, cancellationToken))
         {
             // Fall back to repositories
 
@@ -57,7 +58,7 @@ public class GetPendingSubmissionsQueryHandler(
             var assignmentIds = new List<Guid>();
             foreach (var courseId in courseIds)
             {
-                var assignments = await assignmentRepository.GetByCourseIdAsync(courseId);
+                var assignments = await assignmentRepository.GetByCourseIdAsync(courseId, cancellationToken);
                 assignmentIds.AddRange(assignments.Select(a => a.Id));
             }
 
@@ -65,7 +66,7 @@ public class GetPendingSubmissionsQueryHandler(
             var ungradedSubmissions = new List<Submission>();
             foreach (var assignmentId in assignmentIds)
             {
-                var submissions = await submissionRepository.GetByAssignmentIdAsync(assignmentId);
+                var submissions = await submissionRepository.GetByAssignmentIdAsync(assignmentId, cancellationToken);
                 ungradedSubmissions.AddRange(submissions.Where(s => !s.IsGraded));
             }
 
@@ -84,18 +85,17 @@ public class GetPendingSubmissionsQueryHandler(
             var submissionDtos = new List<SubmissionDto>();
             foreach (var submission in paginatedSubmissions)
             {
-                var assignment = await assignmentRepository.GetByIdAsync(submission.AssignmentId);
+                var assignment = await assignmentRepository.GetByIdAsync(submission.AssignmentId, cancellationToken)
+                    ?? throw new NotFoundException("Assignment", submission.AssignmentId);
 
-                submissionDtos.Add(new SubmissionDto
-                {
-                    Id = submission.Id,
-                    AssignmentId = submission.AssignmentId,
-                    AssignmentTitle = assignment.Title,
-                    SubmittedDate = submission.SubmittedDate,
-                    IsGraded = submission.IsGraded,
-                    Score = submission.Score,
-                    MaxPoints = assignment.MaxPoints
-                });
+                submissionDtos.Add(new SubmissionDto(
+                    submission.Id,
+                    submission.AssignmentId,
+                    assignment.Title,
+                    submission.SubmittedDate,
+                    submission.IsGraded,
+                    submission.Score,
+                    assignment.MaxPoints));
             }
 
             var paginatedList = new PaginatedList<SubmissionDto>(
@@ -108,3 +108,4 @@ public class GetPendingSubmissionsQueryHandler(
         }
     }
 }
+

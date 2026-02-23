@@ -6,9 +6,9 @@ namespace ELearning.Application.Enrollments.Commands;
 /// <summary>
 /// Command to update the status of an enrollment
 /// </summary>
-public class UpdateEnrollmentStatusCommand : IRequest<Result>
+public sealed record UpdateEnrollmentStatusCommand : IRequest<Result>
 {
-    public Guid EnrollmentId { get; set; }
+    public Guid EnrollmentId { get; init; }
 
-    public string Status { get; set; }
+    public string Status { get; init; } = string.Empty;
 }

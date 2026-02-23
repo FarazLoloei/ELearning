@@ -23,7 +23,7 @@ public class DeleteCourseCommandHandler(
         if (!currentUserService.IsAuthenticated || currentUserService.UserId is null)
             throw new ForbiddenAccessException();
 
-        var course = await courseRepository.GetByIdAsync(request.CourseId) ??
+        var course = await courseRepository.GetByIdAsync(request.CourseId, cancellationToken) ??
             throw new NotFoundException(nameof(Course), request.CourseId);
 
         // Check if the current user is the instructor of this course or an admin
@@ -33,13 +33,12 @@ public class DeleteCourseCommandHandler(
             throw new ForbiddenAccessException();
 
         // Check if there are any enrollments for this course
-        var enrollments = await enrollmentRepository.GetByCourseIdAsync(request.CourseId, cancellationToken);
-
-        if (enrollments.Any())
+        var hasEnrollments = await enrollmentRepository.HasAnyForCourseAsync(request.CourseId, cancellationToken);
+        if (hasEnrollments)
             return Result.Failure("Cannot delete a course with active enrollments. Archive it instead.");
 
         // Delete the course
-        await courseRepository.DeleteAsync(course);
+        await courseRepository.DeleteAsync(course, cancellationToken);
 
         return Result.Success();
     }

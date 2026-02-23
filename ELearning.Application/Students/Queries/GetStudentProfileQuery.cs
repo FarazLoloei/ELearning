@@ -4,7 +4,7 @@ using MediatR;
 
 namespace ELearning.Application.Students.Queries;
 
-public class GetStudentProfileQuery : IRequest<Result<StudentDto>>
+public sealed record GetStudentProfileQuery : IRequest<Result<StudentDto>>
 {
-    public Guid StudentId { get; set; }
+    public Guid StudentId { get; init; }
 }

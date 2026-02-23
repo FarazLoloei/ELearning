@@ -1,8 +1,9 @@
-﻿using ELearning.Application.Instructors.Dtos;
+using ELearning.Application.Instructors.Dtos;
+using ELearning.SharedKernel.Abstractions;
 
 namespace ELearning.Application.Courses.Dtos;
 
-public readonly record struct CourseDetailDto(
+public sealed record CourseDto(
     Guid Id,
     string Title,
     string Description,
@@ -15,6 +16,6 @@ public readonly record struct CourseDetailDto(
     DateTime? PublishedDate,
     decimal AverageRating,
     int NumberOfRatings,
-    List<ModuleDto> Modules,
-    List<ReviewDto> Reviews
-);
+    IReadOnlyList<ModuleDto> Modules,
+    IReadOnlyList<ReviewDto> Reviews
+) : IDto;

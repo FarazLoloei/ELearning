@@ -1,7 +1,7 @@
-﻿
+
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.0.31903.59
+# Visual Studio Version 18
+VisualStudioVersion = 18.3.11505.172 d18.3
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ELearning.Domain", "ELearning.Domain\ELearning.Domain.csproj", "{35B31FE2-7D93-4266-B9D8-CF81622EF47C}"
 EndProject
@@ -14,6 +14,12 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ELearning.API", "ELearning.API\ELearning.API.csproj", "{B976C179-E93B-2D56-7A69-0C082C1B3B86}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ELearning.SharedKernel", "ELearning.SharedKernel\ELearning.SharedKernel.csproj", "{21FA0250-F701-4939-B6C5-F1C04F80DBA8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ELearning.Application.Tests", "ELearning.Application.Tests\\ELearning.Application.Tests.csproj", "{D8AF04C9-6E92-4E2B-9AC2-B25D27B21ED4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ELearning.IntegrationTests", "ELearning.IntegrationTests\ELearning.IntegrationTests.csproj", "{5B0C8A5B-78D3-4789-A78D-18312E824832}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{5EA21EF8-1411-42DA-AA46-AF46FD211943}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -97,11 +103,40 @@ Global
 		{21FA0250-F701-4939-B6C5-F1C04F80DBA8}.Release|x64.Build.0 = Release|Any CPU
 		{21FA0250-F701-4939-B6C5-F1C04F80DBA8}.Release|x86.ActiveCfg = Release|Any CPU
 		{21FA0250-F701-4939-B6C5-F1C04F80DBA8}.Release|x86.Build.0 = Release|Any CPU
+		{D8AF04C9-6E92-4E2B-9AC2-B25D27B21ED4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D8AF04C9-6E92-4E2B-9AC2-B25D27B21ED4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D8AF04C9-6E92-4E2B-9AC2-B25D27B21ED4}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{D8AF04C9-6E92-4E2B-9AC2-B25D27B21ED4}.Debug|x64.Build.0 = Debug|Any CPU
+		{D8AF04C9-6E92-4E2B-9AC2-B25D27B21ED4}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{D8AF04C9-6E92-4E2B-9AC2-B25D27B21ED4}.Debug|x86.Build.0 = Debug|Any CPU
+		{D8AF04C9-6E92-4E2B-9AC2-B25D27B21ED4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D8AF04C9-6E92-4E2B-9AC2-B25D27B21ED4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D8AF04C9-6E92-4E2B-9AC2-B25D27B21ED4}.Release|x64.ActiveCfg = Release|Any CPU
+		{D8AF04C9-6E92-4E2B-9AC2-B25D27B21ED4}.Release|x64.Build.0 = Release|Any CPU
+		{D8AF04C9-6E92-4E2B-9AC2-B25D27B21ED4}.Release|x86.ActiveCfg = Release|Any CPU
+		{D8AF04C9-6E92-4E2B-9AC2-B25D27B21ED4}.Release|x86.Build.0 = Release|Any CPU
+		{5B0C8A5B-78D3-4789-A78D-18312E824832}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5B0C8A5B-78D3-4789-A78D-18312E824832}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5B0C8A5B-78D3-4789-A78D-18312E824832}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{5B0C8A5B-78D3-4789-A78D-18312E824832}.Debug|x64.Build.0 = Debug|Any CPU
+		{5B0C8A5B-78D3-4789-A78D-18312E824832}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{5B0C8A5B-78D3-4789-A78D-18312E824832}.Debug|x86.Build.0 = Debug|Any CPU
+		{5B0C8A5B-78D3-4789-A78D-18312E824832}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5B0C8A5B-78D3-4789-A78D-18312E824832}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5B0C8A5B-78D3-4789-A78D-18312E824832}.Release|x64.ActiveCfg = Release|Any CPU
+		{5B0C8A5B-78D3-4789-A78D-18312E824832}.Release|x64.Build.0 = Release|Any CPU
+		{5B0C8A5B-78D3-4789-A78D-18312E824832}.Release|x86.ActiveCfg = Release|Any CPU
+		{5B0C8A5B-78D3-4789-A78D-18312E824832}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{D8AF04C9-6E92-4E2B-9AC2-B25D27B21ED4} = {5EA21EF8-1411-42DA-AA46-AF46FD211943}
+		{5B0C8A5B-78D3-4789-A78D-18312E824832} = {5EA21EF8-1411-42DA-AA46-AF46FD211943}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {9594A825-8D6B-4DF9-9489-70869CC2067B}
 	EndGlobalSection
 EndGlobal
+

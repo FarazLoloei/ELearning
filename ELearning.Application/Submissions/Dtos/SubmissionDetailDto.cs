@@ -1,7 +1,9 @@
-﻿namespace ELearning.Application.Submissions.Dtos;
+using ELearning.SharedKernel.Abstractions;
+
+namespace ELearning.Application.Submissions.Dtos;
 
 // Detailed DTO for submission
-public readonly record struct SubmissionDetailDto(
+public sealed record SubmissionDetailDto(
     Guid Id,
     Guid AssignmentId,
     string AssignmentTitle,
@@ -17,4 +19,4 @@ public readonly record struct SubmissionDetailDto(
     Guid? GradedById,
     string GradedByName,
     DateTime? GradedDate
-);
+) : IDto;

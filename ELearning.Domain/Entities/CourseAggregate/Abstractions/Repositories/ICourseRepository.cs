@@ -12,7 +12,7 @@ public interface ICourseRepository : IEntityFrameworkRepository<Course>
 
     Task<IReadOnlyList<Course>> GetFeaturedCoursesAsync(int count, CancellationToken cancellationToken);
 
-    Task<IReadOnlyList<Course>> SearchCoursesAsync(string searchTerm, PaginationParameters pagination, CancellationToken cancellationToken);
+    Task<IReadOnlyList<Course>> SearchCoursesAsync(string? searchTerm, PaginationParameters pagination, CancellationToken cancellationToken);
 
     Task<IReadOnlyList<Course>> GetRecentCoursesAsync(int count, CancellationToken cancellationToken);
 

@@ -14,35 +14,18 @@ public class LessonRepository : ILessonRepository
         _context = context;
     }
 
-    public async Task<Lesson> GetByIdAsync(Guid id)
+    public async Task<Lesson?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
         return await _context.Lessons
-            .SingleOrDefaultAsync(l => l.Id == id);
+            .SingleOrDefaultAsync(l => l.Id == id, cancellationToken);
     }
 
-    public async Task<IReadOnlyList<Lesson>> GetByModuleIdAsync(Guid moduleId)
+    public async Task<IReadOnlyList<Lesson>> GetByModuleIdAsync(Guid moduleId, CancellationToken cancellationToken = default)
     {
         return await _context.Lessons
             .Where(l => l.ModuleId == moduleId)
             .OrderBy(l => l.Order)
-            .ToListAsync();
+            .ToListAsync(cancellationToken);
     }
 
-    public async Task AddAsync(Lesson lesson)
-    {
-        await _context.Lessons.AddAsync(lesson);
-        await _context.SaveChangesAsync();
-    }
-
-    public async Task UpdateAsync(Lesson lesson)
-    {
-        _context.Entry(lesson).State = EntityState.Modified;
-        await _context.SaveChangesAsync();
-    }
-
-    public async Task DeleteAsync(Lesson lesson)
-    {
-        _context.Lessons.Remove(lesson);
-        await _context.SaveChangesAsync();
-    }
 }

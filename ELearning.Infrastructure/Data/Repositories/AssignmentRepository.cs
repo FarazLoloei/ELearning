@@ -14,20 +14,20 @@ public class AssignmentRepository : IAssignmentRepository
         _context = context;
     }
 
-    public async Task<Assignment> GetByIdAsync(Guid id)
+    public async Task<Assignment?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
         return await _context.Assignments
-            .SingleOrDefaultAsync(a => a.Id == id);
+            .SingleOrDefaultAsync(a => a.Id == id, cancellationToken);
     }
 
-    public async Task<IReadOnlyList<Assignment>> GetByModuleIdAsync(Guid moduleId)
+    public async Task<IReadOnlyList<Assignment>> GetByModuleIdAsync(Guid moduleId, CancellationToken cancellationToken = default)
     {
         return await _context.Assignments
             .Where(a => a.ModuleId == moduleId)
-            .ToListAsync();
+            .ToListAsync(cancellationToken);
     }
 
-    public async Task<IReadOnlyList<Assignment>> GetByCourseIdAsync(Guid courseId)
+    public async Task<IReadOnlyList<Assignment>> GetByCourseIdAsync(Guid courseId, CancellationToken cancellationToken = default)
     {
         return await _context.Assignments
             .Join(_context.Modules,
@@ -36,38 +36,19 @@ public class AssignmentRepository : IAssignmentRepository
                 (a, m) => new { Assignment = a, Module = m })
             .Where(x => x.Module.CourseId == courseId)
             .Select(x => x.Assignment)
-            .ToListAsync();
+            .ToListAsync(cancellationToken);
     }
 
-    public async Task<Module> GetModuleForAssignmentAsync(Guid assignmentId)
+    public async Task<Module?> GetModuleForAssignmentAsync(Guid assignmentId, CancellationToken cancellationToken = default)
     {
         var assignment = await _context.Assignments
-            .FindAsync(assignmentId);
+            .FindAsync([assignmentId], cancellationToken);
 
         if (assignment == null)
-        {
             return null;
-        }
 
         return await _context.Modules
-            .FindAsync(assignment.ModuleId);
+            .FindAsync([assignment.ModuleId], cancellationToken);
     }
 
-    public async Task AddAsync(Assignment assignment)
-    {
-        await _context.Assignments.AddAsync(assignment);
-        await _context.SaveChangesAsync();
-    }
-
-    public async Task UpdateAsync(Assignment assignment)
-    {
-        _context.Entry(assignment).State = EntityState.Modified;
-        await _context.SaveChangesAsync();
-    }
-
-    public async Task DeleteAsync(Assignment assignment)
-    {
-        _context.Assignments.Remove(assignment);
-        await _context.SaveChangesAsync();
-    }
 }

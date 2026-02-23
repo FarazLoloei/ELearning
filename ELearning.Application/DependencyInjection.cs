@@ -1,4 +1,5 @@
-﻿using ELearning.Application.Common.Behaviors;
+using ELearning.Application.Common.Behaviors;
+using FluentValidation;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
@@ -16,10 +17,10 @@ public static class DependencyInjection
         });
 
         // Register AutoMapper
-        services.AddAutoMapper(Assembly.GetExecutingAssembly());
+        services.AddAutoMapper(_ => { }, Assembly.GetExecutingAssembly());
 
         // Register FluentValidation
-        //services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
+        services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly(), includeInternalTypes: true);
 
         // Register MediatR pipeline behaviors
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
@@ -29,3 +30,5 @@ public static class DependencyInjection
         return services;
     }
 }
+
+

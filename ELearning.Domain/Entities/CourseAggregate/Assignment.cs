@@ -8,17 +8,17 @@ public class Assignment : BaseEntity
     /// <summary>
     /// Name of the assignment
     /// </summary>
-    public string Title { get; private set; }
+    public string Title { get; private set; } = string.Empty;
 
     /// <summary>
     /// Instructions and requirements
     /// </summary>
-    public string Description { get; private set; }
+    public string Description { get; private set; } = string.Empty;
 
     /// <summary>
     /// Format (Quiz, Essay, Project, Exam)
     /// </summary>
-    public AssignmentType Type { get; private set; }
+    public AssignmentType Type { get; private set; } = null!;
 
     /// <summary>
     /// Maximum score possible

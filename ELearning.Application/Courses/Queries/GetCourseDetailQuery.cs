@@ -4,7 +4,7 @@ using MediatR;
 
 namespace ELearning.Application.Courses.Queries;
 
-public record GetCourseDetailQuery : IRequest<Result<CourseDetailDto>>
+public record GetCourseDetailQuery : IRequest<Result<CourseDto>>
 {
     public Guid CourseId { get; set; }
 }

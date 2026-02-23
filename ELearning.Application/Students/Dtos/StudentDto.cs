@@ -1,9 +1,11 @@
-﻿namespace ELearning.Application.Students.Dtos;
+using ELearning.SharedKernel.Abstractions;
 
-public readonly record struct StudentDto(
+namespace ELearning.Application.Students.Dtos;
+
+public sealed record StudentDto(
     Guid Id,
     string FullName,
     string Email,
     string ProfilePictureUrl,
     DateTime? LastLoginDate
-);
+) : IDto;

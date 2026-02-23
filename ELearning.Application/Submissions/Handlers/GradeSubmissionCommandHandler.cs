@@ -11,10 +11,9 @@ using MediatR;
 namespace ELearning.Application.Submissions.Handlers;
 
 public class GradeSubmissionCommandHandler(
-        ISubmissionRepository submissionRepository,
+        IEnrollmentRepository enrollmentRepository,
         IAssignmentRepository assignmentRepository,
-        ICurrentUserService currentUserService,
-        IEmailService emailService)
+        ICurrentUserService currentUserService)
     : IRequestHandler<GradeSubmissionCommand, Result>
 {
     public async Task<Result> Handle(GradeSubmissionCommand request, CancellationToken cancellationToken)
@@ -25,32 +24,26 @@ public class GradeSubmissionCommandHandler(
         }
 
         var instructorId = currentUserService.UserId.Value;
-        var submission = await submissionRepository.GetByIdAsync(request.SubmissionId)
+        var enrollment = await enrollmentRepository.GetBySubmissionIdAsync(request.SubmissionId, cancellationToken)
+            ?? throw new NotFoundException(nameof(Submission), request.SubmissionId);
+        var submission = enrollment.Submissions.FirstOrDefault(s => s.Id == request.SubmissionId)
             ?? throw new NotFoundException(nameof(Submission), request.SubmissionId);
 
         if (submission.IsGraded)
             return Result.Failure("Submission is already graded.");
 
         // Get the assignment to check max points
-        var assignment = await assignmentRepository.GetByIdAsync(submission.AssignmentId)
+        var assignment = await assignmentRepository.GetByIdAsync(submission.AssignmentId, cancellationToken)
             ?? throw new NotFoundException(nameof(Assignment), submission.AssignmentId);
 
         if (request.Score > assignment.MaxPoints)
             return Result.Failure($"Score cannot exceed maximum points ({assignment.MaxPoints}).");
 
         // Grade the submission
-        submission.Grade(request.Score, request.Feedback, instructorId);
+        enrollment.GradeSubmission(request.SubmissionId, request.Score, request.Feedback, instructorId);
 
         // Save to repository
-        await submissionRepository.UpdateAsync(submission);
-
-        // Notify student
-        // In a real application, you'd get the student email and name
-        // await emailService.SendAssignmentGradedAsync(
-        //     studentEmail,
-        //     studentName,
-        //     assignment.Title,
-        //     request.Score);
+        await enrollmentRepository.UpdateAsync(enrollment, cancellationToken);
 
         return Result.Success();
     }

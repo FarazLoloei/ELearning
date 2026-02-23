@@ -1,6 +1,8 @@
-﻿namespace ELearning.Application.Enrollments.Dtos;
+using ELearning.SharedKernel.Abstractions;
 
-public readonly record struct EnrollmentDto(
+namespace ELearning.Application.Enrollments.Dtos;
+
+public sealed record EnrollmentDto(
     Guid Id,
     Guid StudentId,
     string StudentName,
@@ -10,4 +12,4 @@ public readonly record struct EnrollmentDto(
     DateTime EnrollmentDate,
     DateTime? CompletedDate,
     double CompletionPercentage
-);
+) : IDto;

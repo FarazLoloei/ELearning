@@ -11,12 +11,12 @@ public class Module : BaseEntity
     /// <summary>
     /// Name of the module
     /// </summary>
-    public string Title { get; private set; }
+    public string Title { get; private set; } = string.Empty;
 
     /// <summary>
     /// Explanation of module's learning objectives
     /// </summary>
-    public string Description { get; private set; }
+    public string Description { get; private set; } = string.Empty;
 
     /// <summary>
     /// Sequence number within the course (for ordering)

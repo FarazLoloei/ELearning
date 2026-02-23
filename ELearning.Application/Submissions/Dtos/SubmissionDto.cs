@@ -1,6 +1,8 @@
-﻿namespace ELearning.Application.Submissions.Dtos;
+using ELearning.SharedKernel.Abstractions;
 
-public readonly record struct SubmissionDto(
+namespace ELearning.Application.Submissions.Dtos;
+
+public sealed record SubmissionDto(
     Guid Id,
     Guid AssignmentId,
     string AssignmentTitle,
@@ -8,4 +10,4 @@ public readonly record struct SubmissionDto(
     bool IsGraded,
     int? Score,
     int MaxPoints
-);
+) : IDto;

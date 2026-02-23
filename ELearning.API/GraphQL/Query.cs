@@ -26,7 +26,7 @@ public class Query
     [GraphQLDescription("Get a paginated list of courses")]
     public async Task<IEnumerable<CourseListDto>> GetCourses(
         [Service] IMediator mediator,
-        string searchTerm = null,
+        string? searchTerm = null,
         int? categoryId = null,
         int? levelId = null,
         bool? isFeatured = null,
@@ -51,7 +51,7 @@ public class Query
     /// Get course details by ID
     /// </summary>
     [GraphQLDescription("Get course details by ID")]
-    public async Task<CourseDetailDto?> GetCourse(
+    public async Task<CourseDto?> GetCourse(
         [Service] IMediator mediator,
         Guid id)
     {

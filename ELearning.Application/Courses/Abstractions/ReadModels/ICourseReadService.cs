@@ -7,7 +7,7 @@ namespace ELearning.Application.Courses.Abstractions.ReadModels;
 /// <summary>
 /// Provides read access to course data.
 /// </summary>
-public interface ICourseReadService : IReadRepository<CourseDetailDto, Guid>
+public interface ICourseReadService : IReadRepository<CourseDto, Guid>
 {
     /// <summary>
     /// Searches courses with optional filters.

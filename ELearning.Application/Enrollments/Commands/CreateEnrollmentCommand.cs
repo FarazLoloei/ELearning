@@ -3,7 +3,7 @@ using MediatR;
 
 namespace ELearning.Application.Enrollments.Commands;
 
-public class CreateEnrollmentCommand : IRequest<Result>
+public sealed record CreateEnrollmentCommand : IRequest<Result>
 {
-    public Guid CourseId { get; set; }
+    public Guid CourseId { get; init; }
 }

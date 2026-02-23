@@ -1,6 +1,8 @@
-﻿namespace ELearning.Application.Courses.Dtos;
+using ELearning.SharedKernel.Abstractions;
 
-public readonly record struct CourseListDto(
+namespace ELearning.Application.Courses.Dtos;
+
+public sealed record CourseListDto(
     Guid Id,
     string Title,
     string Description,
@@ -13,4 +15,4 @@ public readonly record struct CourseListDto(
     bool IsFeatured,
     string Duration,
     int EnrollmentsCount
-);
+) : IDto;

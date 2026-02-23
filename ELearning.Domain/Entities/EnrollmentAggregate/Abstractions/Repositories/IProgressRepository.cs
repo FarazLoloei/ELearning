@@ -2,15 +2,11 @@
 
 public interface IProgressRepository
 {
-    Task<Progress> GetByIdAsync(Guid id);
+    Task<Progress?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
 
-    Task<IReadOnlyList<Progress>> GetByEnrollmentIdAsync(Guid enrollmentId);
+    Task<IReadOnlyList<Progress>> GetByEnrollmentIdAsync(Guid enrollmentId, CancellationToken cancellationToken = default);
 
-    Task<Progress> GetByEnrollmentAndLessonIdAsync(Guid enrollmentId, Guid lessonId);
+    Task<Progress?> GetByEnrollmentAndLessonIdAsync(Guid enrollmentId, Guid lessonId, CancellationToken cancellationToken = default);
 
-    Task<double> GetCourseProgressPercentageAsync(Guid enrollmentId);
-
-    Task AddAsync(Progress progress);
-
-    Task UpdateAsync(Progress progress);
+    Task<double> GetCourseProgressPercentageAsync(Guid enrollmentId, CancellationToken cancellationToken = default);
 }

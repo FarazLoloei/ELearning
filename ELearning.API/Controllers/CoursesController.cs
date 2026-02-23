@@ -52,7 +52,7 @@ public class CoursesController : ControllerBase
     [HttpGet("{id}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<CourseDetailDto>> GetCourse(Guid id)
+    public async Task<ActionResult<CourseDto>> GetCourse(Guid id)
     {
         var query = new GetCourseDetailQuery { CourseId = id };
         var result = await _mediator.Send(query);

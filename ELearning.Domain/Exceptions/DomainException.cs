@@ -30,8 +30,4 @@ public class DomainException : Exception
         Details = details;
     }
 
-    // For serialization purposes
-    protected DomainException(System.Runtime.Serialization.SerializationInfo info, System.Runtime.Serialization.StreamingContext context)
-        : base(info, context)
-    { }
 }

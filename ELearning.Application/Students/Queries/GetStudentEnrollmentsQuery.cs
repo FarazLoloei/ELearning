@@ -6,11 +6,11 @@ using MediatR;
 
 namespace ELearning.Application.Students.Queries;
 
-public class GetStudentEnrollmentsQuery : IRequest<Result<PaginatedList<EnrollmentDto>>>, IPaginatable
+public sealed record GetStudentEnrollmentsQuery : IRequest<Result<PaginatedList<EnrollmentDto>>>, IPaginatable
 {
-    public Guid StudentId { get; set; }
+    public Guid StudentId { get; init; }
 
-    public int PageNumber { get; set; } = 1;
+    public int PageNumber { get; init; } = 1;
 
-    public int PageSize { get; set; } = 10;
+    public int PageSize { get; init; } = 10;
 }

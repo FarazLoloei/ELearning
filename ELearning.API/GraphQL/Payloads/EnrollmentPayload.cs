@@ -1,6 +1,6 @@
 ﻿namespace ELearning.API.GraphQL.Payloads;
 
-public class EnrollmentPayload : Payload
+public class EnrollmentPayload : PayloadBase
 {
     public Guid? EnrollmentId { get; }
 
@@ -10,7 +10,7 @@ public class EnrollmentPayload : Payload
     }
 
     public EnrollmentPayload(string error)
-        : base(new[] { error })
+        : base(new Error("ENROLLMENT_ERROR", error))
     {
     }
 }

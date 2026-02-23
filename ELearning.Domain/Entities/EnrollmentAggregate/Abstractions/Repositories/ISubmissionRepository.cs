@@ -2,17 +2,13 @@
 
 public interface ISubmissionRepository
 {
-    Task<Submission> GetByIdAsync(Guid id);
+    Task<Submission?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
 
-    Task<IReadOnlyList<Submission>> GetByAssignmentIdAsync(Guid assignmentId);
+    Task<IReadOnlyList<Submission>> GetByAssignmentIdAsync(Guid assignmentId, CancellationToken cancellationToken = default);
 
-    Task<IReadOnlyList<Submission>> GetByStudentIdAsync(Guid studentId);
+    Task<IReadOnlyList<Submission>> GetByStudentIdAsync(Guid studentId, CancellationToken cancellationToken = default);
 
-    Task<Submission> GetByStudentAndAssignmentIdAsync(Guid studentId, Guid assignmentId);
+    Task<Submission?> GetByStudentAndAssignmentIdAsync(Guid studentId, Guid assignmentId, CancellationToken cancellationToken = default);
 
-    Task<IReadOnlyList<Submission>> GetUngradedSubmissionsAsync();
-
-    Task AddAsync(Submission submission);
-
-    Task UpdateAsync(Submission submission);
+    Task<IReadOnlyList<Submission>> GetUngradedSubmissionsAsync(CancellationToken cancellationToken = default);
 }

@@ -1,6 +1,7 @@
-﻿using AutoMapper;
+using AutoMapper;
 using ELearning.Application.Common.Exceptions;
 using ELearning.Application.Common.Model;
+using ELearning.Application.Common.Resilience;
 using ELearning.Application.Enrollments.Abstractions.ReadModels;
 using ELearning.Application.Enrollments.Dtos;
 using ELearning.Application.Enrollments.Queries;
@@ -31,14 +32,16 @@ public class GetEnrollmentDetailQueryHandler(
             var enrollmentDto = await enrollmentReadService.GetByIdAsync(request.EnrollmentId);
             return Result.Success(enrollmentDto);
         }
-        catch (Exception)
+        catch (Exception ex) when (ReadModelFallbackPolicy.ShouldFallback(ex, cancellationToken))
         {
             // Fall back to repository
             var enrollment = await enrollmentRepository.GetByIdAsync(request.EnrollmentId) ??
                 throw new NotFoundException(nameof(Enrollment), request.EnrollmentId);
 
-            var course = await courseRepository.GetByIdAsync(enrollment.CourseId);
-            var student = await studentRepository.GetByIdAsync(enrollment.StudentId);
+            var course = await courseRepository.GetByIdAsync(enrollment.CourseId)
+                ?? throw new NotFoundException("Course", enrollment.CourseId);
+            var student = await studentRepository.GetByIdAsync(enrollment.StudentId)
+                ?? throw new NotFoundException("Student", enrollment.StudentId);
             var progressRecords = await progressRepository.GetByEnrollmentIdAsync(enrollment.Id);
             var completionPercentage = await progressRepository.GetCourseProgressPercentageAsync(enrollment.Id);
 
@@ -46,38 +49,38 @@ public class GetEnrollmentDetailQueryHandler(
             foreach (var progress in progressRecords)
             {
                 // Get lesson info
-                var lesson = await lessonRepository.GetByIdAsync(progress.LessonId);
+                var lesson = await lessonRepository.GetByIdAsync(progress.LessonId, cancellationToken)
+                    ?? throw new NotFoundException("Lesson", progress.LessonId);
 
-                lessonProgress.Add(new LessonProgressDto
-                {
-                    LessonId = progress.LessonId,
-                    LessonTitle = lesson.Title,
-                    Status = progress.Status.Name,
-                    CompletedDate = progress.CompletedDate,
-                    TimeSpentSeconds = progress.TimeSpentSeconds
-                });
+                lessonProgress.Add(new LessonProgressDto(
+                    progress.LessonId,
+                    lesson.Title,
+                    progress.Status.Name,
+                    progress.CompletedDate,
+                    progress.TimeSpentSeconds));
             }
 
             var submissionDtos = mapper.Map<List<SubmissionDto>>(enrollment.Submissions);
 
-            var enrollmentDetailDto = new EnrollmentDetailDto
-            {
-                Id = enrollment.Id,
-                StudentId = enrollment.StudentId,
-                StudentName = student.FullName,
-                CourseId = enrollment.CourseId,
-                CourseTitle = course.Title,
-                Status = enrollment.Status.Name,
-                EnrollmentDate = enrollment.CreatedAt(),
-                CompletedDate = enrollment.CompletedDateUTC,
-                CompletionPercentage = completionPercentage,
-                LessonProgress = lessonProgress,
-                Submissions = submissionDtos,
-                CourseRating = enrollment.CourseRating?.Value,
-                Review = enrollment.Review
-            };
+            var enrollmentDetailDto = new EnrollmentDetailDto(
+                enrollment.Id,
+                enrollment.StudentId,
+                student.FullName,
+                enrollment.CourseId,
+                course.Title,
+                enrollment.Status.Name,
+                enrollment.CreatedAt(),
+                enrollment.CompletedDateUTC,
+                completionPercentage,
+                lessonProgress,
+                submissionDtos,
+                enrollment.CourseRating?.Value,
+                enrollment.Review);
 
             return Result.Success(enrollmentDetailDto);
         }
     }
 }
+
+
+

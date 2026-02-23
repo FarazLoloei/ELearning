@@ -4,7 +4,7 @@ public interface IUserService
 {
     Task<bool> IsEmailUniqueAsync(string email, Guid? excludeUserId = null);
 
-    Task<string> HashPasswordAsync(string password);
+    string HashPassword(string password);
 
     Task<bool> VerifyPasswordAsync(string hashedPassword, string providedPassword);
 }

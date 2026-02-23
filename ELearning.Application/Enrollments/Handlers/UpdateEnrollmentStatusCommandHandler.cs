@@ -29,7 +29,7 @@ public class UpdateEnrollmentStatusCommandHandler(
     {
         EnsureAuthenticated();
 
-        var enrollment = await enrollmentRepository.GetByIdAsync(request.EnrollmentId)
+        var enrollment = await enrollmentRepository.GetByIdAsync(request.EnrollmentId, cancellationToken)
                           ?? throw new NotFoundException(nameof(Enrollment), request.EnrollmentId);
 
         EnsureAuthorized(enrollment);
@@ -46,7 +46,7 @@ public class UpdateEnrollmentStatusCommandHandler(
             enrollment.MarkAsCompleted();
         }
 
-        await enrollmentRepository.UpdateAsync(enrollment);
+        await enrollmentRepository.UpdateAsync(enrollment, cancellationToken);
 
         return Result.Success();
     }

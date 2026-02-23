@@ -12,14 +12,14 @@ namespace ELearning.Application.Courses.Handlers;
 public class GetCourseDetailQueryHandler(
         ICourseRepository courseRepository,
         IMapper mapper)
-    : IRequestHandler<GetCourseDetailQuery, Result<CourseDetailDto>>
+    : IRequestHandler<GetCourseDetailQuery, Result<CourseDto>>
 {
-    public async Task<Result<CourseDetailDto>> Handle(GetCourseDetailQuery request, CancellationToken cancellationToken)
+    public async Task<Result<CourseDto>> Handle(GetCourseDetailQuery request, CancellationToken cancellationToken)
     {
         var course = await courseRepository.GetByIdAsync(request.CourseId) ??
             throw new NotFoundException(nameof(Course), request.CourseId);
 
-        var courseDto = mapper.Map<CourseDetailDto>(course);
+        var courseDto = mapper.Map<CourseDto>(course);
 
         // Optionally enrich with additional data not handled by AutoMapper
 

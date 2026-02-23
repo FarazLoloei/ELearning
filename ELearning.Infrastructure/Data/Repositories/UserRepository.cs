@@ -34,8 +34,7 @@ public class UserRepository(ApplicationDbContext _context) : IUserRepository
     /// <param name="cancellationToken">A token to observe while waiting for the task to complete.</param>
     public async Task AddAsync(User entity, CancellationToken cancellationToken)
     {
-        await _context.Users.AddAsync(entity);
-        await _context.SaveChangesAsync(cancellationToken);
+        await _context.Users.AddAsync(entity, cancellationToken);
     }
 
     /// <summary>
@@ -43,10 +42,10 @@ public class UserRepository(ApplicationDbContext _context) : IUserRepository
     /// </summary>
     /// <param name="entity">The user entity to update.</param>
     /// <param name="cancellationToken">A token to observe while waiting for the task to complete.</param>
-    public async Task UpdateAsync(User entity, CancellationToken cancellationToken)
+    public Task UpdateAsync(User entity, CancellationToken cancellationToken)
     {
         _context.Entry(entity).State = EntityState.Modified;
-        await _context.SaveChangesAsync(cancellationToken);
+        return Task.CompletedTask;
     }
 
     /// <summary>
@@ -54,10 +53,10 @@ public class UserRepository(ApplicationDbContext _context) : IUserRepository
     /// </summary>
     /// <param name="entity">The user entity to delete.</param>
     /// <param name="cancellationToken">A token to observe while waiting for the task to complete.</param>
-    public async Task DeleteAsync(User entity, CancellationToken cancellationToken)
+    public Task DeleteAsync(User entity, CancellationToken cancellationToken)
     {
         _context.Users.Remove(entity);
-        await _context.SaveChangesAsync(cancellationToken);
+        return Task.CompletedTask;
     }
 
     /// <summary>
@@ -80,7 +79,7 @@ public class UserRepository(ApplicationDbContext _context) : IUserRepository
     public async Task<bool> IsEmailUniqueAsync(string email, CancellationToken cancellationToken) =>
         !await _context.Users
             .AsNoTracking()
-            .AnyAsync(u => u.Email.Value == email);
+            .AnyAsync(u => u.Email.Value == email, cancellationToken);
 
     /// <summary>
     /// Retrieves a read-only list of users by their role.
@@ -92,7 +91,7 @@ public class UserRepository(ApplicationDbContext _context) : IUserRepository
         await _context.Users
             .AsNoTracking()
             .Where(u => u.Role == role)
-            .ToListAsync();
+            .ToListAsync(cancellationToken);
 
     /// <summary>
     /// Searches for users based on a search term with pagination.

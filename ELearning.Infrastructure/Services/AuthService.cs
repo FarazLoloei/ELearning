@@ -1,4 +1,4 @@
-﻿using ELearning.Application.Common.Interfaces;
+using ELearning.Application.Common.Interfaces;
 using ELearning.Application.Common.Model;
 using ELearning.Domain.Entities.UserAggregate;
 using ELearning.Domain.Entities.UserAggregate.Abstractions.Repositories;
@@ -17,6 +17,7 @@ public class AuthService(
         IUserRepository userRepository,
         IStudentRepository studentRepository,
         IInstructorRepository instructorRepository,
+        IUnitOfWork unitOfWork,
         IConfiguration configuration,
         IUserService userService,
         ILogger<AuthService> logger) : IAuthService
@@ -29,39 +30,36 @@ public class AuthService(
 
             if (user == null)
             {
-                return new AuthResult { Success = false, ErrorMessage = "User not found." };
+                return AuthResult.Failed("User not found.");
             }
 
             if (!await userService.VerifyPasswordAsync(user.PasswordHash, password))
             {
-                return new AuthResult { Success = false, ErrorMessage = "Invalid password." };
+                return AuthResult.Failed("Invalid password.");
             }
 
             if (!user.IsActive)
             {
-                return new AuthResult { Success = false, ErrorMessage = "User account is inactive." };
+                return AuthResult.Failed("User account is inactive.");
             }
 
-            // Record login
             user.RecordLogin();
             await userRepository.UpdateAsync(user);
+            await unitOfWork.SaveChangesAsync();
 
             var token = await GenerateJwtToken(user);
 
-            return new AuthResult
-            {
-                Success = true,
-                Token = token,
-                UserId = user.Id,
-                Email = user.Email.Value,
-                FullName = user.FullName,
-                Role = user.Role.Name
-            };
+            return AuthResult.Succeeded(
+                token,
+                user.Id,
+                user.Email.Value,
+                user.FullName,
+                user.Role.Name);
         }
         catch (Exception ex)
         {
             logger.LogError(ex, "Error during authentication for email {Email}", email);
-            return new AuthResult { Success = false, ErrorMessage = "An error occurred during authentication." };
+            return AuthResult.Failed("An error occurred during authentication.");
         }
     }
 
@@ -69,42 +67,35 @@ public class AuthService(
     {
         try
         {
-            // Check if email is already in use
             if (!await userService.IsEmailUniqueAsync(email))
             {
-                return new AuthResult { Success = false, ErrorMessage = "Email is already in use." };
+                return AuthResult.Failed("Email is already in use.");
             }
 
-            // Hash password
-            var passwordHash = await userService.HashPasswordAsync(password);
+            var passwordHash = userService.HashPassword(password);
 
-            // Create student entity
             var student = new Student(
                 firstName,
                 lastName,
                 Email.Create(email),
                 passwordHash);
 
-            // Save student
             await studentRepository.AddAsync(student);
+            await unitOfWork.SaveChangesAsync();
 
-            // Generate token
             var token = await GenerateJwtToken(student);
 
-            return new AuthResult
-            {
-                Success = true,
-                Token = token,
-                UserId = student.Id,
-                Email = student.Email.Value,
-                FullName = student.FullName,
-                Role = student.Role.Name
-            };
+            return AuthResult.Succeeded(
+                token,
+                student.Id,
+                student.Email.Value,
+                student.FullName,
+                student.Role.Name);
         }
         catch (Exception ex)
         {
             logger.LogError(ex, "Error during student registration for email {Email}", email);
-            return new AuthResult { Success = false, ErrorMessage = "An error occurred during registration." };
+            return AuthResult.Failed("An error occurred during registration.");
         }
     }
 
@@ -112,16 +103,13 @@ public class AuthService(
     {
         try
         {
-            // Check if email is already in use
             if (!await userService.IsEmailUniqueAsync(email))
             {
-                return new AuthResult { Success = false, ErrorMessage = "Email is already in use." };
+                return AuthResult.Failed("Email is already in use.");
             }
 
-            // Hash password
-            var passwordHash = await userService.HashPasswordAsync(password);
+            var passwordHash = userService.HashPassword(password);
 
-            // Create instructor entity
             var instructor = new Instructor(
                 firstName,
                 lastName,
@@ -130,44 +118,47 @@ public class AuthService(
                 bio,
                 expertise);
 
-            // Save instructor
             await instructorRepository.AddAsync(instructor);
+            await unitOfWork.SaveChangesAsync();
 
-            // Generate token
             var token = await GenerateJwtToken(instructor);
 
-            return new AuthResult
-            {
-                Success = true,
-                Token = token,
-                UserId = instructor.Id,
-                Email = instructor.Email.Value,
-                FullName = instructor.FullName,
-                Role = instructor.Role.Name
-            };
+            return AuthResult.Succeeded(
+                token,
+                instructor.Id,
+                instructor.Email.Value,
+                instructor.FullName,
+                instructor.Role.Name);
         }
         catch (Exception ex)
         {
             logger.LogError(ex, "Error during instructor registration for email {Email}", email);
-            return new AuthResult { Success = false, ErrorMessage = "An error occurred during registration." };
+            return AuthResult.Failed("An error occurred during registration.");
         }
     }
 
-    public async Task<string> GenerateJwtToken(User user)
+    public Task<string> GenerateJwtToken(User user)
     {
         var jwtSettings = configuration.GetSection("JwtSettings");
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["Secret"]));
+        var secret = jwtSettings["Secret"] ?? throw new InvalidOperationException("JwtSettings:Secret is not configured.");
+        var expiryInDaysValue = jwtSettings["ExpiryInDays"] ?? throw new InvalidOperationException("JwtSettings:ExpiryInDays is not configured.");
+        if (!double.TryParse(expiryInDaysValue, out var expiryInDays))
+        {
+            throw new InvalidOperationException("JwtSettings:ExpiryInDays is invalid.");
+        }
+
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret));
         var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-        var expiry = DateTime.Now.AddDays(double.Parse(jwtSettings["ExpiryInDays"]));
+        var expiry = DateTime.Now.AddDays(expiryInDays);
 
         var claims = new[]
         {
-                new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
-                new Claim(JwtRegisteredClaimNames.Email, user.Email.Value),
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                new Claim(ClaimTypes.Name, user.FullName),
-                new Claim(ClaimTypes.Role, user.Role.Name)
-            };
+            new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
+            new Claim(JwtRegisteredClaimNames.Email, user.Email.Value),
+            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+            new Claim(ClaimTypes.Name, user.FullName),
+            new Claim(ClaimTypes.Role, user.Role.Name)
+        };
 
         var token = new JwtSecurityToken(
             issuer: jwtSettings["Issuer"],
@@ -176,6 +167,6 @@ public class AuthService(
             expires: expiry,
             signingCredentials: credentials);
 
-        return new JwtSecurityTokenHandler().WriteToken(token);
+        return Task.FromResult(new JwtSecurityTokenHandler().WriteToken(token));
     }
 }

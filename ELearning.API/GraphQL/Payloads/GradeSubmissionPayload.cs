@@ -1,6 +1,6 @@
 ﻿namespace ELearning.API.GraphQL.Payloads;
 
-public class GradeSubmissionPayload : Payload
+public class GradeSubmissionPayload : PayloadBase
 {
     public bool Success { get; }
 
@@ -10,7 +10,7 @@ public class GradeSubmissionPayload : Payload
     }
 
     public GradeSubmissionPayload(string error)
-        : base(new[] { error })
+        : base(new Error("GRADING_ERROR", error))
     {
         Success = false;
     }

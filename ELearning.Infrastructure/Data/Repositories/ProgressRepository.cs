@@ -15,30 +15,30 @@ public class ProgressRepository : IProgressRepository
         _context = context;
     }
 
-    public async Task<Progress> GetByIdAsync(Guid id)
+    public async Task<Progress?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
         return await _context.Progresses
-            .SingleOrDefaultAsync(p => p.Id == id);
+            .SingleOrDefaultAsync(p => p.Id == id, cancellationToken);
     }
 
-    public async Task<IReadOnlyList<Progress>> GetByEnrollmentIdAsync(Guid enrollmentId)
+    public async Task<IReadOnlyList<Progress>> GetByEnrollmentIdAsync(Guid enrollmentId, CancellationToken cancellationToken = default)
     {
         return await _context.Progresses
             .Where(p => p.EnrollmentId == enrollmentId)
-            .ToListAsync();
+            .ToListAsync(cancellationToken);
     }
 
-    public async Task<Progress> GetByEnrollmentAndLessonIdAsync(Guid enrollmentId, Guid lessonId)
+    public async Task<Progress?> GetByEnrollmentAndLessonIdAsync(Guid enrollmentId, Guid lessonId, CancellationToken cancellationToken = default)
     {
         return await _context.Progresses
-            .SingleOrDefaultAsync(p => p.EnrollmentId == enrollmentId && p.LessonId == lessonId);
+            .SingleOrDefaultAsync(p => p.EnrollmentId == enrollmentId && p.LessonId == lessonId, cancellationToken);
     }
 
-    public async Task<double> GetCourseProgressPercentageAsync(Guid enrollmentId)
+    public async Task<double> GetCourseProgressPercentageAsync(Guid enrollmentId, CancellationToken cancellationToken = default)
     {
         var enrollment = await _context.Enrollments
             .Include(e => e.ProgressRecords)
-            .SingleOrDefaultAsync(e => e.Id == enrollmentId);
+            .SingleOrDefaultAsync(e => e.Id == enrollmentId, cancellationToken);
 
         if (enrollment == null)
         {
@@ -49,7 +49,7 @@ public class ProgressRepository : IProgressRepository
         var course = await _context.Courses
             .Include(c => c.Modules)
             .ThenInclude(m => m.Lessons)
-            .SingleOrDefaultAsync(c => c.Id == enrollment.CourseId);
+            .SingleOrDefaultAsync(c => c.Id == enrollment.CourseId, cancellationToken);
 
         if (course == null)
         {
@@ -70,15 +70,4 @@ public class ProgressRepository : IProgressRepository
         return (double)completedLessons / totalLessons * 100;
     }
 
-    public async Task AddAsync(Progress progress)
-    {
-        await _context.Progresses.AddAsync(progress);
-        await _context.SaveChangesAsync();
-    }
-
-    public async Task UpdateAsync(Progress progress)
-    {
-        _context.Entry(progress).State = EntityState.Modified;
-        await _context.SaveChangesAsync();
-    }
 }

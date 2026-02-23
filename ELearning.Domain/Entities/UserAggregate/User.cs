@@ -10,22 +10,22 @@ public class User : BaseEntity, IAggregateRoot<User>
     /// <summary>
     /// User's first name
     /// </summary>
-    public string FirstName { get; protected set; }
+    public string FirstName { get; protected set; } = string.Empty;
 
     /// <summary>
     /// User's last name
     /// </summary>
-    public string LastName { get; protected set; }
+    public string LastName { get; protected set; } = string.Empty;
 
     /// <summary>
     /// Unique identifier for login/communication
     /// </summary>
-    public Email Email { get; protected set; }
+    public Email Email { get; protected set; } = null!;
 
     /// <summary>
     /// Secured password storage
     /// </summary>
-    public string PasswordHash { get; protected set; }
+    public string PasswordHash { get; protected set; } = string.Empty;
 
     /// <summary>
     /// Link to profile image
@@ -35,7 +35,7 @@ public class User : BaseEntity, IAggregateRoot<User>
     /// <summary>
     /// Type of user (Student, Instructor, Admin)
     /// </summary>
-    public UserRole Role { get; protected set; }
+    public UserRole Role { get; protected set; } = null!;
 
     /// <summary>
     /// Whether account is enabled

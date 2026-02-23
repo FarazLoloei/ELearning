@@ -47,13 +47,27 @@ builder.Services.AddApiVersioning(options =>
 });
 
 // Add CORS
+var allowedCorsOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>();
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("CorsPolicy",
-        policyBuilder => policyBuilder
-            .AllowAnyOrigin()
-            .AllowAnyMethod()
-            .AllowAnyHeader());
+        policyBuilder =>
+        {
+            if (allowedCorsOrigins is { Length: > 0 })
+            {
+                policyBuilder
+                    .WithOrigins(allowedCorsOrigins)
+                    .AllowAnyMethod()
+                    .AllowAnyHeader();
+            }
+            else if (builder.Environment.IsDevelopment())
+            {
+                policyBuilder
+                    .AllowAnyOrigin()
+                    .AllowAnyMethod()
+                    .AllowAnyHeader();
+            }
+        });
 });
 
 // Add Ocelot
@@ -151,15 +165,11 @@ app.UseCors("CorsPolicy");
 app.UseAuthentication();
 app.UseAuthorization();
 
-//// Configure endpoints
-//app.UseEndpoints(endpoints =>
-//{
-//    endpoints.MapControllers();
-//});
-
 // Map endpoints
 app.MapControllers(); // REST API endpoints
 app.MapGraphQL();     // GraphQL endpoint at /graphql
 
 // Run the app
 app.Run();
+
+public partial class Program;

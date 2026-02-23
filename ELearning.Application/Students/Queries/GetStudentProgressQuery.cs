@@ -4,7 +4,7 @@ using MediatR;
 
 namespace ELearning.Application.Students.Queries;
 
-public class GetStudentProgressQuery : IRequest<Result<StudentProgressDto>>
+public sealed record GetStudentProgressQuery : IRequest<Result<StudentProgressDto>>
 {
-    public Guid StudentId { get; set; }
+    public Guid StudentId { get; init; }
 }

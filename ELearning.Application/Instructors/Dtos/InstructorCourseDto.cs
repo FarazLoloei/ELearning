@@ -1,6 +1,8 @@
-﻿namespace ELearning.Application.Instructors.Dtos;
+using ELearning.SharedKernel.Abstractions;
 
-public readonly record struct InstructorCourseDto(
+namespace ELearning.Application.Instructors.Dtos;
+
+public sealed record InstructorCourseDto(
     Guid Id,
     string Title,
     string Category,
@@ -8,4 +10,4 @@ public readonly record struct InstructorCourseDto(
     string Status,
     DateTime CreatedAt,
     DateTime? PublishedDate
-);
+) : IDto;

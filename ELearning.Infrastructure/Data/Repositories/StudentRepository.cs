@@ -28,19 +28,18 @@ public class StudentRepository : IStudentRepository
     public async Task AddAsync(Student entity, CancellationToken cancellationToken)
     {
         await _context.Students.AddAsync(entity, cancellationToken);
-        await _context.SaveChangesAsync(cancellationToken);
     }
 
-    public async Task UpdateAsync(Student entity, CancellationToken cancellationToken)
+    public Task UpdateAsync(Student entity, CancellationToken cancellationToken)
     {
         _context.Entry(entity).State = EntityState.Modified;
-        await _context.SaveChangesAsync(cancellationToken);
+        return Task.CompletedTask;
     }
 
-    public async Task DeleteAsync(Student entity, CancellationToken cancellationToken)
+    public Task DeleteAsync(Student entity, CancellationToken cancellationToken)
     {
         _context.Students.Remove(entity);
-        await _context.SaveChangesAsync(cancellationToken);
+        return Task.CompletedTask;
     }
 
     public async Task<IReadOnlyList<Student>> GetStudentsByCourseIdAsync(Guid courseId, CancellationToken cancellationToken)

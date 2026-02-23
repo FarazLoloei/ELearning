@@ -1,6 +1,7 @@
-﻿using AutoMapper;
+using AutoMapper;
 using ELearning.Application.Common.Exceptions;
 using ELearning.Application.Common.Model;
+using ELearning.Application.Common.Resilience;
 using ELearning.Application.Students.Abstractions.ReadModels;
 using ELearning.Application.Students.Dtos;
 using ELearning.Application.Students.Queries;
@@ -24,7 +25,7 @@ public class GetStudentProfileQueryHandler(
             var studentDto = await studentReadService.GetStudentByIdAsync(request.StudentId);
             return Result.Success(studentDto);
         }
-        catch (Exception)
+        catch (Exception ex) when (ReadModelFallbackPolicy.ShouldFallback(ex, cancellationToken))
         {
             // If not found in Dapr, fall back to repository
             var student = await studentRepository.GetByIdAsync(request.StudentId);
