@@ -9,10 +9,4 @@ public interface IAssignmentRepository
     Task<IReadOnlyList<Assignment>> GetByCourseIdAsync(Guid courseId, CancellationToken cancellationToken = default);
 
     Task<Module?> GetModuleForAssignmentAsync(Guid assignmentId, CancellationToken cancellationToken = default);
-
-    Task AddAsync(Assignment assignment, CancellationToken cancellationToken = default);
-
-    Task UpdateAsync(Assignment assignment, CancellationToken cancellationToken = default);
-
-    Task DeleteAsync(Assignment assignment, CancellationToken cancellationToken = default);
 }

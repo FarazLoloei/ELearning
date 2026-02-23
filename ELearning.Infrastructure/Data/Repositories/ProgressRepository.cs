@@ -70,14 +70,4 @@ public class ProgressRepository : IProgressRepository
         return (double)completedLessons / totalLessons * 100;
     }
 
-    public async Task AddAsync(Progress progress, CancellationToken cancellationToken = default)
-    {
-        await _context.Progresses.AddAsync(progress, cancellationToken);
-    }
-
-    public Task UpdateAsync(Progress progress, CancellationToken cancellationToken = default)
-    {
-        _context.Entry(progress).State = EntityState.Modified;
-        return Task.CompletedTask;
-    }
 }

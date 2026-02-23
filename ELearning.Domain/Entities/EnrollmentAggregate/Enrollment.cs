@@ -53,7 +53,30 @@ public class Enrollment : BaseEntity, IAggregateRoot<Enrollment>
 
     public void AddSubmission(Submission submission)
     {
+        ArgumentNullException.ThrowIfNull(submission);
+
         _submissions.Add(submission);
+        UpdatedAt(DateTime.UtcNow);
+    }
+
+    public Submission SubmitAssignment(Guid assignmentId, string? content = null, string? fileUrl = null)
+    {
+        if (_submissions.Any(s => s.AssignmentId == assignmentId))
+            throw new InvalidOperationException("Assignment has already been submitted for this enrollment.");
+
+        var submission = new Submission(Id, assignmentId, content, fileUrl);
+        _submissions.Add(submission);
+        UpdatedAt(DateTime.UtcNow);
+
+        return submission;
+    }
+
+    public void GradeSubmission(Guid submissionId, int score, string feedback, Guid gradedById)
+    {
+        var submission = _submissions.FirstOrDefault(s => s.Id == submissionId)
+            ?? throw new InvalidOperationException("Submission does not belong to this enrollment.");
+
+        submission.Grade(score, feedback, gradedById);
         UpdatedAt(DateTime.UtcNow);
     }
 

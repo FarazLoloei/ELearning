@@ -32,20 +32,4 @@ public class ModuleRepository : IModuleRepository
             .ToListAsync(cancellationToken);
     }
 
-    public async Task AddAsync(Module module, CancellationToken cancellationToken = default)
-    {
-        await _context.Modules.AddAsync(module, cancellationToken);
-    }
-
-    public Task UpdateAsync(Module module, CancellationToken cancellationToken = default)
-    {
-        _context.Entry(module).State = EntityState.Modified;
-        return Task.CompletedTask;
-    }
-
-    public Task DeleteAsync(Module module, CancellationToken cancellationToken = default)
-    {
-        _context.Modules.Remove(module);
-        return Task.CompletedTask;
-    }
 }

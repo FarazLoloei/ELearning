@@ -4,6 +4,7 @@ using ELearning.Application.Common.Model;
 using ELearning.Application.Enrollments.Commands;
 using ELearning.Domain.Entities.CourseAggregate;
 using ELearning.Domain.Entities.CourseAggregate.Abstractions.Repositories;
+using ELearning.Domain.Entities.EnrollmentAggregate;
 using ELearning.Domain.Entities.EnrollmentAggregate.Abstractions.Repositories;
 using ELearning.Domain.Entities.UserAggregate;
 using ELearning.Domain.Entities.UserAggregate.Abstractions.Repositories;
@@ -35,11 +36,8 @@ public class CreateEnrollmentCommandHandler(
         if (alreadyEnrolled)
             return Result.Failure("You are already enrolled in this course.");
 
-        // Enroll student in course
-        student.EnrollInCourse(course);
-
-        // Save to repository
-        await studentRepository.UpdateAsync(student, cancellationToken);
+        var enrollment = new Enrollment(studentId, course.Id);
+        await enrollmentRepository.AddAsync(enrollment, cancellationToken);
 
         return Result.Success();
     }

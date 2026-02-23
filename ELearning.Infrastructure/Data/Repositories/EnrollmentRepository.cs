@@ -37,9 +37,18 @@ public class EnrollmentRepository(ApplicationDbContext context) : IEnrollmentRep
     public async Task<Enrollment?> GetByStudentAndCourseIdAsync(Guid studentId, Guid courseId, CancellationToken cancellationToken)
     {
         return await context.Enrollments
-            .AsNoTracking()
+            .Include(e => e.Submissions)
+            .Include(e => e.ProgressRecords)
             .Where(e => e.StudentId == studentId && e.CourseId == courseId)
             .FirstOrDefaultAsync(cancellationToken);
+    }
+
+    public async Task<Enrollment?> GetBySubmissionIdAsync(Guid submissionId, CancellationToken cancellationToken)
+    {
+        return await context.Enrollments
+            .Include(e => e.Submissions)
+            .Include(e => e.ProgressRecords)
+            .FirstOrDefaultAsync(e => e.Submissions.Any(s => s.Id == submissionId), cancellationToken);
     }
 
     public async Task<bool> HasAnyForCourseAsync(Guid courseId, CancellationToken cancellationToken) =>

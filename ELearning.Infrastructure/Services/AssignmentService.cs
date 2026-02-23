@@ -7,8 +7,7 @@ namespace ELearning.Infrastructure.Services;
 
 public class AssignmentService(
     IAssignmentRepository assignmentRepository,
-    IEnrollmentRepository enrollmentRepository,
-    ISubmissionRepository submissionRepository) : IAssignmentService
+    IEnrollmentRepository enrollmentRepository) : IAssignmentService
 {
     public async Task<bool> CanSubmitAssignmentAsync(Guid studentId, Guid assignmentId)
     {
@@ -34,7 +33,14 @@ public class AssignmentService(
 
     public async Task<bool> HasStudentSubmittedAsync(Guid studentId, Guid assignmentId)
     {
-        var submission = await submissionRepository.GetByStudentAndAssignmentIdAsync(studentId, assignmentId, CancellationToken.None);
-        return submission is not null;
+        var module = await assignmentRepository.GetModuleForAssignmentAsync(assignmentId, CancellationToken.None);
+        if (module is null)
+            return false;
+
+        var enrollment = await enrollmentRepository.GetByStudentAndCourseIdAsync(studentId, module.CourseId, CancellationToken.None);
+        if (enrollment is null)
+            return false;
+
+        return enrollment.Submissions.Any(s => s.AssignmentId == assignmentId);
     }
 }

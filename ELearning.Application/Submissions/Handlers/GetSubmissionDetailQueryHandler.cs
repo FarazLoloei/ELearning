@@ -19,7 +19,6 @@ namespace ELearning.Application.Submissions.Handlers;
 /// </summary>
 public class GetSubmissionDetailQueryHandler(
         ISubmissionReadService submissionReadService,
-        ISubmissionRepository submissionRepository,
         IAssignmentRepository assignmentRepository,
         IEnrollmentRepository enrollmentRepository,
         ICourseRepository courseRepository,
@@ -45,12 +44,10 @@ public class GetSubmissionDetailQueryHandler(
         catch (Exception ex) when (ReadModelFallbackPolicy.ShouldFallback(ex, cancellationToken))
         {
             // Fall back to repository
-            var submission = await submissionRepository.GetByIdAsync(request.SubmissionId, cancellationToken)
+            var enrollment = await enrollmentRepository.GetBySubmissionIdAsync(request.SubmissionId, cancellationToken)
                 ?? throw new NotFoundException(nameof(Submission), request.SubmissionId);
-
-            // Get enrollment for this submission to find student ID
-            var enrollment = await enrollmentRepository.GetByIdAsync(submission.EnrollmentId, cancellationToken)
-                ?? throw new NotFoundException(nameof(Enrollment), submission.EnrollmentId);
+            var submission = enrollment.Submissions.FirstOrDefault(s => s.Id == request.SubmissionId)
+                ?? throw new NotFoundException(nameof(Submission), request.SubmissionId);
 
             // Verify permission
             await VerifyPermission(enrollment.StudentId, submission.AssignmentId, cancellationToken);

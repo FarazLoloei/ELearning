@@ -28,20 +28,4 @@ public class LessonRepository : ILessonRepository
             .ToListAsync(cancellationToken);
     }
 
-    public async Task AddAsync(Lesson lesson, CancellationToken cancellationToken = default)
-    {
-        await _context.Lessons.AddAsync(lesson, cancellationToken);
-    }
-
-    public Task UpdateAsync(Lesson lesson, CancellationToken cancellationToken = default)
-    {
-        _context.Entry(lesson).State = EntityState.Modified;
-        return Task.CompletedTask;
-    }
-
-    public Task DeleteAsync(Lesson lesson, CancellationToken cancellationToken = default)
-    {
-        _context.Lessons.Remove(lesson);
-        return Task.CompletedTask;
-    }
 }

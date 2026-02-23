@@ -29,7 +29,21 @@ public class Rating : ValueObject
 
     public Rating AddRating(decimal newRating) => AdjustRating(newRating, 1);
 
-    public Rating RemoveRating(decimal oldRating) => AdjustRating(-oldRating, -1);
+    public Rating RemoveRating(decimal oldRating)
+    {
+        ValidateRating(oldRating);
+
+        if (NumberOfRatings <= 0)
+            throw new InvalidOperationException("Cannot remove a rating when there are no ratings.");
+
+        var newNumberOfRatings = NumberOfRatings - 1;
+        if (newNumberOfRatings == 0)
+            return CreateDefault();
+
+        var newTotalValue = Value * NumberOfRatings - oldRating;
+        var newAverageValue = newTotalValue / newNumberOfRatings;
+        return new Rating(newAverageValue, newNumberOfRatings);
+    }
 
     private Rating AdjustRating(decimal ratingChange, int ratingCountChange)
     {

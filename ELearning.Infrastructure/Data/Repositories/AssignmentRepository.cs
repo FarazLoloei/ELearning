@@ -51,20 +51,4 @@ public class AssignmentRepository : IAssignmentRepository
             .FindAsync([assignment.ModuleId], cancellationToken);
     }
 
-    public async Task AddAsync(Assignment assignment, CancellationToken cancellationToken = default)
-    {
-        await _context.Assignments.AddAsync(assignment, cancellationToken);
-    }
-
-    public Task UpdateAsync(Assignment assignment, CancellationToken cancellationToken = default)
-    {
-        _context.Entry(assignment).State = EntityState.Modified;
-        return Task.CompletedTask;
-    }
-
-    public Task DeleteAsync(Assignment assignment, CancellationToken cancellationToken = default)
-    {
-        _context.Assignments.Remove(assignment);
-        return Task.CompletedTask;
-    }
 }

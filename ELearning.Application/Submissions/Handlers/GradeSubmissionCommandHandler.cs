@@ -11,7 +11,7 @@ using MediatR;
 namespace ELearning.Application.Submissions.Handlers;
 
 public class GradeSubmissionCommandHandler(
-        ISubmissionRepository submissionRepository,
+        IEnrollmentRepository enrollmentRepository,
         IAssignmentRepository assignmentRepository,
         ICurrentUserService currentUserService)
     : IRequestHandler<GradeSubmissionCommand, Result>
@@ -24,7 +24,9 @@ public class GradeSubmissionCommandHandler(
         }
 
         var instructorId = currentUserService.UserId.Value;
-        var submission = await submissionRepository.GetByIdAsync(request.SubmissionId, cancellationToken)
+        var enrollment = await enrollmentRepository.GetBySubmissionIdAsync(request.SubmissionId, cancellationToken)
+            ?? throw new NotFoundException(nameof(Submission), request.SubmissionId);
+        var submission = enrollment.Submissions.FirstOrDefault(s => s.Id == request.SubmissionId)
             ?? throw new NotFoundException(nameof(Submission), request.SubmissionId);
 
         if (submission.IsGraded)
@@ -38,10 +40,10 @@ public class GradeSubmissionCommandHandler(
             return Result.Failure($"Score cannot exceed maximum points ({assignment.MaxPoints}).");
 
         // Grade the submission
-        submission.Grade(request.Score, request.Feedback, instructorId);
+        enrollment.GradeSubmission(request.SubmissionId, request.Score, request.Feedback, instructorId);
 
         // Save to repository
-        await submissionRepository.UpdateAsync(submission, cancellationToken);
+        await enrollmentRepository.UpdateAsync(enrollment, cancellationToken);
 
         return Result.Success();
     }

@@ -61,14 +61,4 @@ public class SubmissionRepository : ISubmissionRepository
             .ToListAsync(cancellationToken);
     }
 
-    public async Task AddAsync(Submission submission, CancellationToken cancellationToken = default)
-    {
-        await _context.Submissions.AddAsync(submission, cancellationToken);
-    }
-
-    public Task UpdateAsync(Submission submission, CancellationToken cancellationToken = default)
-    {
-        _context.Entry(submission).State = EntityState.Modified;
-        return Task.CompletedTask;
-    }
 }

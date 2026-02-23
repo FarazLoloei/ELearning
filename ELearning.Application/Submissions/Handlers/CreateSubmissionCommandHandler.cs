@@ -5,7 +5,6 @@ using ELearning.Application.Submissions.Commands;
 using ELearning.Domain.Entities.CourseAggregate;
 using ELearning.Domain.Entities.CourseAggregate.Abstractions.Repositories;
 using ELearning.Domain.Entities.CourseAggregate.Abstractions.Services;
-using ELearning.Domain.Entities.EnrollmentAggregate;
 using ELearning.Domain.Entities.EnrollmentAggregate.Abstractions.Repositories;
 using ELearning.Domain.Entities.UserAggregate.Exceptions;
 using MediatR;
@@ -13,7 +12,6 @@ using MediatR;
 namespace ELearning.Application.Submissions.Handlers;
 
 public class CreateSubmissionCommandHandler(
-        ISubmissionRepository submissionRepository,
         IAssignmentRepository assignmentRepository,
         IEnrollmentRepository enrollmentRepository,
         ICurrentUserService currentUserService,
@@ -34,9 +32,6 @@ public class CreateSubmissionCommandHandler(
         if (!await assignmentService.CanSubmitAssignmentAsync(studentId, request.AssignmentId))
             return Result.Failure("You are not enrolled in the course or the assignment is not available.");
 
-        if (await assignmentService.HasStudentSubmittedAsync(studentId, request.AssignmentId))
-            return Result.Failure("You have already submitted this assignment.");
-
         // Get module and enrollment
         var module = await assignmentRepository.GetModuleForAssignmentAsync(request.AssignmentId, cancellationToken)
             ?? throw new NotFoundException("Module for assignment", request.AssignmentId);
@@ -53,16 +48,15 @@ public class CreateSubmissionCommandHandler(
             // return Result.Failure<Guid>("The deadline for this assignment has passed.");
         }
 
-        var submission = new Submission(
-            enrollment.Id,
-            request.AssignmentId,
-            request.Content,
-            request.FileUrl);
+        try
+        {
+            enrollment.SubmitAssignment(request.AssignmentId, request.Content, request.FileUrl);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Result.Failure(ex.Message);
+        }
 
-        await submissionRepository.AddAsync(submission, cancellationToken);
-
-        // Link submission to enrollment
-        enrollment.AddSubmission(submission);
         await enrollmentRepository.UpdateAsync(enrollment, cancellationToken);
 
         return Result.Success();

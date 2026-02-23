@@ -11,8 +11,4 @@ public interface ISubmissionRepository
     Task<Submission?> GetByStudentAndAssignmentIdAsync(Guid studentId, Guid assignmentId, CancellationToken cancellationToken = default);
 
     Task<IReadOnlyList<Submission>> GetUngradedSubmissionsAsync(CancellationToken cancellationToken = default);
-
-    Task AddAsync(Submission submission, CancellationToken cancellationToken = default);
-
-    Task UpdateAsync(Submission submission, CancellationToken cancellationToken = default);
 }
