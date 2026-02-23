@@ -1,63 +1,75 @@
 # E-Learning Platform API
 
-Clean Architecture + DDD sample for an e-learning platform built on .NET 10.
+Production-style backend sample built with .NET 10, Clean Architecture, CQRS, and Domain-Driven Design (DDD).
 
-The solution exposes:
-- REST API controllers
-- GraphQL endpoint
-- CQRS/MediatR application layer
-- EF Core write model
-- Dapr-based read model clients
+This repository is intended as **sample code for engineering interviews and job applications**.
+
+## Why This Project Is a Strong Sample
+
+- Clear layer separation (API, Application, Domain, Infrastructure)
+- DDD-focused domain model with aggregates and value objects
+- Aggregate-root transaction boundary enforcement (no child-entity write repositories)
+- CQRS with MediatR and validation pipeline
+- Unit of Work + transaction behavior for command consistency
+- Warning-clean build and passing test suite
+
+## Tech Stack
+
+- .NET 10
+- ASP.NET Core Web API
+- MediatR
+- FluentValidation
+- EF Core (SQL Server)
+- GraphQL
+- Dapr (read-model integrations)
+- xUnit v3
 
 ## Solution Structure
 
 ```text
-ELearning.API                # API host (REST, GraphQL, middleware, auth, Ocelot)
-ELearning.Application        # Use cases, DTOs, validators, behaviors, interfaces
-ELearning.Domain             # Aggregates, entities, value objects, domain events, domain exceptions
-ELearning.Infrastructure     # Repositories, services, Dapr read-service implementations
+ELearning.API                # REST + GraphQL host, middleware, auth, versioning
+ELearning.Application        # Commands/queries, handlers, DTOs, behaviors, interfaces
+ELearning.Domain             # Aggregates, entities, value objects, domain rules/events
+ELearning.Infrastructure     # EF repositories, read-model services, external implementations
 ELearning.Persistence        # Persistence project
-ELearning.SharedKernel       # Base abstractions (BaseEntity, ValueObject, Enumeration, etc.)
-ELearning.Application.Tests  # Unit/validation tests (xUnit v3)
-ELearning.IntegrationTests   # API integration tests (xUnit v3 + WebApplicationFactory)
+ELearning.SharedKernel       # Shared abstractions and base types
+ELearning.Application.Tests  # Application/unit validation tests
+ELearning.IntegrationTests   # API integration tests (WebApplicationFactory)
 ```
 
-## Architecture
+## Architecture and DDD Notes
 
-- **Domain layer**: pure business rules and invariants
-- **Application layer**: commands/queries, handlers, DTOs, validation pipeline, abstractions
-- **Infrastructure layer**: EF Core repositories and external service implementations
-- **API layer**: transport concerns (REST/GraphQL), auth middleware, serialization, versioning
+### Clean Architecture dependency direction
 
-Dependency direction follows Clean Architecture rules:
 - API -> Application
 - Infrastructure -> Application + Domain
 - Application -> Domain + SharedKernel
 - Domain -> SharedKernel
 
-## Key Features
+### DDD boundaries
 
-- Course, module, lesson, assignment, enrollment, submission flows
-- JWT authentication endpoints
-- FluentValidation pipeline behavior
-- Read-model fallback policy for query handlers
-- DTO validation tests with helper/factory utilities
-- Integration test bootstrapping through `WebApplicationFactory`
+- Value objects (`Email`, `Duration`, `Rating`) are not persisted independently and have no repositories.
+- Minimum transactional consistency is enforced at aggregate-root level.
+- Command writes are coordinated through Unit of Work.
+- Child entities are accessed for reads only; write orchestration happens through root aggregates.
 
-## Prerequisites
+## Key Functional Areas
 
-- .NET SDK 10.0+
-- SQL Server (or LocalDB) for full runtime scenarios
-- Optional: Dapr runtime for read-model endpoints that depend on Dapr services
+- Authentication (`/api/auth/*`)
+- Course and instructor flows
+- Enrollment lifecycle
+- Submission creation and grading
+- Student progress reporting
 
 ## Configuration
 
-Main API settings are loaded from:
+Main configuration files:
+
 - `ELearning.API/appsettings.json`
 - `ELearning.API/appsettings.Development.json`
-- environment variables
 
-Important keys:
+Important settings:
+
 - `ConnectionStrings:DefaultConnection`
 - `JwtSettings:Issuer`
 - `JwtSettings:Audience`
@@ -66,20 +78,21 @@ Important keys:
 - `Dapr:HttpPort`
 - `Dapr:GrpcPort`
 
-## Run the API
+## Run
 
 ```powershell
 dotnet run --project ELearning.API/ELearning.API.csproj
 ```
 
-Default endpoints:
-- REST controllers under `/api/*`
-- GraphQL at `/graphql`
-- Swagger UI in Development environment
+Endpoints:
+
+- REST: `/api/*`
+- GraphQL: `/graphql`
+- Swagger UI: enabled in Development
 
 ## Build and Test
 
-Build solution:
+Build:
 
 ```powershell
 dotnet build ELearning.sln -nologo /p:UseSharedCompilation=false
@@ -91,13 +104,13 @@ Run all tests:
 dotnet test ELearning.sln -nologo /p:UseSharedCompilation=false
 ```
 
-Run application tests only:
+Run only application tests:
 
 ```powershell
 dotnet test ELearning.Application.Tests/ELearning.Application.Tests.csproj -nologo /p:UseSharedCompilation=false
 ```
 
-Run integration tests only:
+Run only integration tests:
 
 ```powershell
 dotnet test ELearning.IntegrationTests/ELearning.IntegrationTests.csproj -nologo /p:UseSharedCompilation=false
@@ -105,24 +118,21 @@ dotnet test ELearning.IntegrationTests/ELearning.IntegrationTests.csproj -nologo
 
 ## Testing Approach
 
-- `ELearning.Application.Tests`:
-  - DTO and validation-focused tests
-  - shared helper patterns to avoid duplicated assertion logic
-- `ELearning.IntegrationTests`:
-  - API-level integration tests using `WebApplicationFactory`
-  - service replacement for controlled test doubles (for deterministic behavior)
+- `ELearning.Application.Tests`: DTO and validation-focused tests with shared helpers/factories.
+- `ELearning.IntegrationTests`: API-level tests with controlled service replacement via `WebApplicationFactory`.
 
-## Notes for Sample-Code Use
+## Next Steps
 
-Current baseline:
-- Solution builds successfully
-- Tests pass successfully
-- Warning-clean baseline maintained in recent updates
-
-If you present this repository as a sample, keep CI validating:
-- `dotnet build`
-- `dotnet test`
+- Add an **Application Facade** layer for complex use-case orchestration (single entrypoints for API/GraphQL).
+- Add dedicated **read-model repositories/interfaces** for all query-heavy modules (courses, submissions, instructors, students) to fully standardize CQRS read paths.
+- Remove remaining child-entity repository abstractions from Domain and keep only aggregate-root write repositories.
+- Introduce **architecture tests** (layer dependency tests) to enforce Clean Architecture rules in CI.
+- Expand integration tests to cover enrollment and submission workflows end-to-end.
+- Add domain-focused unit tests for aggregate invariants (`Course`, `Enrollment`, `User`).
+- Add optimistic concurrency handling (row version / concurrency tokens) for high-contention aggregates.
+- Add API versioning strategy docs and backward-compatibility contract tests.
+- Add CI quality gates: formatting, analyzers, build, tests, and optional coverage threshold.
 
 ## License
 
-MIT - see `LICENSE.txt`.
+MIT (`LICENSE.txt`)
