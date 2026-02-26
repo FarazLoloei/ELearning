@@ -6,6 +6,8 @@ using ELearning.Application.Instructors.Dtos;
 using ELearning.Application.Instructors.Queries;
 using ELearning.Application.Students.Dtos;
 using ELearning.Application.Students.Queries;
+using ELearning.Application.Submissions.Dtos;
+using ELearning.Application.Submissions.Queries;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 
@@ -80,6 +82,23 @@ public class Query
     }
 
     /// <summary>
+    /// Get courses by category
+    /// </summary>
+    [GraphQLDescription("Get courses by category ID")]
+    public async Task<List<CourseListDto>> GetCoursesByCategory(
+        [Service] IMediator mediator,
+        int categoryId)
+    {
+        var query = new GetCoursesListQuery
+        {
+            CategoryId = categoryId
+        };
+
+        var result = await mediator.Send(query);
+        return result.IsSuccess ? new List<CourseListDto>(result.Value.Items) : new List<CourseListDto>();
+    }
+
+    /// <summary>
     /// Get student profile by ID
     /// </summary>
     [GraphQLDescription("Get student profile by ID")]
@@ -120,6 +139,44 @@ public class Query
     }
 
     /// <summary>
+    /// Get instructor profile with courses by ID
+    /// </summary>
+    [GraphQLDescription("Get instructor with courses by ID")]
+    public async Task<InstructorCoursesDto?> GetInstructorWithCourses(
+        [Service] IMediator mediator,
+        Guid id)
+    {
+        var query = new GetInstructorCoursesQuery { InstructorId = id };
+        var result = await mediator.Send(query);
+        return result.IsSuccess ? result.Value : null;
+    }
+
+    /// <summary>
+    /// Get pending submissions for instructor
+    /// </summary>
+    [UsePaging]
+    [UseFiltering]
+    [UseSorting]
+    [GraphQLDescription("Get pending submissions for an instructor")]
+    [Authorize(Roles = "Instructor")]
+    public async Task<IEnumerable<SubmissionDto>> GetPendingSubmissions(
+        [Service] IMediator mediator,
+        Guid instructorId,
+        int pageNumber = 1,
+        int pageSize = 10)
+    {
+        var query = new GetPendingSubmissionsQuery
+        {
+            InstructorId = instructorId,
+            PageNumber = pageNumber,
+            PageSize = pageSize
+        };
+
+        var result = await mediator.Send(query);
+        return result.IsSuccess ? result.Value.Items : new List<SubmissionDto>();
+    }
+
+    /// <summary>
     /// Get enrollment details by ID
     /// </summary>
     [GraphQLDescription("Get enrollment details by ID")]
@@ -129,6 +186,20 @@ public class Query
         Guid id)
     {
         var query = new GetEnrollmentDetailQuery { EnrollmentId = id };
+        var result = await mediator.Send(query);
+        return result.IsSuccess ? result.Value : null;
+    }
+
+    /// <summary>
+    /// Get submission details by ID
+    /// </summary>
+    [GraphQLDescription("Get submission details by ID")]
+    [Authorize]
+    public async Task<SubmissionDetailDto?> GetSubmission(
+        [Service] IMediator mediator,
+        Guid id)
+    {
+        var query = new GetSubmissionDetailQuery { SubmissionId = id };
         var result = await mediator.Send(query);
         return result.IsSuccess ? result.Value : null;
     }

@@ -1,4 +1,4 @@
-﻿using ELearning.API.GraphQL.ObjectTypes;
+using ELearning.API.GraphQL.ObjectTypes;
 
 namespace ELearning.API.GraphQL;
 
