@@ -29,7 +29,7 @@ public class CreateSubmissionCommandHandler(
             ?? throw new NotFoundException(nameof(Assignment), request.AssignmentId);
 
         // Verify submission eligibility
-        if (!await assignmentService.CanSubmitAssignmentAsync(studentId, request.AssignmentId))
+        if (!await assignmentService.CanSubmitAssignmentAsync(studentId, request.AssignmentId, cancellationToken))
             return Result.Failure("You are not enrolled in the course or the assignment is not available.");
 
         // Get module and enrollment
@@ -40,7 +40,7 @@ public class CreateSubmissionCommandHandler(
             ?? throw new StudentNotEnrolledException(studentId, module.CourseId);
 
         // (Optional) Handle late submissions
-        var isOverdue = await assignmentService.IsAssignmentOverdueAsync(request.AssignmentId, DateTime.UtcNow);
+        var isOverdue = await assignmentService.IsAssignmentOverdueAsync(request.AssignmentId, DateTime.UtcNow, cancellationToken);
         if (isOverdue)
         {
             // This could either return a failure or allow late submissions with a flag

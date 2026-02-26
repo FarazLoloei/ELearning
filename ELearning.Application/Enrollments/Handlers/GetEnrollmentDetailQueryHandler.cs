@@ -29,21 +29,21 @@ public class GetEnrollmentDetailQueryHandler(
         try
         {
             // Try Dapr read service first
-            var enrollmentDto = await enrollmentReadService.GetByIdAsync(request.EnrollmentId);
+            var enrollmentDto = await enrollmentReadService.GetByIdAsync(request.EnrollmentId, cancellationToken);
             return Result.Success(enrollmentDto);
         }
         catch (Exception ex) when (ReadModelFallbackPolicy.ShouldFallback(ex, cancellationToken))
         {
             // Fall back to repository
-            var enrollment = await enrollmentRepository.GetByIdAsync(request.EnrollmentId) ??
+            var enrollment = await enrollmentRepository.GetByIdAsync(request.EnrollmentId, cancellationToken) ??
                 throw new NotFoundException(nameof(Enrollment), request.EnrollmentId);
 
-            var course = await courseRepository.GetByIdAsync(enrollment.CourseId)
+            var course = await courseRepository.GetByIdAsync(enrollment.CourseId, cancellationToken)
                 ?? throw new NotFoundException("Course", enrollment.CourseId);
-            var student = await studentRepository.GetByIdAsync(enrollment.StudentId)
+            var student = await studentRepository.GetByIdAsync(enrollment.StudentId, cancellationToken)
                 ?? throw new NotFoundException("Student", enrollment.StudentId);
-            var progressRecords = await progressRepository.GetByEnrollmentIdAsync(enrollment.Id);
-            var completionPercentage = await progressRepository.GetCourseProgressPercentageAsync(enrollment.Id);
+            var progressRecords = await progressRepository.GetByEnrollmentIdAsync(enrollment.Id, cancellationToken);
+            var completionPercentage = await progressRepository.GetCourseProgressPercentageAsync(enrollment.Id, cancellationToken);
 
             var lessonProgress = new List<LessonProgressDto>();
             foreach (var progress in progressRecords)

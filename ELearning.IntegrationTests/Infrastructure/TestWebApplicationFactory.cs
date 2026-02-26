@@ -38,7 +38,7 @@ public sealed class TestWebApplicationFactory : WebApplicationFactory<Program>
 
     private sealed class StubAuthService : IAuthService
     {
-        public Task<AuthResult> AuthenticateAsync(string email, string password)
+        public Task<AuthResult> AuthenticateAsync(string email, string password, CancellationToken cancellationToken)
         {
             var payload = new AuthPayload(
                 "stub-token",
@@ -50,10 +50,10 @@ public sealed class TestWebApplicationFactory : WebApplicationFactory<Program>
             return Task.FromResult(AuthResult.Succeeded(payload));
         }
 
-        public Task<AuthResult> RegisterStudentAsync(string firstName, string lastName, string email, string password)
+        public Task<AuthResult> RegisterStudentAsync(string firstName, string lastName, string email, string password, CancellationToken cancellationToken)
             => Task.FromResult(AuthResult.Failed("Not used in this integration test."));
 
-        public Task<AuthResult> RegisterInstructorAsync(string firstName, string lastName, string email, string password, string bio, string expertise)
+        public Task<AuthResult> RegisterInstructorAsync(string firstName, string lastName, string email, string password, string bio, string expertise, CancellationToken cancellationToken)
             => Task.FromResult(AuthResult.Failed("Not used in this integration test."));
 
         public Task<string> GenerateJwtToken(User user)

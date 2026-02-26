@@ -22,13 +22,13 @@ public class GetStudentProfileQueryHandler(
         try
         {
             // First try to get from Dapr read service
-            var studentDto = await studentReadService.GetStudentByIdAsync(request.StudentId);
+            var studentDto = await studentReadService.GetStudentByIdAsync(request.StudentId, cancellationToken);
             return Result.Success(studentDto);
         }
         catch (Exception ex) when (ReadModelFallbackPolicy.ShouldFallback(ex, cancellationToken))
         {
             // If not found in Dapr, fall back to repository
-            var student = await studentRepository.GetByIdAsync(request.StudentId);
+            var student = await studentRepository.GetByIdAsync(request.StudentId, cancellationToken);
 
             if (student == null)
             {

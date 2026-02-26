@@ -13,6 +13,7 @@ namespace ELearning.Infrastructure.ReadModels;
 public class InstructorReadService(DaprClient daprClient, ILogger<InstructorReadService> logger) : IInstructorReadService
 {
     private const string StateStoreName = "userstore";
+    private const string UserServiceName = "userservice";
 
     public async Task<InstructorDto> GetByIdAsync(Guid id, CancellationToken cancellationToken)
     {
@@ -20,11 +21,12 @@ public class InstructorReadService(DaprClient daprClient, ILogger<InstructorRead
         {
             var instructor = await daprClient.GetStateAsync<InstructorDto>(
                 StateStoreName,
-                id.ToString());
+                id.ToString(),
+                cancellationToken: cancellationToken);
 
             if (instructor == null)
             {
-                throw new NotFoundException(nameof(Course), id);
+                throw new NotFoundException(nameof(Instructor), id);
             }
 
             return instructor;
@@ -42,8 +44,9 @@ public class InstructorReadService(DaprClient daprClient, ILogger<InstructorRead
         {
             var instructor = await daprClient.InvokeMethodAsync<InstructorDto>(
                 httpMethod: HttpMethod.Get,
-                "userservice",
-                $"api/instructors/{id}");
+                UserServiceName,
+                $"api/instructors/{id}",
+                cancellationToken: cancellationToken);
 
             if (instructor == null)
             {
@@ -65,8 +68,9 @@ public class InstructorReadService(DaprClient daprClient, ILogger<InstructorRead
         {
             var instructorWithCourses = await daprClient.InvokeMethodAsync<InstructorCoursesDto>(
                  httpMethod: HttpMethod.Get,
-                "userservice",
-                $"api/instructors/{instructorId}/with-courses");
+                UserServiceName,
+                $"api/instructors/{instructorId}/with-courses",
+                cancellationToken: cancellationToken);
 
             if (instructorWithCourses == null)
             {
@@ -90,8 +94,9 @@ public class InstructorReadService(DaprClient daprClient, ILogger<InstructorRead
             // For simplicity, we're simulating with a direct state get
             var data = await daprClient.InvokeMethodAsync<PaginatedResponse<InstructorDto>>(
                 httpMethod: HttpMethod.Get,
-                StateStoreName,
-                $"api/courses?pageNumber={pagination.PageNumber} &pageSize= {pagination.PageSize}");
+                UserServiceName,
+                $"api/instructors?pageNumber={pagination.PageNumber}&pageSize={pagination.PageSize}",
+                cancellationToken: cancellationToken);
 
             return new PaginatedList<InstructorDto>(
                 data.Items,

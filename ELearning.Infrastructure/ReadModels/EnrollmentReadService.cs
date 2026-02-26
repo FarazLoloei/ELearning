@@ -20,7 +20,8 @@ public class EnrollmentReadService(DaprClient daprClient, ILogger<EnrollmentRead
         {
             var enrollment = await daprClient.GetStateAsync<EnrollmentDetailDto>(
                 StateStoreName,
-                id.ToString());
+                id.ToString(),
+                cancellationToken: cancellationToken);
 
             if (enrollment == null)
             {
@@ -43,7 +44,8 @@ public class EnrollmentReadService(DaprClient daprClient, ILogger<EnrollmentRead
             var data = await daprClient.InvokeMethodAsync<PaginatedResponse<EnrollmentDetailDto>>(
                  httpMethod: HttpMethod.Get,
                 "enrollmentservice",
-                $"api/enrollments?pageNumber={pagination.PageNumber}&pageSize={pagination.PageSize}");
+                $"api/enrollments?pageNumber={pagination.PageNumber}&pageSize={pagination.PageSize}",
+                cancellationToken: cancellationToken);
 
             return new PaginatedList<EnrollmentDetailDto>(
                 data.Items,
@@ -65,7 +67,8 @@ public class EnrollmentReadService(DaprClient daprClient, ILogger<EnrollmentRead
             var data = await daprClient.InvokeMethodAsync<PaginatedResponse<EnrollmentDto>>(
                  httpMethod: HttpMethod.Get,
                 "enrollmentservice",
-                $"api/students/{studentId}/enrollments?pageNumber={pagination.PageNumber}&pageSize={pagination.PageSize}");
+                $"api/students/{studentId}/enrollments?pageNumber={pagination.PageNumber}&pageSize={pagination.PageSize}",
+                cancellationToken: cancellationToken);
 
             return new PaginatedList<EnrollmentDto>(
                 data.Items,
@@ -87,7 +90,8 @@ public class EnrollmentReadService(DaprClient daprClient, ILogger<EnrollmentRead
             var data = await daprClient.InvokeMethodAsync<PaginatedResponse<EnrollmentDto>>(
                  httpMethod: HttpMethod.Get,
                 "enrollmentservice",
-                $"api/courses/{courseId}/enrollments?pageNumber={pagination.PageNumber}&pageSize={pagination.PageSize}");
+                $"api/courses/{courseId}/enrollments?pageNumber={pagination.PageNumber}&pageSize={pagination.PageSize}",
+                cancellationToken: cancellationToken);
 
             return new PaginatedList<EnrollmentDto>(
                 data.Items,
@@ -109,7 +113,8 @@ public class EnrollmentReadService(DaprClient daprClient, ILogger<EnrollmentRead
             var enrollment = await daprClient.InvokeMethodAsync<EnrollmentDetailDto>(
                  httpMethod: HttpMethod.Get,
                 "enrollmentservice",
-                $"api/students/{studentId}/courses/{courseId}/enrollment");
+                $"api/students/{studentId}/courses/{courseId}/enrollment",
+                cancellationToken: cancellationToken);
 
             if (enrollment == null)
             {

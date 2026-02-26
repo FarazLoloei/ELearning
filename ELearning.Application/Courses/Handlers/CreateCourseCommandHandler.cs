@@ -22,7 +22,7 @@ public class CreateCourseCommandHandler(ICourseRepository courseRepository,
             throw new ForbiddenAccessException();
 
         var instructorId = currentUserService.UserId.Value;
-        var instructor = await instructorRepository.GetByIdAsync(instructorId) ??
+        var instructor = await instructorRepository.GetByIdAsync(instructorId, cancellationToken) ??
             throw new ForbiddenAccessException();
 
         // Get category and level from enumeration values
@@ -47,7 +47,7 @@ public class CreateCourseCommandHandler(ICourseRepository courseRepository,
             duration,
             request.Price);
 
-        await courseRepository.AddAsync(course);
+        await courseRepository.AddAsync(course, cancellationToken);
 
         return Result.Success();
     }

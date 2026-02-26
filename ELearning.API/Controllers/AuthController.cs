@@ -13,9 +13,9 @@ public class AuthController(IAuthService authService) : ControllerBase
     [HttpPost("login")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    public async Task<ActionResult<AuthResult>> Login(LoginRequest request)
+    public async Task<ActionResult<AuthResult>> Login(LoginRequest request, CancellationToken cancellationToken)
     {
-        var result = await authService.AuthenticateAsync(request.Email, request.Password);
+        var result = await authService.AuthenticateAsync(request.Email, request.Password, cancellationToken);
 
         if (result.Success)
         {
@@ -28,13 +28,14 @@ public class AuthController(IAuthService authService) : ControllerBase
     [HttpPost("register/student")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<AuthResult>> RegisterStudent(RegisterStudentRequest request)
+    public async Task<ActionResult<AuthResult>> RegisterStudent(RegisterStudentRequest request, CancellationToken cancellationToken)
     {
         var result = await authService.RegisterStudentAsync(
             request.FirstName,
             request.LastName,
             request.Email,
-            request.Password);
+            request.Password,
+            cancellationToken);
 
         if (result.Success)
         {
@@ -47,7 +48,7 @@ public class AuthController(IAuthService authService) : ControllerBase
     [HttpPost("register/instructor")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<AuthResult>> RegisterInstructor(RegisterInstructorRequest request)
+    public async Task<ActionResult<AuthResult>> RegisterInstructor(RegisterInstructorRequest request, CancellationToken cancellationToken)
     {
         var result = await authService.RegisterInstructorAsync(
             request.FirstName,
@@ -55,7 +56,8 @@ public class AuthController(IAuthService authService) : ControllerBase
             request.Email,
             request.Password,
             request.Bio,
-            request.Expertise);
+            request.Expertise,
+            cancellationToken);
 
         if (result.Success)
         {
