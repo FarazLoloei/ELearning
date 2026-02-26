@@ -88,7 +88,7 @@ Endpoints:
 
 - REST docs (Swagger UI): `/`
 - OpenAPI JSON: `/swagger/v1/swagger.json`
-- REST: `/api/*`
+- REST (versioned): `/api/v1/*`
 - GraphQL: `/graphql`
 
 ## Build and Test

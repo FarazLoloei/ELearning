@@ -39,7 +39,9 @@ builder.Services.AddApiVersioning(options =>
     options.DefaultApiVersion = new Asp.Versioning.ApiVersion(1, 0);
     options.AssumeDefaultVersionWhenUnspecified = true;
     options.ReportApiVersions = true;
-    options.ApiVersionReader = new Asp.Versioning.HeaderApiVersionReader("api-version");
+    options.ApiVersionReader = Asp.Versioning.ApiVersionReader.Combine(
+        new Asp.Versioning.UrlSegmentApiVersionReader(),
+        new Asp.Versioning.HeaderApiVersionReader("api-version"));
 }).AddApiExplorer(options =>
 {
     // Format the version as "'v'major[.minor][-status]"
