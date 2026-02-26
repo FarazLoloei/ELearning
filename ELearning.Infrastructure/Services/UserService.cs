@@ -10,9 +10,9 @@ public class UserService(IUserRepository userRepository) : IUserService
     private const int KeySize = 32;
     private const int Iterations = 100_000;
 
-    public async Task<bool> IsEmailUniqueAsync(string email, Guid? excludeUserId = null)
+    public async Task<bool> IsEmailUniqueAsync(string email, Guid? excludeUserId = null, CancellationToken cancellationToken = default)
     {
-        var existingUser = await userRepository.GetByEmailAsync(email);
+        var existingUser = await userRepository.GetByEmailAsync(email, cancellationToken);
         if (existingUser is null)
             return true;
 

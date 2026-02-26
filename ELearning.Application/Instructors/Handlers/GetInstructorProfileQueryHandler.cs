@@ -24,13 +24,13 @@ public class GetInstructorProfileQueryHandler(
         try
         {
             // First attempt to get data from Dapr read service (distributed cache)
-            var instructorDto = await instructorReadService.GetInstructorByIdAsync(request.InstructorId);
+            var instructorDto = await instructorReadService.GetInstructorByIdAsync(request.InstructorId, cancellationToken);
             return Result.Success(instructorDto);
         }
         catch (Exception ex) when (ReadModelFallbackPolicy.ShouldFallback(ex, cancellationToken))
         {
             // If Dapr service fails, fall back to direct repository access
-            var instructor = await instructorRepository.GetByIdAsync(request.InstructorId) ??
+            var instructor = await instructorRepository.GetByIdAsync(request.InstructorId, cancellationToken) ??
                 throw new NotFoundException(nameof(Instructor), request.InstructorId);
 
             var instructorDto = mapper.Map<InstructorDto>(instructor);

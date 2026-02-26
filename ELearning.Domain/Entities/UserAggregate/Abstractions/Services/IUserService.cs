@@ -2,7 +2,7 @@
 
 public interface IUserService
 {
-    Task<bool> IsEmailUniqueAsync(string email, Guid? excludeUserId = null);
+    Task<bool> IsEmailUniqueAsync(string email, Guid? excludeUserId = null, CancellationToken cancellationToken = default);
 
     string HashPassword(string password);
 

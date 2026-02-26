@@ -22,7 +22,7 @@ public class UpdateCourseCommandHandler(
         if (!currentUserService.IsAuthenticated || currentUserService.UserId is null)
             throw new ForbiddenAccessException();
 
-        var course = await courseRepository.GetByIdAsync(request.CourseId) ??
+        var course = await courseRepository.GetByIdAsync(request.CourseId, cancellationToken) ??
             throw new NotFoundException(nameof(Course), request.CourseId);
 
         // Check if the current user is the instructor of this course or an admin
@@ -52,7 +52,7 @@ public class UpdateCourseCommandHandler(
         if (course.IsFeatured != request.IsFeatured)
             course.ToggleFeatured();
 
-        await courseRepository.UpdateAsync(course);
+        await courseRepository.UpdateAsync(course, cancellationToken);
 
         return Result.Success();
     }

@@ -22,11 +22,11 @@ public class AuthService(
         IUserService userService,
         ILogger<AuthService> logger) : IAuthService
 {
-    public async Task<AuthResult> AuthenticateAsync(string email, string password)
+    public async Task<AuthResult> AuthenticateAsync(string email, string password, CancellationToken cancellationToken = default)
     {
         try
         {
-            var user = await userRepository.GetByEmailAsync(email);
+            var user = await userRepository.GetByEmailAsync(email, cancellationToken);
 
             if (user == null)
             {
@@ -44,8 +44,8 @@ public class AuthService(
             }
 
             user.RecordLogin();
-            await userRepository.UpdateAsync(user);
-            await unitOfWork.SaveChangesAsync();
+            await userRepository.UpdateAsync(user, cancellationToken);
+            await unitOfWork.SaveChangesAsync(cancellationToken);
 
             var token = await GenerateJwtToken(user);
 
@@ -63,11 +63,11 @@ public class AuthService(
         }
     }
 
-    public async Task<AuthResult> RegisterStudentAsync(string firstName, string lastName, string email, string password)
+    public async Task<AuthResult> RegisterStudentAsync(string firstName, string lastName, string email, string password, CancellationToken cancellationToken = default)
     {
         try
         {
-            if (!await userService.IsEmailUniqueAsync(email))
+            if (!await userService.IsEmailUniqueAsync(email, cancellationToken: cancellationToken))
             {
                 return AuthResult.Failed("Email is already in use.");
             }
@@ -80,8 +80,8 @@ public class AuthService(
                 Email.Create(email),
                 passwordHash);
 
-            await studentRepository.AddAsync(student);
-            await unitOfWork.SaveChangesAsync();
+            await studentRepository.AddAsync(student, cancellationToken);
+            await unitOfWork.SaveChangesAsync(cancellationToken);
 
             var token = await GenerateJwtToken(student);
 
@@ -99,11 +99,11 @@ public class AuthService(
         }
     }
 
-    public async Task<AuthResult> RegisterInstructorAsync(string firstName, string lastName, string email, string password, string bio, string expertise)
+    public async Task<AuthResult> RegisterInstructorAsync(string firstName, string lastName, string email, string password, string bio, string expertise, CancellationToken cancellationToken = default)
     {
         try
         {
-            if (!await userService.IsEmailUniqueAsync(email))
+            if (!await userService.IsEmailUniqueAsync(email, cancellationToken: cancellationToken))
             {
                 return AuthResult.Failed("Email is already in use.");
             }
@@ -118,8 +118,8 @@ public class AuthService(
                 bio,
                 expertise);
 
-            await instructorRepository.AddAsync(instructor);
-            await unitOfWork.SaveChangesAsync();
+            await instructorRepository.AddAsync(instructor, cancellationToken);
+            await unitOfWork.SaveChangesAsync(cancellationToken);
 
             var token = await GenerateJwtToken(instructor);
 
