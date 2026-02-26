@@ -20,14 +20,14 @@ This repository is intended as **sample code for engineering interviews and job 
 - MediatR
 - FluentValidation
 - EF Core (SQL Server)
-- GraphQL
+- GraphQL (secondary API surface)
 - Dapr (read-model integrations)
 - xUnit v3
 
 ## Solution Structure
 
 ```text
-ELearning.API                # REST + GraphQL host, middleware, auth, versioning
+ELearning.API                # REST-first host (Swagger), plus GraphQL endpoint
 ELearning.Application        # Commands/queries, handlers, DTOs, behaviors, interfaces
 ELearning.Domain             # Aggregates, entities, value objects, domain rules/events
 ELearning.Infrastructure     # EF repositories, read-model services, external implementations
@@ -86,9 +86,10 @@ dotnet run --project ELearning.API/ELearning.API.csproj
 
 Endpoints:
 
+- REST docs (Swagger UI): `/`
+- OpenAPI JSON: `/swagger/v1/swagger.json`
 - REST: `/api/*`
 - GraphQL: `/graphql`
-- Swagger UI: enabled in Development
 
 ## Build and Test
 

@@ -7,6 +7,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Ocelot.Cache.CacheManager;
 using Ocelot.DependencyInjection;
+using System.Reflection;
 using System.Text;
 using System.Text.Json.Serialization;
 
@@ -93,14 +94,26 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     });
 
 // Add swagger with JWT support
+builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo
     {
         Title = "E-Learning Platform API",
         Version = "v1",
-        Description = "A GraphQL and REST API for an e-learning platform."
+        Description = "REST-first API for the E-Learning platform. GraphQL is available as a secondary interface at /graphql.",
+        Contact = new OpenApiContact
+        {
+            Name = "E-Learning API"
+        }
     });
+
+    var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    var xmlPath = System.IO.Path.Combine(AppContext.BaseDirectory, xmlFile);
+    if (File.Exists(xmlPath))
+    {
+        c.IncludeXmlComments(xmlPath, includeControllerXmlComments: true);
+    }
 
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
@@ -150,14 +163,20 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.UseDeveloperExceptionPage();
-    app.UseSwagger();
-    app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "E-Learning Platform API v1"));
 }
 else
 {
     app.UseExceptionHandler("/Error");
     app.UseHsts();
 }
+
+app.UseSwagger();
+app.UseSwaggerUI(c =>
+{
+    c.RoutePrefix = string.Empty;
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "E-Learning Platform REST API v1");
+    c.DocumentTitle = "E-Learning REST API Docs";
+});
 
 app.UseHttpsRedirection();
 app.UseRouting();
