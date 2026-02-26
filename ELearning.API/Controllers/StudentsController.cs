@@ -1,4 +1,6 @@
-﻿using ELearning.Application.Enrollments.Dtos;
+using Asp.Versioning;
+using ELearning.API.Contracts;
+using ELearning.Application.Enrollments.Dtos;
 using ELearning.Application.Students.Dtos;
 using ELearning.Application.Students.Queries;
 using ELearning.SharedKernel;
@@ -8,57 +10,40 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace ELearning.API.Controllers;
 
-[ApiController]
+[ApiVersion("1.0")]
+[Route("api/v{version:apiVersion}/[controller]")]
 [Route("api/[controller]")]
-public class StudentsController : ControllerBase
+public class StudentsController(IMediator mediator) : ApiControllerBase
 {
-    private readonly IMediator _mediator;
-
-    public StudentsController(IMediator mediator)
-    {
-        _mediator = mediator;
-    }
-
-    [HttpGet("{id}")]
+    [HttpGet("{id:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<StudentDto>> GetStudent(Guid id)
+    public async Task<ActionResult<ApiResponse<StudentDto>>> GetStudent(Guid id, CancellationToken cancellationToken)
     {
         var query = new GetStudentProfileQuery { StudentId = id };
-        var result = await _mediator.Send(query);
-
-        if (result.IsSuccess)
-        {
-            return Ok(result.Value);
-        }
-
-        return NotFound(result.Error);
+        var result = await mediator.Send(query, cancellationToken);
+        return FromResult(result, error => error.StartsWith("Student not found", StringComparison.OrdinalIgnoreCase));
     }
 
-    [HttpGet("{id}/progress")]
+    [HttpGet("{id:guid}/progress")]
     [Authorize]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<StudentProgressDto>> GetStudentProgress(Guid id)
+    public async Task<ActionResult<ApiResponse<StudentProgressDto>>> GetStudentProgress(Guid id, CancellationToken cancellationToken)
     {
         var query = new GetStudentProgressQuery { StudentId = id };
-        var result = await _mediator.Send(query);
-
-        if (result.IsSuccess)
-        {
-            return Ok(result.Value);
-        }
-
-        return NotFound(result.Error);
+        var result = await mediator.Send(query, cancellationToken);
+        return FromResult(result, error => error.StartsWith("Student", StringComparison.OrdinalIgnoreCase));
     }
 
-    [HttpGet("{id}/enrollments")]
+    [HttpGet("{id:guid}/enrollments")]
     [Authorize]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<ActionResult<PaginatedList<EnrollmentDto>>> GetStudentEnrollments(
+    public async Task<ActionResult<ApiResponse<PaginatedList<EnrollmentDto>>>> GetStudentEnrollments(
         Guid id,
         [FromQuery] int pageNumber = 1,
-        [FromQuery] int pageSize = 10)
+        [FromQuery] int pageSize = 10,
+        CancellationToken cancellationToken = default)
     {
         var query = new GetStudentEnrollmentsQuery
         {
@@ -67,13 +52,7 @@ public class StudentsController : ControllerBase
             PageSize = pageSize
         };
 
-        var result = await _mediator.Send(query);
-
-        if (result.IsSuccess)
-        {
-            return Ok(result.Value);
-        }
-
-        return BadRequest(result.Error);
+        var result = await mediator.Send(query, cancellationToken);
+        return FromResult(result);
     }
 }

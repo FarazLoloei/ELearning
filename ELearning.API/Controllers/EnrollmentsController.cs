@@ -1,4 +1,6 @@
-﻿using ELearning.Application.Enrollments.Commands;
+using Asp.Versioning;
+using ELearning.API.Contracts;
+using ELearning.Application.Enrollments.Commands;
 using ELearning.Application.Enrollments.Dtos;
 using ELearning.Application.Enrollments.Queries;
 using MediatR;
@@ -7,72 +9,55 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace ELearning.API.Controllers;
 
-[ApiController]
+[ApiVersion("1.0")]
+[Route("api/v{version:apiVersion}/[controller]")]
 [Route("api/[controller]")]
-public class EnrollmentsController : ControllerBase
+public class EnrollmentsController(IMediator mediator) : ApiControllerBase
 {
-    private readonly IMediator _mediator;
-
-    public EnrollmentsController(IMediator mediator)
-    {
-        _mediator = mediator;
-    }
-
-    [HttpGet("{id}")]
+    [HttpGet("{id:guid}")]
     [Authorize]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<EnrollmentDetailDto>> GetEnrollment(Guid id)
+    public async Task<ActionResult<ApiResponse<EnrollmentDetailDto>>> GetEnrollment(Guid id, CancellationToken cancellationToken)
     {
         var query = new GetEnrollmentDetailQuery { EnrollmentId = id };
-        var result = await _mediator.Send(query);
-
-        if (result.IsSuccess)
-        {
-            return Ok(result.Value);
-        }
-
-        return NotFound(result.Error);
+        var result = await mediator.Send(query, cancellationToken);
+        return FromResult(result, error => error.StartsWith("Enrollment not found", StringComparison.OrdinalIgnoreCase));
     }
 
     [HttpPost]
     [Authorize(Roles = "Student")]
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<Guid>> CreateEnrollment(CreateEnrollmentCommand command)
+    public async Task<ActionResult<ApiResponse<object?>>> CreateEnrollment(
+        CreateEnrollmentCommand command,
+        CancellationToken cancellationToken)
     {
-        var result = await _mediator.Send(command);
-
-        if (result.IsSuccess)
+        var result = await mediator.Send(command, cancellationToken);
+        if (!result.IsSuccess)
         {
-            return CreatedAtAction(nameof(GetEnrollment), result);
-            //return CreatedAtAction(nameof(GetEnrollment), new { id = result.Value }, result.Value);
+            return BadRequestResponse<object?>(result.Error);
         }
 
-        return BadRequest(result.Error);
+        return CreatedResponse();
     }
 
-    [HttpPut("{id}/status")]
+    [HttpPut("{id:guid}/status")]
     [Authorize]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> UpdateEnrollmentStatus(Guid id, UpdateEnrollmentStatusCommand command)
+    public async Task<ActionResult<ApiResponse<object?>>> UpdateEnrollmentStatus(
+        Guid id,
+        UpdateEnrollmentStatusCommand command,
+        CancellationToken cancellationToken)
     {
         if (id != command.EnrollmentId)
         {
-            return BadRequest();
+            return BadRequestResponse<object?>("Route id does not match payload EnrollmentId.");
         }
 
-        var result = await _mediator.Send(command);
-
-        if (result.IsSuccess)
-        {
-            return NoContent();
-        }
-
-        return result.Error.StartsWith("Enrollment not found")
-            ? NotFound(result.Error)
-            : BadRequest(result.Error);
+        var result = await mediator.Send(command, cancellationToken);
+        return FromResult(result, error => error.StartsWith("Enrollment not found", StringComparison.OrdinalIgnoreCase));
     }
 }

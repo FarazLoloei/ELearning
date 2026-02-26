@@ -1,4 +1,6 @@
-﻿using ELearning.Application.Courses.Commands;
+using Asp.Versioning;
+using ELearning.API.Contracts;
+using ELearning.Application.Courses.Commands;
 using ELearning.Application.Courses.Dtos;
 using ELearning.Application.Courses.Queries;
 using ELearning.SharedKernel;
@@ -8,26 +10,21 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace ELearning.API.Controllers;
 
-[ApiController]
+[ApiVersion("1.0")]
+[Route("api/v{version:apiVersion}/[controller]")]
 [Route("api/[controller]")]
-public class CoursesController : ControllerBase
+public class CoursesController(IMediator mediator) : ApiControllerBase
 {
-    private readonly IMediator _mediator;
-
-    public CoursesController(IMediator mediator)
-    {
-        _mediator = mediator;
-    }
-
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<ActionResult<PaginatedList<CourseListDto>>> GetCourses(
-        [FromQuery] string searchTerm,
+    public async Task<ActionResult<ApiResponse<PaginatedList<CourseListDto>>>> GetCourses(
+        [FromQuery] string? searchTerm,
         [FromQuery] int? categoryId,
         [FromQuery] int? levelId,
         [FromQuery] bool? isFeatured,
         [FromQuery] int pageNumber = 1,
-        [FromQuery] int pageSize = 10)
+        [FromQuery] int pageSize = 10,
+        CancellationToken cancellationToken = default)
     {
         var query = new GetCoursesListQuery
         {
@@ -39,35 +36,25 @@ public class CoursesController : ControllerBase
             PageSize = pageSize
         };
 
-        var result = await _mediator.Send(query);
-
-        if (result.IsSuccess)
-        {
-            return Ok(result.Value);
-        }
-
-        return BadRequest(result.Error);
+        var result = await mediator.Send(query, cancellationToken);
+        return FromResult(result);
     }
 
-    [HttpGet("{id}")]
+    [HttpGet("{id:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<CourseDto>> GetCourse(Guid id)
+    public async Task<ActionResult<ApiResponse<CourseDto>>> GetCourse(Guid id, CancellationToken cancellationToken)
     {
         var query = new GetCourseDetailQuery { CourseId = id };
-        var result = await _mediator.Send(query);
-
-        if (result.IsSuccess)
-        {
-            return Ok(result.Value);
-        }
-
-        return NotFound(result.Error);
+        var result = await mediator.Send(query, cancellationToken);
+        return FromResult(result, error => error.StartsWith("Course not found", StringComparison.OrdinalIgnoreCase));
     }
 
     [HttpGet("featured")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<ActionResult<List<CourseListDto>>> GetFeaturedCourses([FromQuery] int count = 5)
+    public async Task<ActionResult<ApiResponse<List<CourseListDto>>>> GetFeaturedCourses(
+        [FromQuery] int count = 5,
+        CancellationToken cancellationToken = default)
     {
         var query = new GetCoursesListQuery
         {
@@ -75,83 +62,78 @@ public class CoursesController : ControllerBase
             PageSize = count
         };
 
-        var result = await _mediator.Send(query);
-
-        if (result.IsSuccess)
+        var result = await mediator.Send(query, cancellationToken);
+        if (!result.IsSuccess)
         {
-            return Ok(result.Value.Items);
+            return BadRequestResponse<List<CourseListDto>>(result.Error);
         }
 
-        return BadRequest(result.Error);
+        return Ok(ApiResponse<List<CourseListDto>>.Success(result.Value.Items.ToList()));
     }
 
-    [HttpGet("category/{categoryId}")]
+    [HttpGet("category/{categoryId:int}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<ActionResult<List<CourseListDto>>> GetCoursesByCategory(int categoryId)
+    public async Task<ActionResult<ApiResponse<List<CourseListDto>>>> GetCoursesByCategory(
+        int categoryId,
+        CancellationToken cancellationToken = default)
     {
         var query = new GetCoursesListQuery
         {
             CategoryId = categoryId
         };
 
-        var result = await _mediator.Send(query);
-
-        if (result.IsSuccess)
+        var result = await mediator.Send(query, cancellationToken);
+        if (!result.IsSuccess)
         {
-            return Ok(result.Value.Items);
+            return BadRequestResponse<List<CourseListDto>>(result.Error);
         }
 
-        return BadRequest(result.Error);
+        return Ok(ApiResponse<List<CourseListDto>>.Success(result.Value.Items.ToList()));
     }
 
     [HttpPost]
     [Authorize(Roles = "Instructor")]
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<Guid>> CreateCourse(CreateCourseCommand command)
+    public async Task<ActionResult<ApiResponse<object?>>> CreateCourse(
+        CreateCourseCommand command,
+        CancellationToken cancellationToken)
     {
-        var result = await _mediator.Send(command);
-
-        if (result.IsSuccess)
+        var result = await mediator.Send(command, cancellationToken);
+        if (!result.IsSuccess)
         {
-            //return CreatedAtAction(nameof(GetCourse), new { id = result.Value }, result.Value);
-            return CreatedAtAction(nameof(GetCourse), result);
+            return BadRequestResponse<object?>(result.Error);
         }
 
-        return BadRequest(result.Error);
+        return CreatedResponse();
     }
 
-    [HttpPut("{id}")]
+    [HttpPut("{id:guid}")]
     [Authorize(Roles = "Instructor")]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> UpdateCourse(Guid id, UpdateCourseCommand command)
+    public async Task<ActionResult<ApiResponse<object?>>> UpdateCourse(
+        Guid id,
+        UpdateCourseCommand command,
+        CancellationToken cancellationToken)
     {
         if (id != command.CourseId)
-            return BadRequest();
+        {
+            return BadRequestResponse<object?>("Route id does not match payload CourseId.");
+        }
 
-        var result = await _mediator.Send(command);
-
-        if (result.IsSuccess)
-            return NoContent();
-
-        return result.Error.StartsWith("Course not found")
-            ? NotFound(result.Error)
-            : BadRequest(result.Error);
+        var result = await mediator.Send(command, cancellationToken);
+        return FromResult(result, error => error.StartsWith("Course not found", StringComparison.OrdinalIgnoreCase));
     }
 
-    [HttpDelete("{id}")]
+    [HttpDelete("{id:guid}")]
     [Authorize(Roles = "Instructor,Admin")]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> DeleteCourse(Guid id)
+    public async Task<ActionResult<ApiResponse<object?>>> DeleteCourse(Guid id, CancellationToken cancellationToken)
     {
-        var result = await _mediator.Send(new DeleteCourseCommand(id));
-
-        if (result.IsSuccess)
-            return NoContent();
-
-        return NotFound(result.Error);
+        var result = await mediator.Send(new DeleteCourseCommand(id), cancellationToken);
+        return FromResult(result, error => error.StartsWith("Course not found", StringComparison.OrdinalIgnoreCase));
     }
 }

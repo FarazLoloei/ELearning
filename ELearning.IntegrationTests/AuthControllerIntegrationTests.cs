@@ -31,8 +31,11 @@ public sealed class AuthControllerIntegrationTests : IClassFixture<TestWebApplic
 
         using var responseStream = await response.Content.ReadAsStreamAsync(cancellationToken);
         using var content = await JsonDocument.ParseAsync(responseStream, cancellationToken: cancellationToken);
-        Assert.True(content.RootElement.GetProperty("success").GetBoolean());
-        Assert.Equal("stub-token", content.RootElement.GetProperty("token").GetString());
-        Assert.Equal("sample.user@elearning.test", content.RootElement.GetProperty("email").GetString());
+        Assert.True(content.RootElement.GetProperty("succeeded").GetBoolean());
+
+        var authResult = content.RootElement.GetProperty("data");
+        Assert.True(authResult.GetProperty("success").GetBoolean());
+        Assert.Equal("stub-token", authResult.GetProperty("token").GetString());
+        Assert.Equal("sample.user@elearning.test", authResult.GetProperty("email").GetString());
     }
 }
