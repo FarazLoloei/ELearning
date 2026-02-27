@@ -22,6 +22,7 @@ public class EnrollmentConfiguration : IEntityTypeConfiguration<Enrollment>
         builder.OwnsOne(e => e.CourseRating, nb =>
         {
             nb.Property(r => r.Value).HasColumnName("CourseRatingValue");
+            nb.Property(r => r.NumberOfRatings).HasColumnName("CourseRatingCount");
         });
 
         // Configure relationships
