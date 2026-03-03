@@ -19,7 +19,8 @@ public sealed class TestWebApplicationFactory : WebApplicationFactory<Program>
         {
             var testSettings = new Dictionary<string, string?>
             {
-                ["ConnectionStrings:DefaultConnection"] = "Server=(localdb)\\mssqllocaldb;Database=ELearning_IntegrationTests;Trusted_Connection=True;",
+                ["Database:Provider"] = "SqliteInMemory",
+                ["Database:SqliteInMemoryConnection"] = "Data Source=:memory:;Cache=Shared",
                 ["JwtSettings:Issuer"] = "integration-tests",
                 ["JwtSettings:Audience"] = "integration-tests",
                 ["JwtSettings:Secret"] = "integration-tests-secret-key-with-32chars",

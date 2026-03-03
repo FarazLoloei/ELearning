@@ -1,6 +1,8 @@
 using ELearning.API.GraphQL;
+using ELearning.API.Facades;
 using ELearning.Application;
 using ELearning.Infrastructure;
+using ELearning.Infrastructure.Data;
 using ELearning.Infrastructure.DaprServices;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
@@ -157,9 +159,16 @@ builder.Services.AddControllers()
 
 // Add HttpContextAccessor for CurrentUserService
 builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<IApiFacade, ApiFacade>();
 
 // Build the app
 var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    await dbContext.Database.EnsureCreatedAsync();
+}
 
 // Configure the HTTP request pipeline
 if (app.Environment.IsDevelopment())

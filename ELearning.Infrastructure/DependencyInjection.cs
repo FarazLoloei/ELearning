@@ -8,6 +8,7 @@ using ELearning.Domain.Entities.UserAggregate.Abstractions.Services;
 using ELearning.Infrastructure.Data;
 using ELearning.Infrastructure.Data.Repositories;
 using ELearning.Infrastructure.Services;
+using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -16,12 +17,44 @@ namespace ELearning.Infrastructure;
 
 public static class DependencyInjection
 {
+    private const string SqliteInMemoryProvider = "SqliteInMemory";
+    private const string SqlServerProvider = "SqlServer";
+
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddDbContext<ApplicationDbContext>(options =>
-            options.UseSqlServer(
-                configuration.GetConnectionString("DefaultConnection"),
-                b => b.MigrationsAssembly(typeof(ApplicationDbContext).Assembly.FullName)));
+        var databaseProvider = configuration["Database:Provider"] ?? SqliteInMemoryProvider;
+
+        if (databaseProvider.Equals(SqliteInMemoryProvider, StringComparison.OrdinalIgnoreCase))
+        {
+            var connectionString = configuration["Database:SqliteInMemoryConnection"] ?? "Data Source=:memory:;Cache=Shared";
+
+            services.AddSingleton(_ =>
+            {
+                var connection = new SqliteConnection(connectionString);
+                connection.Open();
+                return connection;
+            });
+
+            services.AddDbContext<ApplicationDbContext>((serviceProvider, options) =>
+            {
+                var connection = serviceProvider.GetRequiredService<SqliteConnection>();
+                options.UseSqlite(connection);
+            });
+        }
+        else if (databaseProvider.Equals(SqlServerProvider, StringComparison.OrdinalIgnoreCase))
+        {
+            var defaultConnection = configuration.GetConnectionString("DefaultConnection")
+                ?? throw new InvalidOperationException("ConnectionStrings:DefaultConnection is required when using SqlServer provider.");
+
+            services.AddDbContext<ApplicationDbContext>(options =>
+                options.UseSqlServer(
+                    defaultConnection,
+                    sqlServerOptions => sqlServerOptions.MigrationsAssembly(typeof(ApplicationDbContext).Assembly.FullName)));
+        }
+        else
+        {
+            throw new InvalidOperationException($"Unsupported Database:Provider '{databaseProvider}'. Supported values: {SqliteInMemoryProvider}, {SqlServerProvider}.");
+        }
 
         services.AddScoped<ICourseRepository, CourseRepository>();
         services.AddScoped<IUserRepository, UserRepository>();

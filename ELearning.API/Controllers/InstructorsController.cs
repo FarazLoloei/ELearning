@@ -1,12 +1,12 @@
 using Asp.Versioning;
 using ELearning.API.Contracts;
+using ELearning.API.Facades;
 using ELearning.Application.Courses.Queries;
 using ELearning.Application.Instructors.Dtos;
 using ELearning.Application.Instructors.Queries;
 using ELearning.Application.Submissions.Dtos;
 using ELearning.Application.Submissions.Queries;
 using ELearning.SharedKernel;
-using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -15,7 +15,7 @@ namespace ELearning.API.Controllers;
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/[controller]")]
 [Route("api/[controller]")]
-public class InstructorsController(IMediator mediator) : ApiControllerBase
+public class InstructorsController(IApiFacade apiFacade) : ApiControllerBase
 {
     [HttpGet("{id:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -23,7 +23,7 @@ public class InstructorsController(IMediator mediator) : ApiControllerBase
     public async Task<ActionResult<ApiResponse<InstructorDto>>> GetInstructor(Guid id, CancellationToken cancellationToken)
     {
         var query = new GetInstructorProfileQuery { InstructorId = id };
-        var result = await mediator.Send(query, cancellationToken);
+        var result = await apiFacade.SendAsync(query, cancellationToken);
         return FromResult(result, error => error.StartsWith("Instructor not found", StringComparison.OrdinalIgnoreCase));
     }
 
@@ -33,7 +33,7 @@ public class InstructorsController(IMediator mediator) : ApiControllerBase
     public async Task<ActionResult<ApiResponse<InstructorCoursesDto>>> GetInstructorWithCourses(Guid id, CancellationToken cancellationToken)
     {
         var query = new GetInstructorCoursesQuery { InstructorId = id };
-        var result = await mediator.Send(query, cancellationToken);
+        var result = await apiFacade.SendAsync(query, cancellationToken);
         return FromResult(result, error => error.StartsWith("Instructor not found", StringComparison.OrdinalIgnoreCase));
     }
 
@@ -53,7 +53,7 @@ public class InstructorsController(IMediator mediator) : ApiControllerBase
             PageSize = pageSize
         };
 
-        var result = await mediator.Send(query, cancellationToken);
+        var result = await apiFacade.SendAsync(query, cancellationToken);
         return FromResult(result);
     }
 }

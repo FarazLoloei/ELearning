@@ -1,10 +1,10 @@
 using Asp.Versioning;
 using ELearning.API.Contracts;
+using ELearning.API.Facades;
 using ELearning.Application.Enrollments.Dtos;
 using ELearning.Application.Students.Dtos;
 using ELearning.Application.Students.Queries;
 using ELearning.SharedKernel;
-using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -13,7 +13,7 @@ namespace ELearning.API.Controllers;
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/[controller]")]
 [Route("api/[controller]")]
-public class StudentsController(IMediator mediator) : ApiControllerBase
+public class StudentsController(IApiFacade apiFacade) : ApiControllerBase
 {
     [HttpGet("{id:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -21,7 +21,7 @@ public class StudentsController(IMediator mediator) : ApiControllerBase
     public async Task<ActionResult<ApiResponse<StudentDto>>> GetStudent(Guid id, CancellationToken cancellationToken)
     {
         var query = new GetStudentProfileQuery { StudentId = id };
-        var result = await mediator.Send(query, cancellationToken);
+        var result = await apiFacade.SendAsync(query, cancellationToken);
         return FromResult(result, error => error.StartsWith("Student not found", StringComparison.OrdinalIgnoreCase));
     }
 
@@ -32,7 +32,7 @@ public class StudentsController(IMediator mediator) : ApiControllerBase
     public async Task<ActionResult<ApiResponse<StudentProgressDto>>> GetStudentProgress(Guid id, CancellationToken cancellationToken)
     {
         var query = new GetStudentProgressQuery { StudentId = id };
-        var result = await mediator.Send(query, cancellationToken);
+        var result = await apiFacade.SendAsync(query, cancellationToken);
         return FromResult(result, error => error.StartsWith("Student", StringComparison.OrdinalIgnoreCase));
     }
 
@@ -52,7 +52,7 @@ public class StudentsController(IMediator mediator) : ApiControllerBase
             PageSize = pageSize
         };
 
-        var result = await mediator.Send(query, cancellationToken);
+        var result = await apiFacade.SendAsync(query, cancellationToken);
         return FromResult(result);
     }
 }
