@@ -1,4 +1,5 @@
 using ELearning.API.Infrastructure;
+using FluentAssertions;
 using Microsoft.Extensions.Configuration;
 
 namespace ELearning.IntegrationTests;
@@ -14,7 +15,7 @@ public sealed class OcelotGatewayModeTests
 
         var enabled = OcelotGatewayMode.IsEnabled(configuration);
 
-        Assert.False(enabled);
+        enabled.Should().BeFalse();
     }
 
     [Theory]
@@ -31,6 +32,6 @@ public sealed class OcelotGatewayModeTests
 
         var enabled = OcelotGatewayMode.IsEnabled(configuration);
 
-        Assert.Equal(expected, enabled);
+        enabled.Should().Be(expected);
     }
 }

@@ -1,6 +1,7 @@
 using ELearning.API.Infrastructure;
 using ELearning.Infrastructure;
 using ELearning.Infrastructure.Data;
+using FluentAssertions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -18,7 +19,7 @@ public sealed class DatabaseInitializerTests
     {
         var result = DatabaseInitializer.ShouldApplyMigrations(provider);
 
-        Assert.Equal(expected, result);
+        result.Should().Be(expected);
     }
 
     [Fact]
@@ -43,6 +44,6 @@ public sealed class DatabaseInitializerTests
         using var scope = serviceProvider.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
         var canConnect = await dbContext.Database.CanConnectAsync(cancellationToken);
-        Assert.True(canConnect);
+        canConnect.Should().BeTrue();
     }
 }

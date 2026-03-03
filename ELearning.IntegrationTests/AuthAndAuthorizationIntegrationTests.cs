@@ -9,6 +9,7 @@ using ELearning.Domain.Entities.UserAggregate;
 using ELearning.Domain.ValueObjects;
 using ELearning.Infrastructure.Data;
 using ELearning.IntegrationTests.Infrastructure;
+using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 
@@ -44,17 +45,17 @@ public sealed class AuthAndAuthorizationIntegrationTests : IClassFixture<RealAut
             Password = password
         }, cancellationToken);
 
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
 
         using var responseStream = await response.Content.ReadAsStreamAsync(cancellationToken);
         using var content = await JsonDocument.ParseAsync(responseStream, cancellationToken: cancellationToken);
-        Assert.True(content.RootElement.GetProperty("succeeded").GetBoolean());
+        content.RootElement.GetProperty("succeeded").GetBoolean().Should().BeTrue();
 
         var authResult = content.RootElement.GetProperty("data");
-        Assert.True(authResult.GetProperty("success").GetBoolean());
+        authResult.GetProperty("success").GetBoolean().Should().BeTrue();
         var token = authResult.GetProperty("token").GetString();
-        Assert.False(string.IsNullOrWhiteSpace(token));
-        Assert.NotEqual("stub-token", token);
+        token.Should().NotBeNullOrWhiteSpace();
+        token.Should().NotBe("stub-token");
     }
 
     [Fact]
@@ -63,7 +64,7 @@ public sealed class AuthAndAuthorizationIntegrationTests : IClassFixture<RealAut
         var cancellationToken = TestContext.Current.CancellationToken;
         var response = await _client.GetAsync($"/api/students/{Guid.NewGuid()}/progress", cancellationToken);
 
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 
     [Fact]
@@ -76,7 +77,7 @@ public sealed class AuthAndAuthorizationIntegrationTests : IClassFixture<RealAut
 
         var response = await _client.SendAsync(request, cancellationToken);
 
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 
     [Fact]
@@ -91,7 +92,7 @@ public sealed class AuthAndAuthorizationIntegrationTests : IClassFixture<RealAut
 
         var response = await _client.SendAsync(request, cancellationToken);
 
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 
     private async Task<Guid> SeedStudentAsync(string email, string password, CancellationToken cancellationToken)
