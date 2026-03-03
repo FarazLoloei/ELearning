@@ -7,6 +7,7 @@ using ELearning.Domain.Entities.UserAggregate.Abstractions.Repositories;
 using ELearning.Domain.Entities.UserAggregate.Abstractions.Services;
 using ELearning.Infrastructure.Data;
 using ELearning.Infrastructure.Data.Repositories;
+using ELearning.Infrastructure.Outbox;
 using ELearning.Infrastructure.Services;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
@@ -78,6 +79,9 @@ public static class DependencyInjection
 
         services.AddHttpContextAccessor();
         services.AddScoped<ICurrentUserService, CurrentUserService>();
+
+        services.AddScoped<IOutboxDispatcher, OutboxDispatcher>();
+        services.AddHostedService<OutboxDispatcherHostedService>();
 
         return services;
     }

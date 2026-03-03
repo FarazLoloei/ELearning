@@ -17,4 +17,8 @@ public interface IApiFacade
     Task<AuthResult> RegisterStudentAsync(RegisterStudentRequest request, CancellationToken cancellationToken);
 
     Task<AuthResult> RegisterInstructorAsync(RegisterInstructorRequest request, CancellationToken cancellationToken);
+
+    Task<AuthResult> RefreshTokenAsync(RefreshTokenRequest request, CancellationToken cancellationToken);
+
+    Task<Result> RevokeTokenAsync(RevokeTokenRequest request, CancellationToken cancellationToken);
 }

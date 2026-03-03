@@ -54,8 +54,65 @@ public sealed class AuthAndAuthorizationIntegrationTests : IClassFixture<RealAut
         var authResult = content.RootElement.GetProperty("data");
         authResult.GetProperty("success").GetBoolean().Should().BeTrue();
         var token = authResult.GetProperty("token").GetString();
+        var refreshToken = authResult.GetProperty("refreshToken").GetString();
         token.Should().NotBeNullOrWhiteSpace();
         token.Should().NotBe("stub-token");
+        refreshToken.Should().NotBeNullOrWhiteSpace();
+    }
+
+    [Fact]
+    public async Task Refresh_And_RevokeTokenFlow_ShouldRotateAndInvalidateRefreshToken()
+    {
+        var cancellationToken = TestContext.Current.CancellationToken;
+        var email = $"refresh.flow.{Guid.NewGuid():N}@tests.io";
+        const string password = "P@ssword123!";
+
+        await SeedStudentAsync(email, password, cancellationToken);
+
+        var loginResponse = await _client.PostAsJsonAsync("/api/auth/login", new
+        {
+            Email = email,
+            Password = password
+        }, cancellationToken);
+        loginResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        using var loginStream = await loginResponse.Content.ReadAsStreamAsync(cancellationToken);
+        using var loginJson = await JsonDocument.ParseAsync(loginStream, cancellationToken: cancellationToken);
+        var firstRefreshToken = loginJson.RootElement.GetProperty("data").GetProperty("refreshToken").GetString();
+        firstRefreshToken.Should().NotBeNullOrWhiteSpace();
+
+        var refreshResponse = await _client.PostAsJsonAsync("/api/auth/refresh", new
+        {
+            RefreshToken = firstRefreshToken
+        }, cancellationToken);
+        refreshResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        using var refreshStream = await refreshResponse.Content.ReadAsStreamAsync(cancellationToken);
+        using var refreshJson = await JsonDocument.ParseAsync(refreshStream, cancellationToken: cancellationToken);
+        var rotatedRefreshToken = refreshJson.RootElement.GetProperty("data").GetProperty("refreshToken").GetString();
+        rotatedRefreshToken.Should().NotBeNullOrWhiteSpace();
+        rotatedRefreshToken.Should().NotBe(firstRefreshToken);
+
+        var revokeResponse = await _client.PostAsJsonAsync("/api/auth/revoke", new
+        {
+            RefreshToken = rotatedRefreshToken
+        }, cancellationToken);
+        revokeResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var revokedRefreshResponse = await _client.PostAsJsonAsync("/api/auth/refresh", new
+        {
+            RefreshToken = rotatedRefreshToken
+        }, cancellationToken);
+        revokedRefreshResponse.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+
+        using var scope = _factory.Services.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        var auditTypes = dbContext.SecurityAuditEvents
+            .Select(x => x.EventType)
+            .ToList();
+        auditTypes.Should().Contain("auth.login");
+        auditTypes.Should().Contain("auth.refresh");
+        auditTypes.Should().Contain("auth.revoke");
     }
 
     [Fact]

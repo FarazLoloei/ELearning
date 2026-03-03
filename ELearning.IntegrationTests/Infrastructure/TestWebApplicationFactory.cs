@@ -43,6 +43,7 @@ public sealed class TestWebApplicationFactory : WebApplicationFactory<Program>
         {
             var payload = new AuthPayload(
                 "stub-token",
+                "stub-refresh-token",
                 Guid.Parse("11111111-1111-1111-1111-111111111111"),
                 email,
                 "Integration Test User",
@@ -56,6 +57,12 @@ public sealed class TestWebApplicationFactory : WebApplicationFactory<Program>
 
         public Task<AuthResult> RegisterInstructorAsync(string firstName, string lastName, string email, string password, string bio, string expertise, CancellationToken cancellationToken)
             => Task.FromResult(AuthResult.Failed("Not used in this integration test."));
+
+        public Task<AuthResult> RefreshTokenAsync(string refreshToken, CancellationToken cancellationToken)
+            => Task.FromResult(AuthResult.Failed("Not used in this integration test."));
+
+        public Task<Result> RevokeRefreshTokenAsync(string refreshToken, CancellationToken cancellationToken)
+            => Task.FromResult(Result.Failure("Not used in this integration test."));
 
         public Task<string> GenerateJwtToken(User user)
             => Task.FromResult("stub-token");

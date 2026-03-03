@@ -1,11 +1,9 @@
 using ELearning.Domain.Entities.CourseAggregate;
-using ELearning.Domain.Entities.CourseAggregate.Events;
 using ELearning.Domain.Entities.CourseAggregate.Enums;
 using ELearning.Domain.Entities.UserAggregate;
 using ELearning.Domain.ValueObjects;
 using ELearning.Infrastructure.Data;
 using FluentAssertions;
-using MediatR;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 
@@ -14,7 +12,7 @@ namespace ELearning.IntegrationTests;
 public sealed class DomainEventsDispatchTests
 {
     [Fact]
-    public async Task SaveChangesAsync_WithPublisher_PublishesAndClearsDomainEvents()
+    public async Task SaveChangesAsync_ShouldWriteDomainEventsToOutbox_AndClearDomainEvents()
     {
         var cancellationToken = TestContext.Current.CancellationToken;
         await using var connection = new SqliteConnection("Data Source=:memory:");
@@ -24,34 +22,7 @@ public sealed class DomainEventsDispatchTests
             .UseSqlite(connection)
             .Options;
 
-        var publisher = new RecordingPublisher();
-        await using var dbContext = new ApplicationDbContext(options, publisher);
-        await dbContext.Database.EnsureCreatedAsync(cancellationToken);
-
-        var instructor = CreateInstructor();
-        dbContext.Instructors.Add(instructor);
-        var course = CreateCourse(instructor.Id);
-        dbContext.Courses.Add(course);
-
-        await dbContext.SaveChangesAsync(cancellationToken);
-
-        publisher.PublishedNotifications.Should().ContainSingle()
-            .Which.Should().BeOfType<CourseCreatedEvent>();
-        course.DomainEvents.Should().BeEmpty();
-    }
-
-    [Fact]
-    public async Task SaveChangesAsync_WithoutPublisher_ClearsDomainEvents()
-    {
-        var cancellationToken = TestContext.Current.CancellationToken;
-        await using var connection = new SqliteConnection("Data Source=:memory:");
-        await connection.OpenAsync(cancellationToken);
-
-        var options = new DbContextOptionsBuilder<ApplicationDbContext>()
-            .UseSqlite(connection)
-            .Options;
-
-        await using var dbContext = new ApplicationDbContext(options, publisher: null);
+        await using var dbContext = new ApplicationDbContext(options);
         await dbContext.Database.EnsureCreatedAsync(cancellationToken);
 
         var instructor = CreateInstructor();
@@ -62,12 +33,17 @@ public sealed class DomainEventsDispatchTests
         await dbContext.SaveChangesAsync(cancellationToken);
 
         course.DomainEvents.Should().BeEmpty();
+
+        var outboxMessages = await dbContext.OutboxMessages.ToListAsync(cancellationToken);
+        outboxMessages.Should().ContainSingle();
+        outboxMessages[0].Type.Should().Contain("CourseCreatedEvent");
+        outboxMessages[0].ProcessedOnUtc.Should().BeNull();
     }
 
     private static Course CreateCourse(Guid instructorId) =>
         new(
             "Domain Event Test Course",
-            "Tests domain event dispatch from ApplicationDbContext.",
+            "Tests domain event outbox from ApplicationDbContext.",
             instructorId,
             CourseCategory.Programming,
             CourseLevel.Beginner,
@@ -80,22 +56,4 @@ public sealed class DomainEventsDispatchTests
             "Publisher",
             Email.Create("domain.publisher@tests.io"),
             "hashed-password");
-
-    private sealed class RecordingPublisher : IPublisher
-    {
-        public List<object> PublishedNotifications { get; } = [];
-
-        public Task Publish(object notification, CancellationToken cancellationToken = default)
-        {
-            PublishedNotifications.Add(notification);
-            return Task.CompletedTask;
-        }
-
-        public Task Publish<TNotification>(TNotification notification, CancellationToken cancellationToken = default)
-            where TNotification : INotification
-        {
-            PublishedNotifications.Add(notification!);
-            return Task.CompletedTask;
-        }
-    }
 }
