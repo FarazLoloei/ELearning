@@ -1,7 +1,7 @@
 using Asp.Versioning;
 using ELearning.API.Contracts;
+using ELearning.API.Facades;
 using ELearning.API.Models;
-using ELearning.Application.Common.Interfaces;
 using ELearning.Application.Common.Model;
 using Microsoft.AspNetCore.Mvc;
 using LoginRequest = ELearning.API.Models.LoginRequest;
@@ -11,14 +11,14 @@ namespace ELearning.API.Controllers;
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/[controller]")]
 [Route("api/[controller]")]
-public class AuthController(IAuthService authService) : ApiControllerBase
+public class AuthController(IApiFacade apiFacade) : ApiControllerBase
 {
     [HttpPost("login")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<ActionResult<ApiResponse<AuthResult>>> Login(LoginRequest request, CancellationToken cancellationToken)
     {
-        var result = await authService.AuthenticateAsync(request.Email, request.Password, cancellationToken);
+        var result = await apiFacade.AuthenticateAsync(request, cancellationToken);
 
         if (result.Success)
         {
@@ -33,12 +33,7 @@ public class AuthController(IAuthService authService) : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<ApiResponse<AuthResult>>> RegisterStudent(RegisterStudentRequest request, CancellationToken cancellationToken)
     {
-        var result = await authService.RegisterStudentAsync(
-            request.FirstName,
-            request.LastName,
-            request.Email,
-            request.Password,
-            cancellationToken);
+        var result = await apiFacade.RegisterStudentAsync(request, cancellationToken);
 
         return result.Success
             ? Ok(ApiResponse<AuthResult>.Success(result))
@@ -50,14 +45,7 @@ public class AuthController(IAuthService authService) : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<ApiResponse<AuthResult>>> RegisterInstructor(RegisterInstructorRequest request, CancellationToken cancellationToken)
     {
-        var result = await authService.RegisterInstructorAsync(
-            request.FirstName,
-            request.LastName,
-            request.Email,
-            request.Password,
-            request.Bio,
-            request.Expertise,
-            cancellationToken);
+        var result = await apiFacade.RegisterInstructorAsync(request, cancellationToken);
 
         return result.Success
             ? Ok(ApiResponse<AuthResult>.Success(result))

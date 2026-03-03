@@ -1,9 +1,9 @@
 using Asp.Versioning;
 using ELearning.API.Contracts;
+using ELearning.API.Facades;
 using ELearning.Application.Submissions.Commands;
 using ELearning.Application.Submissions.Dtos;
 using ELearning.Application.Submissions.Queries;
-using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -12,7 +12,7 @@ namespace ELearning.API.Controllers;
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/[controller]")]
 [Route("api/[controller]")]
-public class SubmissionsController(IMediator mediator) : ApiControllerBase
+public class SubmissionsController(IApiFacade apiFacade) : ApiControllerBase
 {
     [HttpGet("{id:guid}")]
     [Authorize]
@@ -21,7 +21,7 @@ public class SubmissionsController(IMediator mediator) : ApiControllerBase
     public async Task<ActionResult<ApiResponse<SubmissionDetailDto>>> GetSubmission(Guid id, CancellationToken cancellationToken)
     {
         var query = new GetSubmissionDetailQuery { SubmissionId = id };
-        var result = await mediator.Send(query, cancellationToken);
+        var result = await apiFacade.SendAsync(query, cancellationToken);
         return FromResult(result, error => error.StartsWith("Submission not found", StringComparison.OrdinalIgnoreCase));
     }
 
@@ -33,7 +33,7 @@ public class SubmissionsController(IMediator mediator) : ApiControllerBase
         CreateSubmissionCommand command,
         CancellationToken cancellationToken)
     {
-        var result = await mediator.Send(command, cancellationToken);
+        var result = await apiFacade.SendAsync(command, cancellationToken);
         if (!result.IsSuccess)
         {
             return BadRequestResponse<object?>(result.Error);
@@ -57,7 +57,7 @@ public class SubmissionsController(IMediator mediator) : ApiControllerBase
             return BadRequestResponse<object?>("Route id does not match payload SubmissionId.");
         }
 
-        var result = await mediator.Send(command, cancellationToken);
+        var result = await apiFacade.SendAsync(command, cancellationToken);
         return FromResult(result, error => error.StartsWith("Submission not found", StringComparison.OrdinalIgnoreCase));
     }
 }

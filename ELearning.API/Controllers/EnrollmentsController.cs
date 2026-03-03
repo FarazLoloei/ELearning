@@ -1,9 +1,9 @@
 using Asp.Versioning;
 using ELearning.API.Contracts;
+using ELearning.API.Facades;
 using ELearning.Application.Enrollments.Commands;
 using ELearning.Application.Enrollments.Dtos;
 using ELearning.Application.Enrollments.Queries;
-using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -12,7 +12,7 @@ namespace ELearning.API.Controllers;
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/[controller]")]
 [Route("api/[controller]")]
-public class EnrollmentsController(IMediator mediator) : ApiControllerBase
+public class EnrollmentsController(IApiFacade apiFacade) : ApiControllerBase
 {
     [HttpGet("{id:guid}")]
     [Authorize]
@@ -21,7 +21,7 @@ public class EnrollmentsController(IMediator mediator) : ApiControllerBase
     public async Task<ActionResult<ApiResponse<EnrollmentDetailDto>>> GetEnrollment(Guid id, CancellationToken cancellationToken)
     {
         var query = new GetEnrollmentDetailQuery { EnrollmentId = id };
-        var result = await mediator.Send(query, cancellationToken);
+        var result = await apiFacade.SendAsync(query, cancellationToken);
         return FromResult(result, error => error.StartsWith("Enrollment not found", StringComparison.OrdinalIgnoreCase));
     }
 
@@ -33,7 +33,7 @@ public class EnrollmentsController(IMediator mediator) : ApiControllerBase
         CreateEnrollmentCommand command,
         CancellationToken cancellationToken)
     {
-        var result = await mediator.Send(command, cancellationToken);
+        var result = await apiFacade.SendAsync(command, cancellationToken);
         if (!result.IsSuccess)
         {
             return BadRequestResponse<object?>(result.Error);
@@ -57,7 +57,7 @@ public class EnrollmentsController(IMediator mediator) : ApiControllerBase
             return BadRequestResponse<object?>("Route id does not match payload EnrollmentId.");
         }
 
-        var result = await mediator.Send(command, cancellationToken);
+        var result = await apiFacade.SendAsync(command, cancellationToken);
         return FromResult(result, error => error.StartsWith("Enrollment not found", StringComparison.OrdinalIgnoreCase));
     }
 }

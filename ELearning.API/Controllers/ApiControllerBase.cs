@@ -1,12 +1,14 @@
 using ELearning.API.Contracts;
 using Microsoft.AspNetCore.Mvc;
+using ApplicationModel = ELearning.Application.Common.Model;
+using Result = ELearning.Application.Common.Model.Result;
 
 namespace ELearning.API.Controllers;
 
 [ApiController]
 public abstract class ApiControllerBase : ControllerBase
 {
-    protected ActionResult<ApiResponse<T>> FromResult<T>(ELearning.Application.Common.Model.Result<T> result, Func<string, bool>? isNotFound = null)
+    protected ActionResult<ApiResponse<T>> FromResult<T>(ApplicationModel.Result<T> result, Func<string, bool>? isNotFound = null)
     {
         if (result.IsSuccess)
         {
@@ -16,7 +18,7 @@ public abstract class ApiControllerBase : ControllerBase
         return BuildFailure<T>(result.Error, isNotFound);
     }
 
-    protected ActionResult<ApiResponse<object?>> FromResult(ELearning.Application.Common.Model.Result result, Func<string, bool>? isNotFound = null)
+    protected ActionResult<ApiResponse<object?>> FromResult(Result result, Func<string, bool>? isNotFound = null)
     {
         if (result.IsSuccess)
         {

@@ -1,4 +1,5 @@
 using ELearning.API.GraphQL;
+using ELearning.API.Facades;
 using ELearning.Application;
 using ELearning.Infrastructure;
 using ELearning.Infrastructure.Data;
@@ -158,6 +159,7 @@ builder.Services.AddControllers()
 
 // Add HttpContextAccessor for CurrentUserService
 builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<IApiFacade, ApiFacade>();
 
 // Build the app
 var app = builder.Build();

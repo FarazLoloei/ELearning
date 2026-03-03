@@ -1,10 +1,10 @@
 using Asp.Versioning;
 using ELearning.API.Contracts;
+using ELearning.API.Facades;
 using ELearning.Application.Courses.Commands;
 using ELearning.Application.Courses.Dtos;
 using ELearning.Application.Courses.Queries;
 using ELearning.SharedKernel;
-using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -13,7 +13,7 @@ namespace ELearning.API.Controllers;
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/[controller]")]
 [Route("api/[controller]")]
-public class CoursesController(IMediator mediator) : ApiControllerBase
+public class CoursesController(IApiFacade apiFacade) : ApiControllerBase
 {
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -36,7 +36,7 @@ public class CoursesController(IMediator mediator) : ApiControllerBase
             PageSize = pageSize
         };
 
-        var result = await mediator.Send(query, cancellationToken);
+        var result = await apiFacade.SendAsync(query, cancellationToken);
         return FromResult(result);
     }
 
@@ -46,7 +46,7 @@ public class CoursesController(IMediator mediator) : ApiControllerBase
     public async Task<ActionResult<ApiResponse<CourseDto>>> GetCourse(Guid id, CancellationToken cancellationToken)
     {
         var query = new GetCourseDetailQuery { CourseId = id };
-        var result = await mediator.Send(query, cancellationToken);
+        var result = await apiFacade.SendAsync(query, cancellationToken);
         return FromResult(result, error => error.StartsWith("Course not found", StringComparison.OrdinalIgnoreCase));
     }
 
@@ -62,7 +62,7 @@ public class CoursesController(IMediator mediator) : ApiControllerBase
             PageSize = count
         };
 
-        var result = await mediator.Send(query, cancellationToken);
+        var result = await apiFacade.SendAsync(query, cancellationToken);
         if (!result.IsSuccess)
         {
             return BadRequestResponse<List<CourseListDto>>(result.Error);
@@ -82,7 +82,7 @@ public class CoursesController(IMediator mediator) : ApiControllerBase
             CategoryId = categoryId
         };
 
-        var result = await mediator.Send(query, cancellationToken);
+        var result = await apiFacade.SendAsync(query, cancellationToken);
         if (!result.IsSuccess)
         {
             return BadRequestResponse<List<CourseListDto>>(result.Error);
@@ -99,7 +99,7 @@ public class CoursesController(IMediator mediator) : ApiControllerBase
         CreateCourseCommand command,
         CancellationToken cancellationToken)
     {
-        var result = await mediator.Send(command, cancellationToken);
+        var result = await apiFacade.SendAsync(command, cancellationToken);
         if (!result.IsSuccess)
         {
             return BadRequestResponse<object?>(result.Error);
@@ -123,7 +123,7 @@ public class CoursesController(IMediator mediator) : ApiControllerBase
             return BadRequestResponse<object?>("Route id does not match payload CourseId.");
         }
 
-        var result = await mediator.Send(command, cancellationToken);
+        var result = await apiFacade.SendAsync(command, cancellationToken);
         return FromResult(result, error => error.StartsWith("Course not found", StringComparison.OrdinalIgnoreCase));
     }
 
@@ -133,7 +133,7 @@ public class CoursesController(IMediator mediator) : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<ApiResponse<object?>>> DeleteCourse(Guid id, CancellationToken cancellationToken)
     {
-        var result = await mediator.Send(new DeleteCourseCommand(id), cancellationToken);
+        var result = await apiFacade.SendAsync(new DeleteCourseCommand(id), cancellationToken);
         return FromResult(result, error => error.StartsWith("Course not found", StringComparison.OrdinalIgnoreCase));
     }
 }
