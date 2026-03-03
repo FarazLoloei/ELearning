@@ -4,6 +4,7 @@ using ELearning.Domain.Entities.CourseAggregate.Enums;
 using ELearning.Domain.Entities.UserAggregate;
 using ELearning.Domain.ValueObjects;
 using ELearning.Infrastructure.Data;
+using FluentAssertions;
 using MediatR;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
@@ -34,9 +35,9 @@ public sealed class DomainEventsDispatchTests
 
         await dbContext.SaveChangesAsync(cancellationToken);
 
-        Assert.Single(publisher.PublishedNotifications);
-        Assert.IsType<CourseCreatedEvent>(publisher.PublishedNotifications[0]);
-        Assert.Empty(course.DomainEvents);
+        publisher.PublishedNotifications.Should().ContainSingle()
+            .Which.Should().BeOfType<CourseCreatedEvent>();
+        course.DomainEvents.Should().BeEmpty();
     }
 
     [Fact]
@@ -60,7 +61,7 @@ public sealed class DomainEventsDispatchTests
 
         await dbContext.SaveChangesAsync(cancellationToken);
 
-        Assert.Empty(course.DomainEvents);
+        course.DomainEvents.Should().BeEmpty();
     }
 
     private static Course CreateCourse(Guid instructorId) =>

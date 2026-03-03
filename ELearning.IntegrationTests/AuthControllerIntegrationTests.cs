@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
 using ELearning.IntegrationTests.Infrastructure;
+using FluentAssertions;
 
 namespace ELearning.IntegrationTests;
 
@@ -27,15 +28,15 @@ public sealed class AuthControllerIntegrationTests : IClassFixture<TestWebApplic
 
         var response = await _client.PostAsJsonAsync("/api/auth/login", request, cancellationToken);
 
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
 
         using var responseStream = await response.Content.ReadAsStreamAsync(cancellationToken);
         using var content = await JsonDocument.ParseAsync(responseStream, cancellationToken: cancellationToken);
-        Assert.True(content.RootElement.GetProperty("succeeded").GetBoolean());
+        content.RootElement.GetProperty("succeeded").GetBoolean().Should().BeTrue();
 
         var authResult = content.RootElement.GetProperty("data");
-        Assert.True(authResult.GetProperty("success").GetBoolean());
-        Assert.Equal("stub-token", authResult.GetProperty("token").GetString());
-        Assert.Equal("sample.user@elearning.test", authResult.GetProperty("email").GetString());
+        authResult.GetProperty("success").GetBoolean().Should().BeTrue();
+        authResult.GetProperty("token").GetString().Should().Be("stub-token");
+        authResult.GetProperty("email").GetString().Should().Be("sample.user@elearning.test");
     }
 }
