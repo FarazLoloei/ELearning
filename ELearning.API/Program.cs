@@ -1,19 +1,22 @@
 using ELearning.API.GraphQL;
 using ELearning.API.Facades;
+using ELearning.API.Infrastructure;
+using ELearning.API.Middleware;
 using ELearning.Application;
 using ELearning.Infrastructure;
-using ELearning.Infrastructure.Data;
 using ELearning.Infrastructure.DaprServices;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Ocelot.Cache.CacheManager;
 using Ocelot.DependencyInjection;
+using Ocelot.Middleware;
 using System.Reflection;
 using System.Text;
 using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
+var ocelotGatewayEnabled = OcelotGatewayMode.IsEnabled(builder.Configuration);
 
 // Add application layer
 builder.Services.AddApplication();
@@ -75,9 +78,12 @@ builder.Services.AddCors(options =>
         });
 });
 
-// Add Ocelot
-builder.Services.AddOcelot(builder.Configuration)
-    .AddCacheManager(settings => settings.WithDictionaryHandle());
+// Add Ocelot only when running in gateway mode
+if (ocelotGatewayEnabled)
+{
+    builder.Services.AddOcelot(builder.Configuration)
+        .AddCacheManager(settings => settings.WithDictionaryHandle());
+}
 
 // Add authentication
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");
@@ -164,22 +170,15 @@ builder.Services.AddScoped<IApiFacade, ApiFacade>();
 // Build the app
 var app = builder.Build();
 
-using (var scope = app.Services.CreateScope())
-{
-    var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-    await dbContext.Database.EnsureCreatedAsync();
-}
+await DatabaseInitializer.InitializeAsync(app.Services, app.Configuration);
 
 // Configure the HTTP request pipeline
-if (app.Environment.IsDevelopment())
+if (!app.Environment.IsDevelopment())
 {
-    app.UseDeveloperExceptionPage();
-}
-else
-{
-    app.UseExceptionHandler("/Error");
     app.UseHsts();
 }
+
+app.UseMiddleware<GlobalExceptionMiddleware>();
 
 app.UseSwagger();
 app.UseSwaggerUI(c =>
@@ -195,9 +194,16 @@ app.UseCors("CorsPolicy");
 app.UseAuthentication();
 app.UseAuthorization();
 
-// Map endpoints
-app.MapControllers(); // REST API endpoints
-app.MapGraphQL();     // GraphQL endpoint at /graphql
+// Map endpoints for monolith mode; gateway mode delegates to Ocelot pipeline.
+if (!ocelotGatewayEnabled)
+{
+    app.MapControllers(); // REST API endpoints
+    app.MapGraphQL();     // GraphQL endpoint at /graphql
+}
+else
+{
+    await app.UseOcelot();
+}
 
 // Run the app
 app.Run();

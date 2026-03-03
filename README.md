@@ -1,138 +1,113 @@
 # E-Learning Platform API
 
-Production-style backend sample built with .NET 10, Clean Architecture, CQRS, and Domain-Driven Design (DDD).
+Monolith backend sample built with .NET 10 using Clean Architecture, CQRS, and DDD-style domain modeling.
 
-This repository is intended as **sample code for engineering interviews and job applications**.
+This repository is curated as portfolio code for senior/backend engineering interviews.
 
-## Why This Project Is a Strong Sample
+## What This Demonstrates
 
-- Clear layer separation (API, Application, Domain, Infrastructure)
-- DDD-focused domain model with aggregates and value objects
-- Aggregate-root transaction boundary enforcement (no child-entity write repositories)
-- CQRS with MediatR and validation pipeline
-- Unit of Work + transaction behavior for command consistency
-- Warning-clean build and passing test suite
+- Clean layer boundaries across API, Application, Domain, Infrastructure, SharedKernel
+- Command/query separation with MediatR pipeline behaviors
+- Aggregate-focused domain model with value objects and invariants
+- Consistent API envelope responses for REST and a secondary GraphQL surface
+- Integration point pattern for external read models (Dapr-style fallback)
 
-## Tech Stack
-
-- .NET 10
-- ASP.NET Core Web API
-- MediatR
-- FluentValidation
-- EF Core (SQL Server)
-- GraphQL (secondary API surface)
-- Dapr (read-model integrations)
-- xUnit v3
-
-## Solution Structure
+## Architecture (Monolith + Clean Architecture)
 
 ```text
-ELearning.API                # REST-first host (Swagger), plus GraphQL endpoint
-ELearning.Application        # Commands/queries, handlers, DTOs, behaviors, interfaces
-ELearning.Domain             # Aggregates, entities, value objects, domain rules/events
-ELearning.Infrastructure     # EF repositories, read-model services, external implementations
-ELearning.Persistence        # Persistence project
-ELearning.SharedKernel       # Shared abstractions and base types
-ELearning.Application.Tests  # Application/unit validation tests
-ELearning.IntegrationTests   # API integration tests (WebApplicationFactory)
+ELearning.API                # Web host, REST controllers, GraphQL schema/resolvers
+ELearning.Application        # Use cases (commands/queries), handlers, DTOs, behaviors
+ELearning.Domain             # Aggregates, entities, value objects, domain rules
+ELearning.Infrastructure     # EF Core, repositories, auth, read-model services, gateways
+ELearning.Persistence        # Persistence project boundary
+ELearning.SharedKernel       # Cross-cutting abstractions/base types
+ELearning.Application.Tests  # Application validation/unit tests
+ELearning.IntegrationTests   # API integration tests
 ```
 
-## Architecture and DDD Notes
-
-### Clean Architecture dependency direction
+Dependency direction (intended):
 
 - API -> Application
 - Infrastructure -> Application + Domain
 - Application -> Domain + SharedKernel
 - Domain -> SharedKernel
 
-### DDD boundaries
+## Domain Scope
 
-- Value objects (`Email`, `Duration`, `Rating`) are not persisted independently and have no repositories.
-- Minimum transactional consistency is enforced at aggregate-root level.
-- Command writes are coordinated through Unit of Work.
-- Child entities are accessed for reads only; write orchestration happens through root aggregates.
+Primary business flows currently implemented:
 
-## Key Functional Areas
+- Authentication and role-based access (Student, Instructor, Admin)
+- Course lifecycle (create/update/delete/list/filter)
+- Enrollment lifecycle and student progress access
+- Assignment submission and instructor grading
+- Instructor pending-submissions workflow
 
-- Authentication (`/api/auth/*`)
-- Course and instructor flows
-- Enrollment lifecycle
-- Submission creation and grading
-- Student progress reporting
+## Tech Stack
 
-## Configuration
+- .NET 10 / ASP.NET Core
+- EF Core (Sqlite in-memory by default, SQL Server configurable)
+- MediatR + FluentValidation
+- HotChocolate GraphQL
+- Swagger/OpenAPI
+- Ocelot (gateway config present)
+- xUnit v3
 
-Main configuration files:
+## Local Run (Quick Start)
 
-- `ELearning.API/appsettings.json`
-- `ELearning.API/appsettings.Development.json`
+1. Configure required settings (at minimum JWT values):
 
-Important settings:
+```powershell
+dotnet user-secrets set "JwtSettings:Issuer" "elearning-local" --project ELearning.API/ELearning.API.csproj
+dotnet user-secrets set "JwtSettings:Audience" "elearning-local" --project ELearning.API/ELearning.API.csproj
+dotnet user-secrets set "JwtSettings:Secret" "your-long-random-secret-at-least-32-characters" --project ELearning.API/ELearning.API.csproj
+dotnet user-secrets set "JwtSettings:ExpiryInDays" "7" --project ELearning.API/ELearning.API.csproj
+```
 
-- `ConnectionStrings:DefaultConnection`
-- `JwtSettings:Issuer`
-- `JwtSettings:Audience`
-- `JwtSettings:Secret`
-- `JwtSettings:ExpiryInDays`
-- `Dapr:HttpPort`
-- `Dapr:GrpcPort`
-
-## Run
+2. Run API:
 
 ```powershell
 dotnet run --project ELearning.API/ELearning.API.csproj
 ```
 
-Endpoints:
+3. Open endpoints:
 
-- REST docs (Swagger UI): `/`
-- OpenAPI JSON: `/swagger/v1/swagger.json`
-- REST (versioned): `/api/v1/*`
+- Swagger UI: `/`
+- REST: `/api/v1/*` (also `/api/*` compatibility routes)
 - GraphQL: `/graphql`
 
 ## Build and Test
 
-Build:
-
 ```powershell
 dotnet build ELearning.sln -nologo /p:UseSharedCompilation=false
-```
-
-Run all tests:
-
-```powershell
 dotnet test ELearning.sln -nologo /p:UseSharedCompilation=false
 ```
 
-Run only application tests:
+Current test status from latest local run:
 
-```powershell
-dotnet test ELearning.Application.Tests/ELearning.Application.Tests.csproj -nologo /p:UseSharedCompilation=false
-```
+- `ELearning.Application.Tests`: 71 passed
+- `ELearning.IntegrationTests`: 1 passed
 
-Run only integration tests:
+## API Notes
 
-```powershell
-dotnet test ELearning.IntegrationTests/ELearning.IntegrationTests.csproj -nologo /p:UseSharedCompilation=false
-```
+- REST is the primary interface for this sample.
+- GraphQL is intentionally secondary and reuses the same Application use cases.
+- Responses use a consistent envelope (`succeeded`, `data`, `error`) for REST.
 
-## Testing Approach
+## Why This Is A Strong Portfolio Monolith
 
-- `ELearning.Application.Tests`: DTO and validation-focused tests with shared helpers/factories.
-- `ELearning.IntegrationTests`: API-level tests with controlled service replacement via `WebApplicationFactory`.
+- Business logic is centered in Application + Domain, not controllers.
+- Request validation and transaction handling are centralized via MediatR behaviors.
+- The codebase shows clear seams for scaling later (read services, facades, abstractions).
+- Test projects are separated by responsibility (application-level vs integration-level).
 
-## Next Steps
+## Roadmap (High-Impact Next Additions)
 
-- Add an **Application Facade** layer for complex use-case orchestration (single entrypoints for API/GraphQL).
-- Add dedicated **read-model repositories/interfaces** for all query-heavy modules (courses, submissions, instructors, students) to fully standardize CQRS read paths.
-- Remove remaining child-entity repository abstractions from Domain and keep only aggregate-root write repositories.
-- Introduce **architecture tests** (layer dependency tests) to enforce Clean Architecture rules in CI.
-- Expand integration tests to cover enrollment and submission workflows end-to-end.
-- Add domain-focused unit tests for aggregate invariants (`Course`, `Enrollment`, `User`).
-- Add optimistic concurrency handling (row version / concurrency tokens) for high-contention aggregates.
-- Add API versioning strategy docs and backward-compatibility contract tests.
-- Add CI quality gates: formatting, analyzers, build, tests, and optional coverage threshold.
+- Add global exception-to-problem-details mapping middleware.
+- Add architecture tests enforcing layer dependency rules in CI.
+- Increase integration coverage to enrollment/submission end-to-end scenarios.
+- Add optimistic concurrency (row version tokens) for write-heavy aggregates.
+- Add migration-based database bootstrapping for production safety.
+- Expand auth story with refresh tokens/revocation and audit events.
 
 ## License
 

@@ -1,22 +1,27 @@
-﻿using ELearning.Domain.Entities.CourseAggregate;
+using ELearning.Domain.Entities.CourseAggregate;
 using ELearning.Domain.Entities.EnrollmentAggregate;
 using ELearning.Domain.Entities.UserAggregate;
 using ELearning.SharedKernel;
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 
 namespace ELearning.Infrastructure.Data;
 
 public class ApplicationDbContext : DbContext
 {
+    private readonly IPublisher? _publisher;
+
     //private readonly ICurrentUserService _currentUserService;
     //private readonly IDateTime _dateTime;
 
     public ApplicationDbContext(
-        DbContextOptions<ApplicationDbContext> options//,
-                                                      //ICurrentUserService currentUserService,
-                                                      //IDateTime dateTime
+        DbContextOptions<ApplicationDbContext> options,
+        IPublisher? publisher = null//,
+                              //ICurrentUserService currentUserService,
+                              //IDateTime dateTime
         ) : base(options)
     {
+        _publisher = publisher;
         //_currentUserService = currentUserService;
         //_dateTime = dateTime;
     }
@@ -50,8 +55,8 @@ public class ApplicationDbContext : DbContext
 
         var result = await base.SaveChangesAsync(cancellationToken);
 
-        // Dispatch domain events after saving changes
-        await DispatchDomainEvents();
+        // Dispatch domain events after saving changes.
+        await DispatchDomainEvents(cancellationToken);
 
         return result;
     }
@@ -63,7 +68,7 @@ public class ApplicationDbContext : DbContext
         base.OnModelCreating(modelBuilder);
     }
 
-    private async Task DispatchDomainEvents()
+    private async Task DispatchDomainEvents(CancellationToken cancellationToken)
     {
         var domainEntities = ChangeTracker
             .Entries<BaseEntity>()
@@ -75,13 +80,17 @@ public class ApplicationDbContext : DbContext
             .SelectMany(x => x.DomainEvents)
             .ToList();
 
-        domainEntities.ForEach(entity => entity.ClearDomainEvents());
+        if (_publisher is null)
+        {
+            domainEntities.ForEach(entity => entity.ClearDomainEvents());
+            return;
+        }
 
         foreach (var domainEvent in domainEvents)
         {
-            // In a real application, you would dispatch these events
-            // using a mediator or an event bus
-            // await _mediator.Publish(domainEvent);
+            await _publisher.Publish(domainEvent, cancellationToken);
         }
+
+        domainEntities.ForEach(entity => entity.ClearDomainEvents());
     }
 }

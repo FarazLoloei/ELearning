@@ -1,6 +1,8 @@
-﻿namespace ELearning.SharedKernel.Abstractions;
+using MediatR;
 
-public interface IDomainEvent
+namespace ELearning.SharedKernel.Abstractions;
+
+public interface IDomainEvent : INotification
 {
     DateTime OccurredOnUTC { get; }
 }
