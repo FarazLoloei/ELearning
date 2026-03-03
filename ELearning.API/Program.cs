@@ -1,5 +1,6 @@
 using ELearning.API.GraphQL;
 using ELearning.API.Facades;
+using ELearning.API.Middleware;
 using ELearning.Application;
 using ELearning.Infrastructure;
 using ELearning.Infrastructure.Data;
@@ -171,15 +172,12 @@ using (var scope = app.Services.CreateScope())
 }
 
 // Configure the HTTP request pipeline
-if (app.Environment.IsDevelopment())
+if (!app.Environment.IsDevelopment())
 {
-    app.UseDeveloperExceptionPage();
-}
-else
-{
-    app.UseExceptionHandler("/Error");
     app.UseHsts();
 }
+
+app.UseMiddleware<GlobalExceptionMiddleware>();
 
 app.UseSwagger();
 app.UseSwaggerUI(c =>

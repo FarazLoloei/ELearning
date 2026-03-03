@@ -1,6 +1,8 @@
 using ELearning.Application.Common.Exceptions;
+using ELearning.Application.Common.Interfaces;
 using ELearning.Application.Common.Model;
 using ELearning.Application.Common.Resilience;
+using ELearning.Application.Common.Security;
 using ELearning.Application.Enrollments.Abstractions.ReadModels;
 using ELearning.Application.Enrollments.Dtos;
 using ELearning.Application.Students.Abstractions.ReadModels;
@@ -17,11 +19,14 @@ public class GetStudentEnrollmentsQueryHandler(
         IEnrollmentReadRepository enrollmentReadRepository,
         ICourseRepository courseRepository,
         IStudentReadService studentReadService,
-        IProgressRepository progressRepository)
+        IProgressRepository progressRepository,
+        ICurrentUserService currentUserService)
     : IRequestHandler<GetStudentEnrollmentsQuery, Result<PaginatedList<EnrollmentDto>>>
 {
     public async Task<Result<PaginatedList<EnrollmentDto>>> Handle(GetStudentEnrollmentsQuery request, CancellationToken cancellationToken)
     {
+        CurrentUserAuthorizationGuard.EnsureStudentSelfOrAdmin(currentUserService, request.StudentId);
+
         try
         {
             // Try Dapr read service first

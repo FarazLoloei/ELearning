@@ -1,7 +1,9 @@
 using AutoMapper;
 using ELearning.Application.Common.Exceptions;
+using ELearning.Application.Common.Interfaces;
 using ELearning.Application.Common.Model;
 using ELearning.Application.Common.Resilience;
+using ELearning.Application.Common.Security;
 using ELearning.Application.Enrollments.Abstractions.ReadModels;
 using ELearning.Application.Enrollments.Dtos;
 using ELearning.Application.Enrollments.Queries;
@@ -21,15 +23,24 @@ public class GetEnrollmentDetailQueryHandler(
         IStudentRepository studentRepository,
         IProgressRepository progressRepository,
         ILessonRepository lessonRepository,
+        ICurrentUserService currentUserService,
         IMapper mapper)
     : IRequestHandler<GetEnrollmentDetailQuery, Result<EnrollmentDetailDto>>
 {
     public async Task<Result<EnrollmentDetailDto>> Handle(GetEnrollmentDetailQuery request, CancellationToken cancellationToken)
     {
+        CurrentUserAuthorizationGuard.EnsureAuthenticated(currentUserService);
+
         try
         {
             // Try Dapr read service first
             var enrollmentDto = await enrollmentReadService.GetByIdAsync(request.EnrollmentId, cancellationToken);
+            await CurrentUserAuthorizationGuard.EnsureEnrollmentReadAccessAsync(
+                currentUserService,
+                enrollmentDto.StudentId,
+                enrollmentDto.CourseId,
+                courseRepository,
+                cancellationToken);
             return Result.Success(enrollmentDto);
         }
         catch (Exception ex) when (ReadModelFallbackPolicy.ShouldFallback(ex, cancellationToken))
@@ -37,6 +48,12 @@ public class GetEnrollmentDetailQueryHandler(
             // Fall back to repository
             var enrollment = await enrollmentRepository.GetByIdAsync(request.EnrollmentId, cancellationToken) ??
                 throw new NotFoundException(nameof(Enrollment), request.EnrollmentId);
+            await CurrentUserAuthorizationGuard.EnsureEnrollmentReadAccessAsync(
+                currentUserService,
+                enrollment.StudentId,
+                enrollment.CourseId,
+                courseRepository,
+                cancellationToken);
 
             var course = await courseRepository.GetByIdAsync(enrollment.CourseId, cancellationToken)
                 ?? throw new NotFoundException("Course", enrollment.CourseId);
