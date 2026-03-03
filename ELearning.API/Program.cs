@@ -16,7 +16,6 @@ using System.Text;
 using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
-var ocelotGatewayEnabled = OcelotGatewayMode.IsEnabled(builder.Configuration);
 
 // Add application layer
 builder.Services.AddApplication();
@@ -37,6 +36,8 @@ builder.Configuration
     .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: true)
     .AddJsonFile($"ocelot.{builder.Environment.EnvironmentName}.json", optional: false, reloadOnChange: true)
     .AddEnvironmentVariables();
+
+var ocelotGatewayEnabled = OcelotGatewayMode.IsEnabled(builder.Configuration);
 
 // Add API versioning
 builder.Services.AddApiVersioning(options =>

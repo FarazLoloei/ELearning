@@ -69,6 +69,11 @@ public class Course : BaseEntity, IAggregateRoot<Course>
     public decimal Price { get; private set; }
 
     /// <summary>
+    /// Optimistic concurrency token.
+    /// </summary>
+    public byte[]? RowVersion { get; private set; }
+
+    /// <summary>
     /// Collection of content modules making up the course.
     /// </summary>
     public IReadOnlyCollection<Module> Modules => _modules.AsReadOnly();

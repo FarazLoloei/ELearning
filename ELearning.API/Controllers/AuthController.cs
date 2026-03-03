@@ -51,4 +51,25 @@ public class AuthController(IApiFacade apiFacade) : ApiControllerBase
             ? Ok(ApiResponse<AuthResult>.Success(result))
             : BadRequestResponse<AuthResult>(result.ErrorMessage ?? "Registration failed.");
     }
+
+    [HttpPost("refresh")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<ActionResult<ApiResponse<AuthResult>>> RefreshToken(RefreshTokenRequest request, CancellationToken cancellationToken)
+    {
+        var result = await apiFacade.RefreshTokenAsync(request, cancellationToken);
+
+        return result.Success
+            ? Ok(ApiResponse<AuthResult>.Success(result))
+            : UnauthorizedResponse<AuthResult>(result.ErrorMessage ?? "Refresh token is invalid.");
+    }
+
+    [HttpPost("revoke")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<ApiResponse<object?>>> RevokeToken(RevokeTokenRequest request, CancellationToken cancellationToken)
+    {
+        var result = await apiFacade.RevokeTokenAsync(request, cancellationToken);
+        return result.IsSuccess ? Ok(ApiResponse<object?>.Success(null)) : BadRequestResponse<object?>(result.Error);
+    }
 }

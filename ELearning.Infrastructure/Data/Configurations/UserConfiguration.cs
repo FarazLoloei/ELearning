@@ -35,6 +35,9 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
                 v => v.Id,
                 v => UserRole.GetAll<UserRole>().Single(e => e.Id == v));
 
+        builder.Property(u => u.RowVersion)
+            .IsRowVersion();
+
         // Table name and TPH inheritance
         builder.HasDiscriminator<string>("UserType")
             .HasValue<Student>("Student")

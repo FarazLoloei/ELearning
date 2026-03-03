@@ -11,5 +11,9 @@ public interface IAuthService
 
     Task<AuthResult> RegisterInstructorAsync(string firstName, string lastName, string email, string password, string bio, string expertise, CancellationToken cancellationToken = default);
 
+    Task<AuthResult> RefreshTokenAsync(string refreshToken, CancellationToken cancellationToken = default);
+
+    Task<Result> RevokeRefreshTokenAsync(string refreshToken, CancellationToken cancellationToken = default);
+
     Task<string> GenerateJwtToken(User user);
 }

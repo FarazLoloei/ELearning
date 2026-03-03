@@ -47,6 +47,11 @@ public class User : BaseEntity, IAggregateRoot<User>
     /// </summary>
     public DateTime? LastLoginDate { get; protected set; }
 
+    /// <summary>
+    /// Optimistic concurrency token.
+    /// </summary>
+    public byte[]? RowVersion { get; protected set; }
+
     protected User()
     { }
 

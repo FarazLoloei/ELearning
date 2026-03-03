@@ -34,4 +34,10 @@ public sealed class ApiFacade(IMediator mediator, IAuthService authService) : IA
             request.Bio,
             request.Expertise,
             cancellationToken);
+
+    public Task<AuthResult> RefreshTokenAsync(RefreshTokenRequest request, CancellationToken cancellationToken) =>
+        authService.RefreshTokenAsync(request.RefreshToken, cancellationToken);
+
+    public Task<Result> RevokeTokenAsync(RevokeTokenRequest request, CancellationToken cancellationToken) =>
+        authService.RevokeRefreshTokenAsync(request.RefreshToken, cancellationToken);
 }

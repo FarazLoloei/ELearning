@@ -12,6 +12,9 @@ public class EnrollmentConfiguration : IEntityTypeConfiguration<Enrollment>
     {
         builder.HasKey(e => e.Id);
 
+        builder.Property(e => e.RowVersion)
+            .IsRowVersion();
+
         // Configure enumerations
         builder.Property(e => e.Status)
             .HasConversion(
