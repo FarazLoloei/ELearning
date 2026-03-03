@@ -19,6 +19,11 @@ public class Enrollment : BaseEntity, IAggregateRoot<Enrollment>
 
     public string? Review { get; private set; }
 
+    /// <summary>
+    /// Optimistic concurrency token.
+    /// </summary>
+    public byte[]? RowVersion { get; private set; }
+
     private readonly List<Progress> _progressRecords = new();
 
     private readonly List<Submission> _submissions = new();

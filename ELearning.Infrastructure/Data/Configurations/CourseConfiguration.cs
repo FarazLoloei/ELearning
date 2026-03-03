@@ -19,6 +19,9 @@ public class CourseConfiguration : IEntityTypeConfiguration<Course>
         builder.Property(c => c.Description)
             .IsRequired();
 
+        builder.Property(c => c.RowVersion)
+            .IsRowVersion();
+
         // Configure value objects
         builder.OwnsOne(c => c.Duration, nb =>
         {
