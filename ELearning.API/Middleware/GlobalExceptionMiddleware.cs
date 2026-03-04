@@ -1,4 +1,5 @@
 using ELearning.Application.Common.Exceptions;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ELearning.API.Middleware;
@@ -26,6 +27,7 @@ public sealed class GlobalExceptionMiddleware(RequestDelegate next, ILogger<Glob
             ForbiddenAccessException => (StatusCodes.Status403Forbidden, "Forbidden"),
             UnauthorizedAccessException => (StatusCodes.Status401Unauthorized, "Unauthorized"),
             DomainApplicationException => (StatusCodes.Status400BadRequest, "Application error"),
+            DbUpdateConcurrencyException => (StatusCodes.Status409Conflict, "Concurrency conflict"),
             _ => (StatusCodes.Status500InternalServerError, "Internal server error")
         };
 
@@ -55,6 +57,6 @@ public sealed class GlobalExceptionMiddleware(RequestDelegate next, ILogger<Glob
 
         context.Response.StatusCode = statusCode;
         context.Response.ContentType = "application/problem+json";
-        await context.Response.WriteAsJsonAsync(problemDetails);
+        await context.Response.WriteAsJsonAsync(problemDetails, options: null, contentType: "application/problem+json");
     }
 }

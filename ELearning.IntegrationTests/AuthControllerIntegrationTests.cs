@@ -39,4 +39,14 @@ public sealed class AuthControllerIntegrationTests : IClassFixture<TestWebApplic
         authResult.GetProperty("token").GetString().Should().Be("stub-token");
         authResult.GetProperty("email").GetString().Should().Be("sample.user@elearning.test");
     }
+
+    [Fact]
+    public async Task Login_WhenPayloadIsInvalid_ReturnsBadRequest()
+    {
+        var cancellationToken = TestContext.Current.CancellationToken;
+
+        var response = await _client.PostAsJsonAsync("/api/auth/login", new { }, cancellationToken);
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
 }
