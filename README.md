@@ -11,7 +11,7 @@ This repository is curated as portfolio code for senior/backend engineering inte
 - Aggregate-focused domain model with value objects and invariants
 - Application Facade (`IApiFacade`/`ApiFacade`) as a single API entrypoint for use-case dispatch
 - Provider-aware database startup strategy (SQL Server migrations, sqlite in-memory bootstrap)
-- Domain event dispatch via MediatR from `ApplicationDbContext`
+- Outbox pattern for reliable domain-event delivery with background dispatch
 - Optional Ocelot gateway mode with explicit configuration switch
 - Consistent API envelope responses for REST and a secondary GraphQL surface
 - Integration point pattern for external read models (Dapr-style fallback)
@@ -96,7 +96,7 @@ dotnet test ELearning.sln -nologo /p:UseSharedCompilation=false
 Current test status from latest local run:
 
 - `ELearning.Application.Tests`: 80 passed
-- `ELearning.IntegrationTests`: 16 passed
+- `ELearning.IntegrationTests`: 18 passed
 
 ## API Notes
 
@@ -110,7 +110,7 @@ Current test status from latest local run:
 - Business logic is centered in Application + Domain, not controllers.
 - Request validation and transaction handling are centralized via MediatR behaviors.
 - Controller orchestration is simplified via an Application Facade.
-- Domain events are dispatched in-process through MediatR.
+- Domain events are persisted to an outbox and dispatched by a background worker.
 - The codebase shows clear seams for scaling later (read services, facades, abstractions).
 - Test projects are separated by responsibility (application-level vs integration-level).
 - Integration tests now cover real auth/JWT and protected endpoint authorization behavior.
@@ -118,11 +118,10 @@ Current test status from latest local run:
 ## Roadmap (High-Impact Next Additions)
 
 - Add architecture tests enforcing layer dependency rules in CI.
-- Add optimistic concurrency (row version tokens) for write-heavy aggregates.
 - Add end-to-end integration scenarios for enrollment/submission command workflows.
 - Add migration assets and deployment guidance for SQL Server environments.
-- Evolve domain event handling to outbox/background delivery for reliability.
-- Expand auth story with refresh tokens/revocation and audit events.
+- Add API-level optimistic concurrency conflict handling (`DbUpdateConcurrencyException` -> HTTP `409`).
+- Tighten auth request validation and token revocation ownership checks.
 
 ## License
 
