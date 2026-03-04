@@ -19,7 +19,7 @@ namespace ELearning.Application.Submissions.Handlers;
 /// </summary>
 public class GetSubmissionDetailQueryHandler(
         ISubmissionReadService submissionReadService,
-        IAssignmentRepository assignmentRepository,
+        IAssignmentReadRepository assignmentRepository,
         IEnrollmentRepository enrollmentRepository,
         ICourseRepository courseRepository,
         IUserRepository userRepository,

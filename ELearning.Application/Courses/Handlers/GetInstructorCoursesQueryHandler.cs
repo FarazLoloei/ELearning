@@ -16,7 +16,7 @@ namespace ELearning.Application.Courses.Handlers;
 /// </summary>
 public class GetInstructorCoursesQueryHandler(
         IInstructorRepository instructorRepository,
-        IEnrollmentReadRepository enrollmentReadRepository,
+        IEnrollmentReadService enrollmentReadService,
         IMapper mapper)
     : IRequestHandler<GetInstructorCoursesQuery, Result<InstructorCoursesDto>>
 {
@@ -38,7 +38,16 @@ public class GetInstructorCoursesQueryHandler(
             var mappedInstructorCoursesDto = mapper.Map<InstructorCoursesDto>(instructor);
 
             var courseIds = instructor.Courses.Select(course => course.Id).ToList();
-            var enrollmentCountsByCourseId = await enrollmentReadRepository.GetCourseEnrollmentCountsAsync(courseIds, cancellationToken);
+            var enrollmentCountsByCourseId = new Dictionary<Guid, int>(courseIds.Count);
+            foreach (var courseId in courseIds)
+            {
+                var pagedEnrollments = await enrollmentReadService.GetCourseEnrollmentsAsync(
+                    courseId,
+                    new SharedKernel.Models.PaginationParameters(1, 1),
+                    cancellationToken);
+
+                enrollmentCountsByCourseId[courseId] = pagedEnrollments.TotalCount;
+            }
 
             // Get course details
             var courses = new List<InstructorCourseDto>();

@@ -173,9 +173,6 @@ public sealed class CurrentUserAuthorizationGuardTests
             return Task.FromResult<Course?>(course);
         }
 
-        public Task<IReadOnlyList<Course>> ListAllAsync(CancellationToken cancellationToken = default) =>
-            throw new NotImplementedException();
-
         public Task AddAsync(Course entity, CancellationToken cancellationToken = default) =>
             throw new NotImplementedException();
 

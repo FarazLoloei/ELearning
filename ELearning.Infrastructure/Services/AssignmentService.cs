@@ -6,7 +6,7 @@ using ELearning.Domain.Entities.EnrollmentAggregate.Enums;
 namespace ELearning.Infrastructure.Services;
 
 public class AssignmentService(
-    IAssignmentRepository assignmentRepository,
+    IAssignmentReadRepository assignmentRepository,
     IEnrollmentRepository enrollmentRepository) : IAssignmentService
 {
     public async Task<bool> CanSubmitAssignmentAsync(Guid studentId, Guid assignmentId, CancellationToken cancellationToken = default)

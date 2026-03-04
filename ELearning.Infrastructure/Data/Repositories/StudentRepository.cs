@@ -20,11 +20,6 @@ public class StudentRepository : IStudentRepository
             .Include(s => s.Enrollments)
             .SingleOrDefaultAsync(s => s.Id == id, cancellationToken);
 
-    public async Task<IReadOnlyList<Student>> ListAllAsync(CancellationToken cancellationToken) =>
-        await _context.Students
-        .AsNoTracking()
-        .ToListAsync(cancellationToken);
-
     public async Task AddAsync(Student entity, CancellationToken cancellationToken)
     {
         await _context.Students.AddAsync(entity, cancellationToken);

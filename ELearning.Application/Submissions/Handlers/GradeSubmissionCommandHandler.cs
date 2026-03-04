@@ -1,4 +1,4 @@
-﻿using ELearning.Application.Common.Exceptions;
+using ELearning.Application.Common.Exceptions;
 using ELearning.Application.Common.Interfaces;
 using ELearning.Application.Common.Model;
 using ELearning.Application.Submissions.Commands;
@@ -12,7 +12,7 @@ namespace ELearning.Application.Submissions.Handlers;
 
 public class GradeSubmissionCommandHandler(
         IEnrollmentRepository enrollmentRepository,
-        IAssignmentRepository assignmentRepository,
+        IAssignmentReadRepository assignmentRepository,
         ICurrentUserService currentUserService)
     : IRequestHandler<GradeSubmissionCommand, Result>
 {

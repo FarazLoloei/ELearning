@@ -4,6 +4,8 @@ namespace ELearning.Domain.Entities.EnrollmentAggregate.Abstractions.Repositorie
 
 public interface IEnrollmentRepository : IEntityFrameworkRepository<Enrollment>
 {
+    Task<IReadOnlyList<Enrollment>> GetByStudentIdAsync(Guid studentId, CancellationToken cancellationToken);
+
     Task<Enrollment?> GetByStudentAndCourseIdAsync(Guid studentId, Guid courseId, CancellationToken cancellationToken);
 
     Task<Enrollment?> GetBySubmissionIdAsync(Guid submissionId, CancellationToken cancellationToken);

@@ -8,6 +8,7 @@ using ELearning.Application.Students.Abstractions.ReadModels;
 using ELearning.Application.Students.Dtos;
 using ELearning.Application.Students.Queries;
 using ELearning.Domain.Entities.CourseAggregate.Abstractions.Repositories;
+using ELearning.Domain.Entities.EnrollmentAggregate.Abstractions.Repositories;
 using ELearning.Domain.Entities.EnrollmentAggregate.Enums;
 using ELearning.Domain.Entities.UserAggregate;
 using ELearning.Domain.Entities.UserAggregate.Abstractions.Repositories;
@@ -18,7 +19,7 @@ namespace ELearning.Application.Students.Handlers;
 public class GetStudentProgressQueryHandler(
         IStudentReadService studentReadService,
         IStudentRepository studentRepository,
-        IEnrollmentReadRepository enrollmentReadRepository,
+        IEnrollmentRepository enrollmentRepository,
         IProgressReadRepository progressRepository,
         ICourseRepository courseRepository,
         ICurrentUserService currentUserService)
@@ -44,7 +45,7 @@ public class GetStudentProgressQueryHandler(
                 throw new NotFoundException(nameof(Student), request.StudentId);
             }
 
-            var enrollments = await enrollmentReadRepository.GetByStudentIdAsync(request.StudentId, cancellationToken);
+            var enrollments = await enrollmentRepository.GetByStudentIdAsync(request.StudentId, cancellationToken);
             var completedEnrollments = enrollments.Where(e => e.Status == EnrollmentStatus.Completed).ToList();
             var inProgressEnrollments = enrollments.Where(e => e.Status == EnrollmentStatus.Active).ToList();
 

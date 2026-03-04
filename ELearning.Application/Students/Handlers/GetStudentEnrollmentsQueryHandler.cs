@@ -8,6 +8,7 @@ using ELearning.Application.Enrollments.Dtos;
 using ELearning.Application.Students.Abstractions.ReadModels;
 using ELearning.Application.Students.Queries;
 using ELearning.Domain.Entities.CourseAggregate.Abstractions.Repositories;
+using ELearning.Domain.Entities.EnrollmentAggregate.Abstractions.Repositories;
 using ELearning.SharedKernel;
 using MediatR;
 
@@ -15,7 +16,7 @@ namespace ELearning.Application.Students.Handlers;
 
 public class GetStudentEnrollmentsQueryHandler(
         IEnrollmentReadService enrollmentReadService,
-        IEnrollmentReadRepository enrollmentReadRepository,
+        IEnrollmentRepository enrollmentRepository,
         ICourseRepository courseRepository,
         IStudentReadService studentReadService,
         IProgressReadRepository progressRepository,
@@ -39,13 +40,17 @@ public class GetStudentEnrollmentsQueryHandler(
         catch (Exception ex) when (ReadModelFallbackPolicy.ShouldFallback(ex, cancellationToken))
         {
             // Fall back to local read repository
-            var pagedEnrollments = await enrollmentReadRepository.GetStudentEnrollmentsAsync(
-                request.StudentId,
-                new SharedKernel.Models.PaginationParameters(request.PageNumber, request.PageSize),
-                cancellationToken);
+            var allEnrollments = await enrollmentRepository.GetByStudentIdAsync(request.StudentId, cancellationToken);
+            var pagination = new SharedKernel.Models.PaginationParameters(request.PageNumber, request.PageSize);
+            var totalCount = allEnrollments.Count;
+            var pagedItems = allEnrollments
+                .OrderByDescending(e => e.CreatedAt())
+                .Skip(pagination.SkipCount)
+                .Take(pagination.PageSize)
+                .ToList();
 
             var enrollmentDtos = new List<EnrollmentDto>();
-            foreach (var enrollment in pagedEnrollments.Items)
+            foreach (var enrollment in pagedItems)
             {
                 var course = await courseRepository.GetByIdForUpdateAsync(enrollment.CourseId, cancellationToken)
                     ?? throw new NotFoundException("Course", enrollment.CourseId);
@@ -68,7 +73,7 @@ public class GetStudentEnrollmentsQueryHandler(
 
             var paginatedList = new PaginatedList<EnrollmentDto>(
                 enrollmentDtos,
-                pagedEnrollments.TotalCount,
+                totalCount,
                 request.PageNumber,
                 request.PageSize);
 

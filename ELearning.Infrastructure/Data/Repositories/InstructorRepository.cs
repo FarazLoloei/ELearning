@@ -21,8 +21,6 @@ public class InstructorRepository : IInstructorRepository
             .SingleOrDefaultAsync(i => i.Id == id, cancellationToken);
     }
 
-    public async Task<IReadOnlyList<Instructor>> ListAllAsync(CancellationToken cancellationToken) => await _context.Instructors.ToListAsync(cancellationToken);
-
     public async Task AddAsync(Instructor entity, CancellationToken cancellationToken)
     {
         await _context.Instructors.AddAsync(entity, cancellationToken);

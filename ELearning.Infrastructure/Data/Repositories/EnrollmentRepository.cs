@@ -14,9 +14,6 @@ public class EnrollmentRepository(ApplicationDbContext context) : IEnrollmentRep
             .FirstOrDefaultAsync(e => e.Id == id, cancellationToken);
     }
 
-    public async Task<IReadOnlyList<Enrollment>> ListAllAsync(CancellationToken cancellationToken) =>
-        await context.Enrollments.ToListAsync(cancellationToken);
-
     public async Task AddAsync(Enrollment entity, CancellationToken cancellationToken)
     {
         await context.Enrollments.AddAsync(entity, cancellationToken);
@@ -46,6 +43,15 @@ public class EnrollmentRepository(ApplicationDbContext context) : IEnrollmentRep
             .Include(e => e.ProgressRecords)
             .Where(e => e.StudentId == studentId && e.CourseId == courseId)
             .FirstOrDefaultAsync(cancellationToken);
+    }
+
+    public async Task<IReadOnlyList<Enrollment>> GetByStudentIdAsync(Guid studentId, CancellationToken cancellationToken)
+    {
+        return await context.Enrollments
+            .Include(e => e.Submissions)
+            .Include(e => e.ProgressRecords)
+            .Where(e => e.StudentId == studentId)
+            .ToListAsync(cancellationToken);
     }
 
     public async Task<Enrollment?> GetBySubmissionIdAsync(Guid submissionId, CancellationToken cancellationToken)

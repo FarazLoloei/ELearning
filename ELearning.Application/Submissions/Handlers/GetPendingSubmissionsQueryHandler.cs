@@ -20,7 +20,7 @@ namespace ELearning.Application.Submissions.Handlers;
 public class GetPendingSubmissionsQueryHandler(
         ISubmissionReadService submissionReadService,
         ICourseRepository courseRepository,
-        IAssignmentRepository assignmentRepository,
+        IAssignmentReadRepository assignmentRepository,
         ISubmissionRepository submissionRepository,
         ICurrentUserService currentUserService)
     : IRequestHandler<GetPendingSubmissionsQuery, Result<PaginatedList<SubmissionDto>>>

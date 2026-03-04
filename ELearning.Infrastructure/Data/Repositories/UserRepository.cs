@@ -18,16 +18,6 @@ public class UserRepository(ApplicationDbContext _context) : IUserRepository
         await _context.Users.FindAsync(id, cancellationToken);
 
     /// <summary>
-    /// Retrieves a read-only list of all users.
-    /// </summary>
-    /// <param name="cancellationToken">A token to observe while waiting for the task to complete.</param>
-    /// <returns>A read-only list of users.</returns>
-    public async Task<IReadOnlyList<User>> ListAllAsync(CancellationToken cancellationToken) =>
-        await _context.Users
-            .AsNoTracking()
-            .ToListAsync(cancellationToken);
-
-    /// <summary>
     /// Adds a new user to the database.
     /// </summary>
     /// <param name="entity">The user entity to add.</param>
@@ -80,48 +70,6 @@ public class UserRepository(ApplicationDbContext _context) : IUserRepository
         !await _context.Users
             .AsNoTracking()
             .AnyAsync(u => u.Email.Value == email, cancellationToken);
-
-    /// <summary>
-    /// Retrieves a read-only list of users by their role.
-    /// </summary>
-    /// <param name="role">The role of the users to retrieve.</param>
-    /// <param name="cancellationToken">A token to observe while waiting for the task to complete.</param>
-    /// <returns>A read-only list of users matching the specified role.</returns>
-    public async Task<IReadOnlyList<User>> GetByRoleAsync(UserRole role, CancellationToken cancellationToken) =>
-        await _context.Users
-            .AsNoTracking()
-            .Where(u => u.Role == role)
-            .ToListAsync(cancellationToken);
-
-    /// <summary>
-    /// Searches for users based on a search term with pagination.
-    /// </summary>
-    /// <param name="searchTerm">The term to search for in first name, last name, or email.</param>
-    /// <param name="pagination">Pagination parameters (SkipCount, PageSize).</param>
-    /// <param name="cancellationToken">A token to observe while waiting for the task to complete.</param>
-    /// <returns>A read-only list of users matching the search criteria and pagination.</returns>
-    public async Task<IReadOnlyList<User>> SearchUsersAsync(string searchTerm, PaginationParameters pagination, CancellationToken cancellationToken)
-    {
-        var query = _context.Users
-            .AsNoTracking()
-            .AsQueryable();
-
-        if (!string.IsNullOrWhiteSpace(searchTerm))
-        {
-            var lowerCaseSearchTerm = searchTerm.Trim().ToLower();
-            query = query.Where(u =>
-                u.FirstName.ToLower().Contains(lowerCaseSearchTerm) ||
-                u.LastName.ToLower().Contains(lowerCaseSearchTerm) ||
-                u.Email.Value.ToLower().Contains(lowerCaseSearchTerm));
-        }
-
-        return await query
-            .OrderBy(u => u.LastName)
-            .ThenBy(u => u.FirstName)
-            .Skip(pagination.SkipCount)
-            .Take(pagination.PageSize)
-            .ToListAsync(cancellationToken);
-    }
 
     /// <summary>
     /// Gets the total count of users in the database.

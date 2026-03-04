@@ -26,10 +26,6 @@ public class CourseRepository : ICourseRepository
             .FirstOrDefaultAsync(c => c.Id == id, cancellationToken);
     }
 
-    public async Task<IReadOnlyList<Course>> ListAllAsync(CancellationToken cancellationToken) => await _context.Courses
-        .AsNoTracking()
-        .ToListAsync(cancellationToken);
-
     public async Task AddAsync(Course entity, CancellationToken cancellationToken)
     {
         await _context.Courses.AddAsync(entity, cancellationToken);

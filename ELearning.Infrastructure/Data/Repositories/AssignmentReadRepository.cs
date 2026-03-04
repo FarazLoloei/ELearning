@@ -5,11 +5,11 @@ using Microsoft.EntityFrameworkCore;
 namespace ELearning.Infrastructure.Data.Repositories;
 
 // Assignment Repository Implementation
-public class AssignmentRepository : IAssignmentRepository
+public class AssignmentReadRepository : IAssignmentReadRepository
 {
     private readonly ApplicationDbContext _context;
 
-    public AssignmentRepository(ApplicationDbContext context)
+    public AssignmentReadRepository(ApplicationDbContext context)
     {
         _context = context;
     }

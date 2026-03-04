@@ -1,6 +1,6 @@
 ﻿namespace ELearning.Domain.Entities.CourseAggregate.Abstractions.Repositories;
 
-public interface IAssignmentRepository
+public interface IAssignmentReadRepository
 {
     Task<Assignment?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
 

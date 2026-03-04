@@ -1,4 +1,4 @@
-﻿using ELearning.Application.Common.Exceptions;
+using ELearning.Application.Common.Exceptions;
 using ELearning.Application.Common.Interfaces;
 using ELearning.Application.Common.Model;
 using ELearning.Application.Submissions.Commands;
@@ -12,7 +12,7 @@ using MediatR;
 namespace ELearning.Application.Submissions.Handlers;
 
 public class CreateSubmissionCommandHandler(
-        IAssignmentRepository assignmentRepository,
+        IAssignmentReadRepository assignmentRepository,
         IEnrollmentRepository enrollmentRepository,
         ICurrentUserService currentUserService,
         IAssignmentService assignmentService) : IRequestHandler<CreateSubmissionCommand, Result>
