@@ -1,4 +1,5 @@
 using ELearning.Application.Common.Interfaces;
+using ELearning.Application.Common.Exceptions;
 using ELearning.Application.Common.Model;
 using ELearning.Domain.Entities.UserAggregate;
 using ELearning.Domain.Entities.UserAggregate.Abstractions.Repositories;
@@ -24,6 +25,7 @@ public class AuthService(
         IInstructorRepository instructorRepository,
         IUnitOfWork unitOfWork,
         ApplicationDbContext dbContext,
+        ICurrentUserService currentUserService,
         IHttpContextAccessor httpContextAccessor,
         IConfiguration configuration,
         IUserService userService,
@@ -177,7 +179,7 @@ public class AuthService(
                 return AuthResult.Failed("Refresh token is invalid.");
             }
 
-            var user = await userRepository.GetByIdAsync(existingToken.UserId, cancellationToken);
+            var user = await userRepository.GetByIdForUpdateAsync(existingToken.UserId, cancellationToken);
             if (user == null || !user.IsActive)
             {
                 await PersistAuditOnlyAsync(existingToken.UserId, "auth.refresh", false, "User not found or inactive", cancellationToken);
@@ -221,6 +223,11 @@ public class AuthService(
 
     public async Task<Result> RevokeRefreshTokenAsync(string refreshToken, CancellationToken cancellationToken = default)
     {
+        if (!currentUserService.IsAuthenticated || currentUserService.UserId is null)
+        {
+            throw new ForbiddenAccessException();
+        }
+
         try
         {
             var refreshTokenHash = HashToken(refreshToken);
@@ -233,6 +240,12 @@ public class AuthService(
                 return Result.Failure("Refresh token was not found.");
             }
 
+            var currentUserId = currentUserService.UserId.Value;
+            if (existingToken.UserId != currentUserId && !currentUserService.IsInRole("Admin"))
+            {
+                throw new ForbiddenAccessException();
+            }
+
             if (!existingToken.RevokedAtUtc.HasValue)
             {
                 existingToken.RevokedAtUtc = DateTime.UtcNow;
@@ -243,6 +256,10 @@ public class AuthService(
             await unitOfWork.SaveChangesAsync(cancellationToken);
 
             return Result.Success();
+        }
+        catch (ForbiddenAccessException)
+        {
+            throw;
         }
         catch (Exception ex)
         {

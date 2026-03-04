@@ -89,14 +89,21 @@ public sealed class AuthAndAuthorizationIntegrationTests : IClassFixture<RealAut
 
         using var refreshStream = await refreshResponse.Content.ReadAsStreamAsync(cancellationToken);
         using var refreshJson = await JsonDocument.ParseAsync(refreshStream, cancellationToken: cancellationToken);
+        var accessToken = refreshJson.RootElement.GetProperty("data").GetProperty("token").GetString();
         var rotatedRefreshToken = refreshJson.RootElement.GetProperty("data").GetProperty("refreshToken").GetString();
+        accessToken.Should().NotBeNullOrWhiteSpace();
         rotatedRefreshToken.Should().NotBeNullOrWhiteSpace();
         rotatedRefreshToken.Should().NotBe(firstRefreshToken);
 
-        var revokeResponse = await _client.PostAsJsonAsync("/api/auth/revoke", new
+        using var revokeRequest = new HttpRequestMessage(HttpMethod.Post, "/api/auth/revoke")
         {
-            RefreshToken = rotatedRefreshToken
-        }, cancellationToken);
+            Content = JsonContent.Create(new
+            {
+                RefreshToken = rotatedRefreshToken
+            })
+        };
+        revokeRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+        var revokeResponse = await _client.SendAsync(revokeRequest, cancellationToken);
         revokeResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var revokedRefreshResponse = await _client.PostAsJsonAsync("/api/auth/refresh", new
@@ -113,6 +120,39 @@ public sealed class AuthAndAuthorizationIntegrationTests : IClassFixture<RealAut
         auditTypes.Should().Contain("auth.login");
         auditTypes.Should().Contain("auth.refresh");
         auditTypes.Should().Contain("auth.revoke");
+    }
+
+    [Fact]
+    public async Task Revoke_WithDifferentAuthenticatedUser_ShouldReturnForbidden()
+    {
+        var cancellationToken = TestContext.Current.CancellationToken;
+        var ownerEmail = $"revoke.owner.{Guid.NewGuid():N}@tests.io";
+        const string ownerPassword = "P@ssword123!";
+        await SeedStudentAsync(ownerEmail, ownerPassword, cancellationToken);
+
+        var loginResponse = await _client.PostAsJsonAsync("/api/auth/login", new
+        {
+            Email = ownerEmail,
+            Password = ownerPassword
+        }, cancellationToken);
+        loginResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        using var loginStream = await loginResponse.Content.ReadAsStreamAsync(cancellationToken);
+        using var loginJson = await JsonDocument.ParseAsync(loginStream, cancellationToken: cancellationToken);
+        var ownerRefreshToken = loginJson.RootElement.GetProperty("data").GetProperty("refreshToken").GetString();
+        ownerRefreshToken.Should().NotBeNullOrWhiteSpace();
+
+        using var revokeRequest = new HttpRequestMessage(HttpMethod.Post, "/api/auth/revoke")
+        {
+            Content = JsonContent.Create(new
+            {
+                RefreshToken = ownerRefreshToken
+            })
+        };
+        revokeRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", CreateJwt(Guid.NewGuid(), "Student"));
+
+        var revokeResponse = await _client.SendAsync(revokeRequest, cancellationToken);
+        revokeResponse.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 
     [Fact]

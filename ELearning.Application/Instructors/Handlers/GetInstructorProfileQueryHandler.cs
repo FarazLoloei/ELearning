@@ -30,7 +30,7 @@ public class GetInstructorProfileQueryHandler(
         catch (Exception ex) when (ReadModelFallbackPolicy.ShouldFallback(ex, cancellationToken))
         {
             // If Dapr service fails, fall back to direct repository access
-            var instructor = await instructorRepository.GetByIdAsync(request.InstructorId, cancellationToken) ??
+            var instructor = await instructorRepository.GetByIdForUpdateAsync(request.InstructorId, cancellationToken) ??
                 throw new NotFoundException(nameof(Instructor), request.InstructorId);
 
             var instructorDto = mapper.Map<InstructorDto>(instructor);

@@ -15,6 +15,8 @@ This repository is curated as portfolio code for senior/backend engineering inte
 - Optional Ocelot gateway mode with explicit configuration switch
 - Consistent API envelope responses for REST and a secondary GraphQL surface
 - Integration point pattern for external read models (Dapr-style fallback)
+- Optimistic concurrency conflict handling (`DbUpdateConcurrencyException` -> HTTP `409`)
+- Refresh-token rotation/revocation with owner-or-admin revoke policy and security audit events
 
 ## Architecture (Monolith + Clean Architecture)
 
@@ -95,8 +97,21 @@ dotnet test ELearning.sln -nologo /p:UseSharedCompilation=false
 
 Current test status from latest local run:
 
-- `ELearning.Application.Tests`: 80 passed
-- `ELearning.IntegrationTests`: 18 passed
+- `ELearning.Application.Tests`: 84 passed
+- `ELearning.IntegrationTests`: 22 passed
+
+## Quality Gates (CI)
+
+- GitHub Actions pipeline: build, test, coverage collection, lint (`dotnet format`), dependency vulnerability scan (SCA).
+- CI artifact publishing includes test results, coverage reports, and dependency scan output.
+- Layer guardrails are enforced with architecture tests (API/Application/Domain/Infrastructure boundaries).
+
+## AI Review Posture
+
+- AI-assisted review is used as an additional signal, not an auto-merge mechanism.
+- Every AI suggestion is manually reviewed before acceptance.
+- Static analysis, architecture tests, and integration tests remain required quality gates.
+- Security-sensitive changes (auth, tokens, authorization) require explicit human review.
 
 ## API Notes
 
@@ -117,11 +132,9 @@ Current test status from latest local run:
 
 ## Roadmap (High-Impact Next Additions)
 
-- Add architecture tests enforcing layer dependency rules in CI.
-- Add end-to-end integration scenarios for enrollment/submission command workflows.
 - Add migration assets and deployment guidance for SQL Server environments.
-- Add API-level optimistic concurrency conflict handling (`DbUpdateConcurrencyException` -> HTTP `409`).
-- Tighten auth request validation and token revocation ownership checks.
+- Expand end-to-end API workflow coverage for enrollment/submission/grading under SQL Server-backed integration environments.
+- Introduce centralized observability (OpenTelemetry traces/metrics/log correlation).
 
 ## License
 

@@ -8,7 +8,6 @@ using ELearning.Application.Students.Abstractions.ReadModels;
 using ELearning.Application.Students.Dtos;
 using ELearning.Application.Students.Queries;
 using ELearning.Domain.Entities.CourseAggregate.Abstractions.Repositories;
-using ELearning.Domain.Entities.EnrollmentAggregate.Abstractions.Repositories;
 using ELearning.Domain.Entities.EnrollmentAggregate.Enums;
 using ELearning.Domain.Entities.UserAggregate;
 using ELearning.Domain.Entities.UserAggregate.Abstractions.Repositories;
@@ -20,7 +19,7 @@ public class GetStudentProgressQueryHandler(
         IStudentReadService studentReadService,
         IStudentRepository studentRepository,
         IEnrollmentReadRepository enrollmentReadRepository,
-        IProgressRepository progressRepository,
+        IProgressReadRepository progressRepository,
         ICourseRepository courseRepository,
         ICurrentUserService currentUserService)
     : IRequestHandler<GetStudentProgressQuery, Result<StudentProgressDto>>
@@ -38,7 +37,7 @@ public class GetStudentProgressQueryHandler(
         catch (Exception ex) when (ReadModelFallbackPolicy.ShouldFallback(ex, cancellationToken))
         {
             // Fall back to repositories if Dapr service fails
-            var student = await studentRepository.GetByIdAsync(request.StudentId, cancellationToken);
+            var student = await studentRepository.GetByIdForUpdateAsync(request.StudentId, cancellationToken);
 
             if (student == null)
             {
@@ -53,7 +52,7 @@ public class GetStudentProgressQueryHandler(
 
             foreach (var enrollment in enrollments)
             {
-                var course = await courseRepository.GetByIdAsync(enrollment.CourseId, cancellationToken)
+                var course = await courseRepository.GetByIdForUpdateAsync(enrollment.CourseId, cancellationToken)
                     ?? throw new NotFoundException("Course", enrollment.CourseId);
                 var completionPercentage = await progressRepository.GetCourseProgressPercentageAsync(enrollment.Id, cancellationToken);
 

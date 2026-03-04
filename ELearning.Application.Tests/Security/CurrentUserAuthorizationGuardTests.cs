@@ -165,7 +165,7 @@ public sealed class CurrentUserAuthorizationGuardTests
 
     private sealed class FakeCourseRepository(Course? course) : ICourseRepository
     {
-        public Task<Course?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+        public Task<Course?> GetByIdForUpdateAsync(Guid id, CancellationToken cancellationToken = default)
         {
             if (course is null || course.Id != id)
                 return Task.FromResult<Course?>(null);

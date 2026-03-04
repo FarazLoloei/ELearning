@@ -14,7 +14,7 @@ public class ModuleRepository : IModuleRepository
         _context = context;
     }
 
-    public async Task<Module?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+    public async Task<Module?> GetByIdForUpdateAsync(Guid id, CancellationToken cancellationToken = default)
     {
         return await _context.Modules
             .Include(m => m.Lessons)
@@ -22,7 +22,7 @@ public class ModuleRepository : IModuleRepository
             .SingleOrDefaultAsync(m => m.Id == id, cancellationToken);
     }
 
-    public async Task<IReadOnlyList<Module>> GetByCourseIdAsync(Guid courseId, CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<Module>> GetByCourseIdForUpdateAsync(Guid courseId, CancellationToken cancellationToken = default)
     {
         return await _context.Modules
             .Include(m => m.Lessons)
@@ -31,5 +31,4 @@ public class ModuleRepository : IModuleRepository
             .OrderBy(m => m.Order)
             .ToListAsync(cancellationToken);
     }
-
 }

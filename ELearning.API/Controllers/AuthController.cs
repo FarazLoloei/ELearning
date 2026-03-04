@@ -3,7 +3,9 @@ using ELearning.API.Contracts;
 using ELearning.API.Facades;
 using ELearning.API.Models;
 using ELearning.Application.Common.Model;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using LoginRequest = ELearning.API.Models.LoginRequest;
 
 namespace ELearning.API.Controllers;
@@ -11,6 +13,7 @@ namespace ELearning.API.Controllers;
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/[controller]")]
 [Route("api/[controller]")]
+[EnableRateLimiting("AuthEndpoints")]
 public class AuthController(IApiFacade apiFacade) : ApiControllerBase
 {
     [HttpPost("login")]
@@ -65,7 +68,9 @@ public class AuthController(IApiFacade apiFacade) : ApiControllerBase
     }
 
     [HttpPost("revoke")]
+    [Authorize]
     [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<ApiResponse<object?>>> RevokeToken(RevokeTokenRequest request, CancellationToken cancellationToken)
     {

@@ -57,11 +57,11 @@ public class GetSubmissionDetailQueryHandler(
                 ?? throw new NotFoundException("Assignment", submission.AssignmentId);
 
             // Get student and grader (if applicable)
-            var student = await userRepository.GetByIdAsync(enrollment.StudentId, cancellationToken)
+            var student = await userRepository.GetByIdForUpdateAsync(enrollment.StudentId, cancellationToken)
                 ?? throw new NotFoundException(nameof(Student), enrollment.StudentId);
 
             var grader = submission.GradedById.HasValue
-                ? await userRepository.GetByIdAsync(submission.GradedById.Value, cancellationToken)
+                ? await userRepository.GetByIdForUpdateAsync(submission.GradedById.Value, cancellationToken)
                 : null;
 
             var submissionDto = new SubmissionDetailDto(
@@ -97,7 +97,7 @@ public class GetSubmissionDetailQueryHandler(
             // Check if user is instructor of course that contains this assignment
             var module = await assignmentRepository.GetModuleForAssignmentAsync(assignmentId, cancellationToken)
                 ?? throw new NotFoundException("Module", assignmentId);
-            var course = await courseRepository.GetByIdAsync(module.CourseId, cancellationToken)
+            var course = await courseRepository.GetByIdForUpdateAsync(module.CourseId, cancellationToken)
                 ?? throw new NotFoundException("Course", module.CourseId);
             isInstructor = course.InstructorId == currentUserId;
         }

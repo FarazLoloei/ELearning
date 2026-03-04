@@ -25,10 +25,10 @@ public class CreateEnrollmentCommandHandler(
             throw new ForbiddenAccessException();
 
         var studentId = currentUserService.UserId.Value;
-        var student = await studentRepository.GetByIdAsync(studentId, cancellationToken) ??
+        var student = await studentRepository.GetByIdForUpdateAsync(studentId, cancellationToken) ??
             throw new NotFoundException(nameof(Student), studentId);
 
-        var course = await courseRepository.GetByIdAsync(request.CourseId, cancellationToken) ??
+        var course = await courseRepository.GetByIdForUpdateAsync(request.CourseId, cancellationToken) ??
             throw new NotFoundException(nameof(Course), request.CourseId);
 
         // Check if student is already enrolled

@@ -14,7 +14,7 @@ public class StudentRepository : IStudentRepository
         _context = context;
     }
 
-    public async Task<Student?> GetByIdAsync(Guid id, CancellationToken cancellationToken) =>
+    public async Task<Student?> GetByIdForUpdateAsync(Guid id, CancellationToken cancellationToken) =>
         await _context.Students
             .AsNoTracking()
             .Include(s => s.Enrollments)

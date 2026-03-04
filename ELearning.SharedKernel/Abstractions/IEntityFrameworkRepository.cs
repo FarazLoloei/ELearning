@@ -2,7 +2,7 @@
 
 public interface IEntityFrameworkRepository<T> where T : BaseEntity
 {
-    Task<T?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
+    Task<T?> GetByIdForUpdateAsync(Guid id, CancellationToken cancellationToken = default);
 
     Task<IReadOnlyList<T>> ListAllAsync(CancellationToken cancellationToken = default);
 

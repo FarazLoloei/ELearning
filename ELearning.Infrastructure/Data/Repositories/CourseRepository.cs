@@ -15,7 +15,7 @@ public class CourseRepository : ICourseRepository
         _context = context;
     }
 
-    public async Task<Course?> GetByIdAsync(Guid id, CancellationToken cancellationToken)
+    public async Task<Course?> GetByIdForUpdateAsync(Guid id, CancellationToken cancellationToken)
     {
         return await _context.Courses
             .Include(c => c.Modules)

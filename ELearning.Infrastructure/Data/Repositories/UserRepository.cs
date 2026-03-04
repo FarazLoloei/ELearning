@@ -14,7 +14,7 @@ public class UserRepository(ApplicationDbContext _context) : IUserRepository
     /// <param name="id">The GUID of the user.</param>
     /// <param name="cancellationToken">A token to observe while waiting for the task to complete.</param>
     /// <returns>The User if found, otherwise null.</returns>
-    public async Task<User?> GetByIdAsync(Guid id, CancellationToken cancellationToken) =>
+    public async Task<User?> GetByIdForUpdateAsync(Guid id, CancellationToken cancellationToken) =>
         await _context.Users.FindAsync(id, cancellationToken);
 
     /// <summary>

@@ -34,7 +34,7 @@ public static class CurrentUserAuthorizationGuard
         if (currentUserId == studentId || currentUserService.IsInRole("Admin"))
             return;
 
-        var course = await courseRepository.GetByIdAsync(courseId, cancellationToken)
+        var course = await courseRepository.GetByIdForUpdateAsync(courseId, cancellationToken)
             ?? throw new NotFoundException("Course", courseId);
 
         if (course.InstructorId != currentUserId)

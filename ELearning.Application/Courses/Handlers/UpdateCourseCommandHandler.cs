@@ -22,7 +22,7 @@ public class UpdateCourseCommandHandler(
         if (!currentUserService.IsAuthenticated || currentUserService.UserId is null)
             throw new ForbiddenAccessException();
 
-        var course = await courseRepository.GetByIdAsync(request.CourseId, cancellationToken) ??
+        var course = await courseRepository.GetByIdForUpdateAsync(request.CourseId, cancellationToken) ??
             throw new NotFoundException(nameof(Course), request.CourseId);
 
         // Check if the current user is the instructor of this course or an admin

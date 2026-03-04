@@ -14,18 +14,17 @@ public class LessonRepository : ILessonRepository
         _context = context;
     }
 
-    public async Task<Lesson?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+    public async Task<Lesson?> GetByIdForUpdateAsync(Guid id, CancellationToken cancellationToken = default)
     {
         return await _context.Lessons
             .SingleOrDefaultAsync(l => l.Id == id, cancellationToken);
     }
 
-    public async Task<IReadOnlyList<Lesson>> GetByModuleIdAsync(Guid moduleId, CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<Lesson>> GetByModuleIdForUpdateAsync(Guid moduleId, CancellationToken cancellationToken = default)
     {
         return await _context.Lessons
             .Where(l => l.ModuleId == moduleId)
             .OrderBy(l => l.Order)
             .ToListAsync(cancellationToken);
     }
-
 }

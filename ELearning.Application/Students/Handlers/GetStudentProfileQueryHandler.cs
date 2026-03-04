@@ -28,7 +28,7 @@ public class GetStudentProfileQueryHandler(
         catch (Exception ex) when (ReadModelFallbackPolicy.ShouldFallback(ex, cancellationToken))
         {
             // If not found in Dapr, fall back to repository
-            var student = await studentRepository.GetByIdAsync(request.StudentId, cancellationToken);
+            var student = await studentRepository.GetByIdForUpdateAsync(request.StudentId, cancellationToken);
 
             if (student == null)
             {

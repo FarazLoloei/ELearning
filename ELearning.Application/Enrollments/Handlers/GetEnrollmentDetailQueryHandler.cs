@@ -21,7 +21,7 @@ public class GetEnrollmentDetailQueryHandler(
         IEnrollmentRepository enrollmentRepository,
         ICourseRepository courseRepository,
         IStudentRepository studentRepository,
-        IProgressRepository progressRepository,
+        IProgressReadRepository progressRepository,
         ILessonRepository lessonRepository,
         ICurrentUserService currentUserService,
         IMapper mapper)
@@ -46,7 +46,7 @@ public class GetEnrollmentDetailQueryHandler(
         catch (Exception ex) when (ReadModelFallbackPolicy.ShouldFallback(ex, cancellationToken))
         {
             // Fall back to repository
-            var enrollment = await enrollmentRepository.GetByIdAsync(request.EnrollmentId, cancellationToken) ??
+            var enrollment = await enrollmentRepository.GetByIdForUpdateAsync(request.EnrollmentId, cancellationToken) ??
                 throw new NotFoundException(nameof(Enrollment), request.EnrollmentId);
             await CurrentUserAuthorizationGuard.EnsureEnrollmentReadAccessAsync(
                 currentUserService,
@@ -55,9 +55,9 @@ public class GetEnrollmentDetailQueryHandler(
                 courseRepository,
                 cancellationToken);
 
-            var course = await courseRepository.GetByIdAsync(enrollment.CourseId, cancellationToken)
+            var course = await courseRepository.GetByIdForUpdateAsync(enrollment.CourseId, cancellationToken)
                 ?? throw new NotFoundException("Course", enrollment.CourseId);
-            var student = await studentRepository.GetByIdAsync(enrollment.StudentId, cancellationToken)
+            var student = await studentRepository.GetByIdForUpdateAsync(enrollment.StudentId, cancellationToken)
                 ?? throw new NotFoundException("Student", enrollment.StudentId);
             var progressRecords = await progressRepository.GetByEnrollmentIdAsync(enrollment.Id, cancellationToken);
             var completionPercentage = await progressRepository.GetCourseProgressPercentageAsync(enrollment.Id, cancellationToken);
@@ -66,7 +66,7 @@ public class GetEnrollmentDetailQueryHandler(
             foreach (var progress in progressRecords)
             {
                 // Get lesson info
-                var lesson = await lessonRepository.GetByIdAsync(progress.LessonId, cancellationToken)
+                var lesson = await lessonRepository.GetByIdForUpdateAsync(progress.LessonId, cancellationToken)
                     ?? throw new NotFoundException("Lesson", progress.LessonId);
 
                 lessonProgress.Add(new LessonProgressDto(

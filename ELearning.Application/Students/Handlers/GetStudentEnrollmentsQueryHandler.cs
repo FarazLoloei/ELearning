@@ -8,7 +8,6 @@ using ELearning.Application.Enrollments.Dtos;
 using ELearning.Application.Students.Abstractions.ReadModels;
 using ELearning.Application.Students.Queries;
 using ELearning.Domain.Entities.CourseAggregate.Abstractions.Repositories;
-using ELearning.Domain.Entities.EnrollmentAggregate.Abstractions.Repositories;
 using ELearning.SharedKernel;
 using MediatR;
 
@@ -19,7 +18,7 @@ public class GetStudentEnrollmentsQueryHandler(
         IEnrollmentReadRepository enrollmentReadRepository,
         ICourseRepository courseRepository,
         IStudentReadService studentReadService,
-        IProgressRepository progressRepository,
+        IProgressReadRepository progressRepository,
         ICurrentUserService currentUserService)
     : IRequestHandler<GetStudentEnrollmentsQuery, Result<PaginatedList<EnrollmentDto>>>
 {
@@ -48,7 +47,7 @@ public class GetStudentEnrollmentsQueryHandler(
             var enrollmentDtos = new List<EnrollmentDto>();
             foreach (var enrollment in pagedEnrollments.Items)
             {
-                var course = await courseRepository.GetByIdAsync(enrollment.CourseId, cancellationToken)
+                var course = await courseRepository.GetByIdForUpdateAsync(enrollment.CourseId, cancellationToken)
                     ?? throw new NotFoundException("Course", enrollment.CourseId);
                 var student = await studentReadService.GetByIdAsync(enrollment.StudentId, cancellationToken);
                 var completionPercentage = await progressRepository.GetCourseProgressPercentageAsync(enrollment.Id, cancellationToken);

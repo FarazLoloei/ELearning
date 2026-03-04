@@ -6,7 +6,7 @@ namespace ELearning.Infrastructure.Data.Repositories;
 
 public class EnrollmentRepository(ApplicationDbContext context) : IEnrollmentRepository
 {
-    public async Task<Enrollment?> GetByIdAsync(Guid id, CancellationToken cancellationToken)
+    public async Task<Enrollment?> GetByIdForUpdateAsync(Guid id, CancellationToken cancellationToken)
     {
         return await context.Enrollments
             .Include(e => e.ProgressRecords)
@@ -24,7 +24,12 @@ public class EnrollmentRepository(ApplicationDbContext context) : IEnrollmentRep
 
     public Task UpdateAsync(Enrollment entity, CancellationToken cancellationToken)
     {
-        context.Entry(entity).State = EntityState.Modified;
+        var entry = context.Entry(entity);
+        if (entry.State == EntityState.Detached)
+        {
+            context.Enrollments.Attach(entity);
+        }
+
         return Task.CompletedTask;
     }
 

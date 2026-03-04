@@ -29,7 +29,7 @@ public class UpdateEnrollmentStatusCommandHandler(
     {
         EnsureAuthenticated();
 
-        var enrollment = await enrollmentRepository.GetByIdAsync(request.EnrollmentId, cancellationToken)
+        var enrollment = await enrollmentRepository.GetByIdForUpdateAsync(request.EnrollmentId, cancellationToken)
                           ?? throw new NotFoundException(nameof(Enrollment), request.EnrollmentId);
 
         EnsureAuthorized(enrollment);

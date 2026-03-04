@@ -32,7 +32,7 @@ public class GetInstructorCoursesQueryHandler(
         catch (Exception ex) when (ReadModelFallbackPolicy.ShouldFallback(ex, cancellationToken))
         {
             // Fall back to repository
-            var instructor = await instructorRepository.GetByIdAsync(request.InstructorId, cancellationToken) ??
+            var instructor = await instructorRepository.GetByIdForUpdateAsync(request.InstructorId, cancellationToken) ??
                 throw new NotFoundException(nameof(Instructor), request.InstructorId);
 
             var mappedInstructorCoursesDto = mapper.Map<InstructorCoursesDto>(instructor);

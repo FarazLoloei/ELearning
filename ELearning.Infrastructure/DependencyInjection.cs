@@ -67,7 +67,7 @@ public static class DependencyInjection
         services.AddScoped<ILessonRepository, LessonRepository>();
         services.AddScoped<IAssignmentRepository, AssignmentRepository>();
         services.AddScoped<ISubmissionRepository, SubmissionRepository>();
-        services.AddScoped<IProgressRepository, ProgressRepository>();
+        services.AddScoped<IProgressReadRepository, ProgressRepository>();
         services.AddScoped<IUnitOfWork, UnitOfWork>();
 
         services.AddTransient<IDateTime, DateTimeService>();

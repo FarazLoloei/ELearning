@@ -1,6 +1,8 @@
-﻿namespace ELearning.Domain.Entities.EnrollmentAggregate.Abstractions.Repositories;
+using ELearning.Domain.Entities.EnrollmentAggregate;
 
-public interface IProgressRepository
+namespace ELearning.Application.Enrollments.Abstractions.ReadModels;
+
+public interface IProgressReadRepository
 {
     Task<Progress?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
 

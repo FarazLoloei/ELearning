@@ -1,12 +1,12 @@
 ﻿using ELearning.Domain.Entities.EnrollmentAggregate;
-using ELearning.Domain.Entities.EnrollmentAggregate.Abstractions.Repositories;
+using ELearning.Application.Enrollments.Abstractions.ReadModels;
 using ELearning.Domain.Entities.EnrollmentAggregate.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace ELearning.Infrastructure.Data.Repositories;
 
 // Progress Repository Implementation
-public class ProgressRepository : IProgressRepository
+public class ProgressRepository : IProgressReadRepository
 {
     private readonly ApplicationDbContext _context;
 
@@ -18,12 +18,14 @@ public class ProgressRepository : IProgressRepository
     public async Task<Progress?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
         return await _context.Progresses
+            .AsNoTracking()
             .SingleOrDefaultAsync(p => p.Id == id, cancellationToken);
     }
 
     public async Task<IReadOnlyList<Progress>> GetByEnrollmentIdAsync(Guid enrollmentId, CancellationToken cancellationToken = default)
     {
         return await _context.Progresses
+            .AsNoTracking()
             .Where(p => p.EnrollmentId == enrollmentId)
             .ToListAsync(cancellationToken);
     }
@@ -31,12 +33,14 @@ public class ProgressRepository : IProgressRepository
     public async Task<Progress?> GetByEnrollmentAndLessonIdAsync(Guid enrollmentId, Guid lessonId, CancellationToken cancellationToken = default)
     {
         return await _context.Progresses
+            .AsNoTracking()
             .SingleOrDefaultAsync(p => p.EnrollmentId == enrollmentId && p.LessonId == lessonId, cancellationToken);
     }
 
     public async Task<double> GetCourseProgressPercentageAsync(Guid enrollmentId, CancellationToken cancellationToken = default)
     {
         var enrollment = await _context.Enrollments
+            .AsNoTracking()
             .Include(e => e.ProgressRecords)
             .SingleOrDefaultAsync(e => e.Id == enrollmentId, cancellationToken);
 
@@ -47,6 +51,7 @@ public class ProgressRepository : IProgressRepository
 
         // Get the course
         var course = await _context.Courses
+            .AsNoTracking()
             .Include(c => c.Modules)
             .ThenInclude(m => m.Lessons)
             .SingleOrDefaultAsync(c => c.Id == enrollment.CourseId, cancellationToken);
@@ -69,5 +74,4 @@ public class ProgressRepository : IProgressRepository
 
         return (double)completedLessons / totalLessons * 100;
     }
-
 }
