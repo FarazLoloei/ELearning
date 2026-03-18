@@ -1,8 +1,6 @@
 using ELearning.Application.Common.Exceptions;
 using ELearning.Application.Common.Interfaces;
 using ELearning.Application.Common.Model;
-using ELearning.Application.Common.Resilience;
-using ELearning.Application.Submissions.Abstractions.ReadModels;
 using ELearning.Application.Submissions.Dtos;
 using ELearning.Application.Submissions.Queries;
 using ELearning.Domain.Entities.CourseAggregate.Abstractions.Repositories;
@@ -18,7 +16,6 @@ namespace ELearning.Application.Submissions.Handlers;
 /// Handler for GetSubmissionDetailQuery
 /// </summary>
 public class GetSubmissionDetailQueryHandler(
-        ISubmissionReadService submissionReadService,
         IAssignmentReadRepository assignmentRepository,
         IEnrollmentRepository enrollmentRepository,
         ICourseRepository courseRepository,
@@ -31,58 +28,40 @@ public class GetSubmissionDetailQueryHandler(
         if (!currentUserService.IsAuthenticated || currentUserService.UserId == null)
             throw new ForbiddenAccessException();
 
-        try
-        {
-            // Try Dapr read service first
-            var submissionDto = await submissionReadService.GetByIdAsync(request.SubmissionId, cancellationToken);
+        var enrollment = await enrollmentRepository.GetBySubmissionIdAsync(request.SubmissionId, cancellationToken)
+            ?? throw new NotFoundException(nameof(Submission), request.SubmissionId);
+        var submission = enrollment.Submissions.FirstOrDefault(s => s.Id == request.SubmissionId)
+            ?? throw new NotFoundException(nameof(Submission), request.SubmissionId);
 
-            // Verify permission
-            await VerifyPermission(submissionDto.StudentId, submissionDto.AssignmentId, cancellationToken);
+        await VerifyPermission(enrollment.StudentId, submission.AssignmentId, cancellationToken);
 
-            return Result.Success(submissionDto);
-        }
-        catch (Exception ex) when (ReadModelFallbackPolicy.ShouldFallback(ex, cancellationToken))
-        {
-            // Fall back to repository
-            var enrollment = await enrollmentRepository.GetBySubmissionIdAsync(request.SubmissionId, cancellationToken)
-                ?? throw new NotFoundException(nameof(Submission), request.SubmissionId);
-            var submission = enrollment.Submissions.FirstOrDefault(s => s.Id == request.SubmissionId)
-                ?? throw new NotFoundException(nameof(Submission), request.SubmissionId);
+        var assignment = await assignmentRepository.GetByIdAsync(submission.AssignmentId, cancellationToken)
+            ?? throw new NotFoundException("Assignment", submission.AssignmentId);
+        var student = await userRepository.GetByIdForUpdateAsync(enrollment.StudentId, cancellationToken)
+            ?? throw new NotFoundException(nameof(Student), enrollment.StudentId);
 
-            // Verify permission
-            await VerifyPermission(enrollment.StudentId, submission.AssignmentId, cancellationToken);
+        var grader = submission.GradedById.HasValue
+            ? await userRepository.GetByIdForUpdateAsync(submission.GradedById.Value, cancellationToken)
+            : null;
 
-            // Get assignment
-            var assignment = await assignmentRepository.GetByIdAsync(submission.AssignmentId, cancellationToken)
-                ?? throw new NotFoundException("Assignment", submission.AssignmentId);
+        var submissionDto = new SubmissionDetailDto(
+            submission.Id,
+            submission.AssignmentId,
+            assignment.Title,
+            submission.SubmittedDate,
+            submission.IsGraded,
+            submission.Score,
+            assignment.MaxPoints,
+            enrollment.StudentId,
+            student.FullName,
+            submission.Content,
+            submission.FileUrl,
+            submission.Feedback,
+            submission.GradedById,
+            grader?.FullName ?? string.Empty,
+            submission.GradedDate);
 
-            // Get student and grader (if applicable)
-            var student = await userRepository.GetByIdForUpdateAsync(enrollment.StudentId, cancellationToken)
-                ?? throw new NotFoundException(nameof(Student), enrollment.StudentId);
-
-            var grader = submission.GradedById.HasValue
-                ? await userRepository.GetByIdForUpdateAsync(submission.GradedById.Value, cancellationToken)
-                : null;
-
-            var submissionDto = new SubmissionDetailDto(
-                submission.Id,
-                submission.AssignmentId,
-                assignment.Title,
-                submission.SubmittedDate,
-                submission.IsGraded,
-                submission.Score,
-                assignment.MaxPoints,
-                enrollment.StudentId,
-                student.FullName,
-                submission.Content,
-                submission.FileUrl,
-                submission.Feedback,
-                submission.GradedById,
-                grader?.FullName ?? string.Empty,
-                submission.GradedDate);
-
-            return Result.Success(submissionDto);
-        }
+        return Result.Success(submissionDto);
     }
 
     private async Task VerifyPermission(Guid studentId, Guid assignmentId, CancellationToken cancellationToken)

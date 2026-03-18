@@ -21,8 +21,6 @@ namespace ELearning.Infrastructure.Services;
 
 public class AuthService(
         IUserRepository userRepository,
-        IStudentRepository studentRepository,
-        IInstructorRepository instructorRepository,
         IUnitOfWork unitOfWork,
         ApplicationDbContext dbContext,
         ICurrentUserService currentUserService,
@@ -99,7 +97,7 @@ public class AuthService(
                 Email.Create(email),
                 passwordHash);
 
-            await studentRepository.AddAsync(student, cancellationToken);
+            await userRepository.AddAsync(student, cancellationToken);
 
             var token = await GenerateJwtToken(student);
             var refreshToken = await IssueRefreshTokenAsync(student.Id, cancellationToken);
@@ -142,7 +140,7 @@ public class AuthService(
                 bio,
                 expertise);
 
-            await instructorRepository.AddAsync(instructor, cancellationToken);
+            await userRepository.AddAsync(instructor, cancellationToken);
 
             var token = await GenerateJwtToken(instructor);
             var refreshToken = await IssueRefreshTokenAsync(instructor.Id, cancellationToken);

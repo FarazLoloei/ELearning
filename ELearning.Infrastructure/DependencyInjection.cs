@@ -1,5 +1,8 @@
 using ELearning.Application.Common.Interfaces;
-using ELearning.Application.Enrollments.Abstractions.ReadModels;
+using ELearning.Application.Courses.Abstractions;
+using ELearning.Application.Enrollments.Abstractions;
+using ELearning.Application.Students.Abstractions;
+using ELearning.Application.Submissions.Abstractions;
 using ELearning.Domain.Entities.CourseAggregate.Abstractions.Repositories;
 using ELearning.Domain.Entities.CourseAggregate.Abstractions.Services;
 using ELearning.Domain.Entities.EnrollmentAggregate.Abstractions.Repositories;
@@ -60,14 +63,15 @@ public static class DependencyInjection
         services.AddScoped<ICourseRepository, CourseRepository>();
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IUserReadRepository, UserReadRepository>();
-        services.AddScoped<IStudentRepository, StudentRepository>();
-        services.AddScoped<IInstructorRepository, InstructorRepository>();
+        services.AddScoped<IStudentReadRepository, StudentReadRepository>();
+        services.AddScoped<IInstructorReadRepository, InstructorReadRepository>();
         services.AddScoped<IEnrollmentRepository, EnrollmentRepository>();
-        services.AddScoped<IModuleRepository, ModuleRepository>();
-        services.AddScoped<ILessonRepository, LessonRepository>();
+        services.AddScoped<IEnrollmentReadRepository, EnrollmentReadRepository>();
+        services.AddScoped<IModuleReadRepository, ModuleReadRepository>();
+        services.AddScoped<ILessonReadRepository, LessonReadRepository>();
         services.AddScoped<IAssignmentReadRepository, AssignmentReadRepository>();
-        services.AddScoped<ISubmissionRepository, SubmissionRepository>();
-        services.AddScoped<IProgressReadRepository, ProgressRepository>();
+        services.AddScoped<ISubmissionReadRepository, SubmissionReadRepository>();
+        services.AddScoped<IProgressReadRepository, ProgressReadRepository>();
         services.AddScoped<IUnitOfWork, UnitOfWork>();
 
         services.AddTransient<IDateTime, DateTimeService>();

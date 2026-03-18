@@ -5,6 +5,7 @@ using ELearning.Application.Courses.Commands;
 using ELearning.Domain.Entities.CourseAggregate;
 using ELearning.Domain.Entities.CourseAggregate.Abstractions.Repositories;
 using ELearning.Domain.Entities.CourseAggregate.Enums;
+using ELearning.Domain.Entities.UserAggregate.Enums;
 using ELearning.Domain.Entities.UserAggregate.Abstractions.Repositories;
 using ELearning.Domain.ValueObjects;
 using MediatR;
@@ -13,7 +14,7 @@ namespace ELearning.Application.Courses.Handlers;
 
 public class CreateCourseCommandHandler(ICourseRepository courseRepository,
         ICurrentUserService currentUserService,
-        IInstructorRepository instructorRepository)
+        IUserRepository userRepository)
     : IRequestHandler<CreateCourseCommand, Result>
 {
     public async Task<Result> Handle(CreateCourseCommand request, CancellationToken cancellationToken)
@@ -22,8 +23,11 @@ public class CreateCourseCommandHandler(ICourseRepository courseRepository,
             throw new ForbiddenAccessException();
 
         var instructorId = currentUserService.UserId.Value;
-        var instructor = await instructorRepository.GetByIdForUpdateAsync(instructorId, cancellationToken) ??
+        var instructor = await userRepository.GetByIdForUpdateAsync(instructorId, cancellationToken);
+        if (instructor is null || instructor.Role.Id != UserRole.Instructor.Id)
+        {
             throw new ForbiddenAccessException();
+        }
 
         // Get category and level from enumeration values
         var category = CourseCategory.GetAll<CourseCategory>().FirstOrDefault(c => c.Id == request.CategoryId);
