@@ -1,4 +1,8 @@
-﻿namespace ELearning.Domain.Entities.UserAggregate.Abstractions.Services;
+﻿// <copyright file="IInstructorService.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
+namespace ELearning.Domain.Entities.UserAggregate.Abstractions.Services;
 
 // Instructor service interface
 public interface IInstructorService

@@ -1,6 +1,10 @@
-﻿using ELearning.Domain.ValueObjects;
+﻿// <copyright file="ICourseService.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace ELearning.Domain.Entities.CourseAggregate.Abstractions.Services;
+
+using ELearning.Domain.ValueObjects;
 
 public interface ICourseService
 {

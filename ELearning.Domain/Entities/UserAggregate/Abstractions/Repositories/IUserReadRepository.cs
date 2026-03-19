@@ -1,10 +1,14 @@
-﻿using ELearning.Domain.Entities.UserAggregate.Enums;
-using ELearning.SharedKernel.Models;
+﻿// <copyright file="IUserReadRepository.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
+namespace ELearning.Domain.Entities.UserAggregate.Abstractions.Repositories;
+
 using System;
 using System.Collections.Generic;
 using System.Text;
-
-namespace ELearning.Domain.Entities.UserAggregate.Abstractions.Repositories;
+using ELearning.Domain.Entities.UserAggregate.Enums;
+using ELearning.SharedKernel.Models;
 
 public interface IUserReadRepository
 {

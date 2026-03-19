@@ -1,9 +1,13 @@
-﻿using ELearning.Application.Submissions.Dtos;
+﻿// <copyright file="ISubmissionReadService.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
+namespace ELearning.Application.Submissions.Abstractions;
+
+using ELearning.Application.Submissions.Dtos;
 using ELearning.SharedKernel;
 using ELearning.SharedKernel.Abstractions;
 using ELearning.SharedKernel.Models;
-
-namespace ELearning.Application.Submissions.Abstractions;
 
 /// <summary>
 /// Provides read-only access to submission-related data.
@@ -15,6 +19,7 @@ public interface ISubmissionReadService : IReadRepository<SubmissionDetailDto, G
     /// </summary>
     /// <param name="instructorId">The unique identifier of the instructor.</param>
     /// <param name="cancellationToken">Cancellation token for the async operation.</param>
+    /// <returns><placeholder>A <see cref="Task"/> representing the asynchronous operation.</placeholder></returns>
     Task<PaginatedList<SubmissionDto>> GetPendingSubmissionsAsync(
         Guid instructorId,
         PaginationParameters pagination,
@@ -27,6 +32,7 @@ public interface ISubmissionReadService : IReadRepository<SubmissionDetailDto, G
     /// <param name="pageNumber">The current page number.</param>
     /// <param name="pageSize">The number of items per page.</param>
     /// <param name="cancellationToken">Cancellation token for the async operation.</param>
+    /// <returns><placeholder>A <see cref="Task"/> representing the asynchronous operation.</placeholder></returns>
     Task<PaginatedList<SubmissionDto>> GetStudentSubmissionsAsync(
         Guid studentId,
         PaginationParameters pagination,
@@ -39,6 +45,7 @@ public interface ISubmissionReadService : IReadRepository<SubmissionDetailDto, G
     /// <param name="pageNumber">The current page number.</param>
     /// <param name="pageSize">The number of items per page.</param>
     /// <param name="cancellationToken">Cancellation token for the async operation.</param>
+    /// <returns><placeholder>A <see cref="Task"/> representing the asynchronous operation.</placeholder></returns>
     Task<PaginatedList<SubmissionDto>> GetAssignmentSubmissionsAsync(
         Guid assignmentId,
         PaginationParameters pagination,

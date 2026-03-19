@@ -1,6 +1,10 @@
-using ELearning.SharedKernel.Abstractions;
+// <copyright file="InstructorDto.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace ELearning.Application.Instructors.Dtos;
+
+using ELearning.SharedKernel.Abstractions;
 
 public sealed record InstructorDto(
     Guid Id,
@@ -11,5 +15,4 @@ public sealed record InstructorDto(
     string ProfilePictureUrl,
     decimal AverageRating,
     int TotalStudents,
-    int TotalCourses
-) : IDto;
+    int TotalCourses) : IDto;

@@ -1,6 +1,10 @@
-using ELearning.SharedKernel.Abstractions;
+// <copyright file="CourseListDto.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace ELearning.Application.Courses.Dtos;
+
+using ELearning.SharedKernel.Abstractions;
 
 public sealed record CourseListDto(
     Guid Id,
@@ -14,5 +18,4 @@ public sealed record CourseListDto(
     int NumberOfRatings,
     bool IsFeatured,
     string Duration,
-    int EnrollmentsCount
-) : IDto;
+    int EnrollmentsCount) : IDto;

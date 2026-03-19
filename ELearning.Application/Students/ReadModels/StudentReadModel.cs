@@ -1,3 +1,7 @@
+// <copyright file="StudentReadModel.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
 namespace ELearning.Application.Students.ReadModels;
 
 public sealed record StudentReadModel(
@@ -8,5 +12,5 @@ public sealed record StudentReadModel(
     string? ProfilePictureUrl,
     DateTime? LastLoginDate)
 {
-    public string FullName => $"{FirstName} {LastName}".Trim();
+    public string FullName => $"{this.FirstName} {this.LastName}".Trim();
 }

@@ -1,7 +1,11 @@
-﻿using ELearning.Application.Common.Model;
-using MediatR;
+﻿// <copyright file="CreateCourseCommand.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace ELearning.Application.Courses.Commands;
+
+using ELearning.Application.Common.Model;
+using MediatR;
 
 /// <summary>
 /// Command to create a new course.
@@ -13,5 +17,4 @@ public record CreateCourseCommand(
     int LevelId,
     decimal Price,
     int DurationHours,
-    int DurationMinutes
-) : IRequest<Result>;
+    int DurationMinutes) : IRequest<Result>;

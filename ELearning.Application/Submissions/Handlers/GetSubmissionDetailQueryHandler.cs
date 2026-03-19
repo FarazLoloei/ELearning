@@ -1,3 +1,9 @@
+// <copyright file="GetSubmissionDetailQueryHandler.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
+namespace ELearning.Application.Submissions.Handlers;
+
 using ELearning.Application.Common.Exceptions;
 using ELearning.Application.Common.Interfaces;
 using ELearning.Application.Common.Model;
@@ -10,10 +16,8 @@ using ELearning.Domain.Entities.UserAggregate;
 using ELearning.Domain.Entities.UserAggregate.Abstractions.Repositories;
 using MediatR;
 
-namespace ELearning.Application.Submissions.Handlers;
-
 /// <summary>
-/// Handler for GetSubmissionDetailQuery
+/// Handler for GetSubmissionDetailQuery.
 /// </summary>
 public class GetSubmissionDetailQueryHandler(
         IAssignmentReadRepository assignmentRepository,
@@ -26,14 +30,16 @@ public class GetSubmissionDetailQueryHandler(
     public async Task<Result<SubmissionDetailDto>> Handle(GetSubmissionDetailQuery request, CancellationToken cancellationToken)
     {
         if (!currentUserService.IsAuthenticated || currentUserService.UserId == null)
+        {
             throw new ForbiddenAccessException();
+        }
 
         var enrollment = await enrollmentRepository.GetBySubmissionIdAsync(request.SubmissionId, cancellationToken)
             ?? throw new NotFoundException(nameof(Submission), request.SubmissionId);
         var submission = enrollment.Submissions.FirstOrDefault(s => s.Id == request.SubmissionId)
             ?? throw new NotFoundException(nameof(Submission), request.SubmissionId);
 
-        await VerifyPermission(enrollment.StudentId, submission.AssignmentId, cancellationToken);
+        await this.VerifyPermission(enrollment.StudentId, submission.AssignmentId, cancellationToken);
 
         var assignment = await assignmentRepository.GetByIdAsync(submission.AssignmentId, cancellationToken)
             ?? throw new NotFoundException("Assignment", submission.AssignmentId);
@@ -84,6 +90,8 @@ public class GetSubmissionDetailQueryHandler(
         var isAdmin = currentUserService.IsInRole("Admin");
 
         if (!isStudent && !isInstructor && !isAdmin)
+        {
             throw new ForbiddenAccessException();
+        }
     }
 }

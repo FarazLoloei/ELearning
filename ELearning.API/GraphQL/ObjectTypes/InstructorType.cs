@@ -1,6 +1,10 @@
-﻿using ELearning.Application.Instructors.Dtos;
+﻿// <copyright file="InstructorType.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace ELearning.API.GraphQL.ObjectTypes;
+
+using ELearning.Application.Instructors.Dtos;
 
 public class InstructorType : ObjectType<InstructorDto>
 {

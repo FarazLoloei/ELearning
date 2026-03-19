@@ -1,3 +1,9 @@
+// <copyright file="GetInstructorProfileQueryHandler.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
+namespace ELearning.Application.Instructors.Handlers;
+
 using ELearning.Application.Common.Exceptions;
 using ELearning.Application.Common.Model;
 using ELearning.Application.Instructors.Dtos;
@@ -5,10 +11,8 @@ using ELearning.Application.Instructors.Queries;
 using ELearning.Domain.Entities.UserAggregate.Abstractions.Repositories;
 using MediatR;
 
-namespace ELearning.Application.Instructors.Handlers;
-
 /// <summary>
-/// Handler for the GetInstructorProfileQuery
+/// Handler for the GetInstructorProfileQuery.
 /// </summary>
 public class GetInstructorProfileQueryHandler(
         IInstructorReadRepository instructorReadRepository) : IRequestHandler<GetInstructorProfileQuery, Result<InstructorDto>>

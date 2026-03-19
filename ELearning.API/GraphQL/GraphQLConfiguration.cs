@@ -1,6 +1,10 @@
-using ELearning.API.GraphQL.ObjectTypes;
+// <copyright file="GraphQLConfiguration.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace ELearning.API.GraphQL;
+
+using ELearning.API.GraphQL.ObjectTypes;
 
 public static class GraphQLConfiguration
 {

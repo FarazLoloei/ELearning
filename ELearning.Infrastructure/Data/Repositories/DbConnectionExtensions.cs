@@ -1,7 +1,11 @@
-using System.Data;
-using System.Data.Common;
+// <copyright file="DbConnectionExtensions.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace ELearning.Infrastructure.Data.Repositories;
+
+using System.Data;
+using System.Data.Common;
 
 internal static class DbConnectionExtensions
 {

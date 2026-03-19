@@ -1,6 +1,10 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿// <copyright file="RegisterStudentRequest.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace ELearning.API.Models;
+
+using System.ComponentModel.DataAnnotations;
 
 public class RegisterStudentRequest
 {

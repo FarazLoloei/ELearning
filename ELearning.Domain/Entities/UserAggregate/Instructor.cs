@@ -1,29 +1,34 @@
-﻿using ELearning.Domain.Entities.CourseAggregate;
-using ELearning.Domain.Entities.UserAggregate.Enums;
-using ELearning.Domain.ValueObjects;
+﻿// <copyright file="Instructor.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace ELearning.Domain.Entities.UserAggregate;
 
+using ELearning.Domain.Entities.CourseAggregate;
+using ELearning.Domain.Entities.UserAggregate.Enums;
+using ELearning.Domain.ValueObjects;
+
 public class Instructor : User
 {
-    private readonly HashSet<Course> _courses = new();
+    private readonly HashSet<Course> courses = new();
 
     /// <summary>
-    /// Professional biography
+    /// Gets professional biography.
     /// </summary>
     public string Bio { get; private set; } = string.Empty;
 
     /// <summary>
-    /// Areas of specialization
+    /// Gets areas of specialization.
     /// </summary>
     public string Expertise { get; private set; } = string.Empty;
 
     /// <summary>
-    /// Collection of courses created by this instructor
+    /// Gets collection of courses created by this instructor.
     /// </summary>
-    public IReadOnlyCollection<Course> Courses => _courses.ToList().AsReadOnly();
+    public IReadOnlyCollection<Course> Courses => this.courses.ToList().AsReadOnly();
 
-    private Instructor() : base()
+    private Instructor()
+        : base()
     {
     }
 
@@ -36,16 +41,16 @@ public class Instructor : User
         string expertise = "")
         : base(firstName, lastName, email, passwordHash, UserRole.Instructor)
     {
-        Bio = bio ?? string.Empty;
-        Expertise = expertise ?? string.Empty;
+        this.Bio = bio ?? string.Empty;
+        this.Expertise = expertise ?? string.Empty;
     }
 
     public void UpdateBio(string bio)
     {
         if (!string.IsNullOrWhiteSpace(bio))
         {
-            Bio = bio;
-            UpdatedAt(DateTime.UtcNow);
+            this.Bio = bio;
+            this.UpdatedAt(DateTime.UtcNow);
         }
     }
 
@@ -53,12 +58,12 @@ public class Instructor : User
     {
         if (!string.IsNullOrWhiteSpace(expertise))
         {
-            Expertise = expertise;
-            UpdatedAt(DateTime.UtcNow);
+            this.Expertise = expertise;
+            this.UpdatedAt(DateTime.UtcNow);
         }
     }
 
-    public bool AddCourse(Course course) => _courses.Add(course); // HashSet prevents duplicates and returns success status
+    public bool AddCourse(Course course) => this.courses.Add(course); // HashSet prevents duplicates and returns success status
 
-    public bool RemoveCourse(Course course) => _courses.Remove(course);
+    public bool RemoveCourse(Course course) => this.courses.Remove(course);
 }

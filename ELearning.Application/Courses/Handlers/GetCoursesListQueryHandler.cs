@@ -1,4 +1,10 @@
-﻿using AutoMapper;
+﻿// <copyright file="GetCoursesListQueryHandler.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
+namespace ELearning.Application.Courses.Handlers;
+
+using AutoMapper;
 using ELearning.Application.Common.Exceptions;
 using ELearning.Application.Common.Model;
 using ELearning.Application.Courses.Dtos;
@@ -6,8 +12,6 @@ using ELearning.Application.Courses.Queries;
 using ELearning.Domain.Entities.CourseAggregate.Abstractions.Repositories;
 using ELearning.SharedKernel;
 using MediatR;
-
-namespace ELearning.Application.Courses.Handlers;
 
 public class GetCoursesListQueryHandler(
         ICourseRepository courseRepository,
@@ -20,8 +24,7 @@ public class GetCoursesListQueryHandler(
         var courses = await courseRepository.SearchCoursesAsync(
             request.SearchTerm,
             request.ToPaginationParameters(),
-            cancellationToken
-            );
+            cancellationToken);
 
         var courseDtos = mapper.Map<List<CourseListDto>>(courses);
 

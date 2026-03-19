@@ -1,4 +1,8 @@
-﻿namespace ELearning.Domain.Entities.CourseAggregate.Abstractions.Services;
+﻿// <copyright file="IAssignmentService.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
+namespace ELearning.Domain.Entities.CourseAggregate.Abstractions.Services;
 
 public interface IAssignmentService
 {

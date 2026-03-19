@@ -1,4 +1,10 @@
-﻿using ELearning.Application.Common.Exceptions;
+﻿// <copyright file="UpdateEnrollmentStatusCommandHandler.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
+namespace ELearning.Application.Enrollments.Handlers;
+
+using ELearning.Application.Common.Exceptions;
 using ELearning.Application.Common.Interfaces;
 using ELearning.Application.Common.Model;
 using ELearning.Application.Enrollments.Commands;
@@ -6,8 +12,6 @@ using ELearning.Domain.Entities.EnrollmentAggregate;
 using ELearning.Domain.Entities.EnrollmentAggregate.Abstractions.Repositories;
 using ELearning.Domain.Entities.EnrollmentAggregate.Enums;
 using MediatR;
-
-namespace ELearning.Application.Enrollments.Handlers;
 
 /// <summary>
 /// Handler for UpdateEnrollmentStatusCommand.
@@ -22,17 +26,17 @@ public class UpdateEnrollmentStatusCommandHandler(
         ["Active"] = EnrollmentStatus.Active,
         ["Paused"] = EnrollmentStatus.Paused,
         ["Completed"] = EnrollmentStatus.Completed,
-        ["Abandoned"] = EnrollmentStatus.Abandoned
+        ["Abandoned"] = EnrollmentStatus.Abandoned,
     };
 
     public async Task<Result> Handle(UpdateEnrollmentStatusCommand request, CancellationToken cancellationToken)
     {
-        EnsureAuthenticated();
+        this.EnsureAuthenticated();
 
         var enrollment = await enrollmentRepository.GetByIdForUpdateAsync(request.EnrollmentId, cancellationToken)
                           ?? throw new NotFoundException(nameof(Enrollment), request.EnrollmentId);
 
-        EnsureAuthorized(enrollment);
+        this.EnsureAuthorized(enrollment);
 
         if (!StatusMap.TryGetValue(request.Status, out var newStatus))
         {
@@ -54,7 +58,9 @@ public class UpdateEnrollmentStatusCommandHandler(
     private void EnsureAuthenticated()
     {
         if (!currentUserService.IsAuthenticated || currentUserService.UserId == null)
+        {
             throw new ForbiddenAccessException();
+        }
     }
 
     private void EnsureAuthorized(Enrollment enrollment)
@@ -63,6 +69,8 @@ public class UpdateEnrollmentStatusCommandHandler(
         var isAuthorized = isOwner || currentUserService.IsInRole("Instructor") || currentUserService.IsInRole("Admin");
 
         if (!isAuthorized)
+        {
             throw new ForbiddenAccessException();
+        }
     }
 }

@@ -1,7 +1,11 @@
-﻿using ELearning.Application.Common.Model;
-using MediatR;
+﻿// <copyright file="UpdateCourseCommand.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace ELearning.Application.Courses.Commands;
+
+using ELearning.Application.Common.Model;
+using MediatR;
 
 /// <summary>
 /// Command to update an existing course.
@@ -15,5 +19,4 @@ public record UpdateCourseCommand(
     decimal Price,
     int DurationHours,
     int DurationMinutes,
-    bool IsFeatured
-) : IRequest<Result>;
+    bool IsFeatured) : IRequest<Result>;

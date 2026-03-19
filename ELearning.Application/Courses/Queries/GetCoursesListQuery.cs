@@ -1,10 +1,14 @@
-﻿using ELearning.Application.Common.Model;
+﻿// <copyright file="GetCoursesListQuery.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
+namespace ELearning.Application.Courses.Queries;
+
+using ELearning.Application.Common.Model;
 using ELearning.Application.Courses.Dtos;
 using ELearning.SharedKernel;
 using ELearning.SharedKernel.Abstractions;
 using MediatR;
-
-namespace ELearning.Application.Courses.Queries;
 
 public record GetCoursesListQuery : IRequest<Result<PaginatedList<CourseListDto>>>, IPaginatable
 {

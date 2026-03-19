@@ -1,3 +1,7 @@
+// <copyright file="InstructorWithCoursesReadModel.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
 namespace ELearning.Application.Instructors.ReadModels;
 
 public sealed record InstructorWithCoursesReadModel(
@@ -13,5 +17,5 @@ public sealed record InstructorWithCoursesReadModel(
     int TotalCourses,
     IReadOnlyList<InstructorCourseReadModel> Courses)
 {
-    public string FullName => $"{FirstName} {LastName}".Trim();
+    public string FullName => $"{this.FirstName} {this.LastName}".Trim();
 }

@@ -1,6 +1,10 @@
-﻿using ELearning.SharedKernel;
+﻿// <copyright file="CourseStatus.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace ELearning.Domain.Entities.CourseAggregate.Enums;
+
+using ELearning.SharedKernel;
 
 public sealed class CourseStatus : Enumeration
 {
@@ -12,7 +16,8 @@ public sealed class CourseStatus : Enumeration
 
     public static CourseStatus Archived = new CourseStatus(4, nameof(Archived));
 
-    private CourseStatus(int id, string name) : base(id, name)
+    private CourseStatus(int id, string name)
+        : base(id, name)
     {
     }
 }

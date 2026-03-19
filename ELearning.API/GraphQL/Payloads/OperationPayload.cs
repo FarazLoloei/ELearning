@@ -1,3 +1,7 @@
+// <copyright file="OperationPayload.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
 namespace ELearning.API.GraphQL.Payloads;
 
 public sealed class OperationPayload : PayloadBase

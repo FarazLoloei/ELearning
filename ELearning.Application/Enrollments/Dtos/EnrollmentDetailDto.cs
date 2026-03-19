@@ -1,7 +1,11 @@
-using ELearning.Application.Submissions.Dtos;
-using ELearning.SharedKernel.Abstractions;
+// <copyright file="EnrollmentDetailDto.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace ELearning.Application.Enrollments.Dtos;
+
+using ELearning.Application.Submissions.Dtos;
+using ELearning.SharedKernel.Abstractions;
 
 public sealed record EnrollmentDetailDto(
     Guid Id,
@@ -16,5 +20,4 @@ public sealed record EnrollmentDetailDto(
     IReadOnlyList<LessonProgressDto> LessonProgress,
     IReadOnlyList<SubmissionDto> Submissions,
     decimal? CourseRating,
-    string? Review
-) : IDto;
+    string? Review) : IDto;

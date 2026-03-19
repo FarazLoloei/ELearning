@@ -1,4 +1,8 @@
-﻿namespace ELearning.SharedKernel;
+﻿// <copyright file="PaginatedList.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
+namespace ELearning.SharedKernel;
 
 public class PaginatedList<T>
 {
@@ -12,15 +16,15 @@ public class PaginatedList<T>
 
     public PaginatedList(List<T> items, int count, int pageIndex, int pageSize)
     {
-        PageIndex = pageIndex;
-        TotalPages = (int)Math.Ceiling(count / (double)pageSize);
-        TotalCount = count;
-        Items = items;
+        this.PageIndex = pageIndex;
+        this.TotalPages = (int)Math.Ceiling(count / (double)pageSize);
+        this.TotalCount = count;
+        this.Items = items;
     }
 
-    public bool HasPreviousPage => PageIndex > 1;
+    public bool HasPreviousPage => this.PageIndex > 1;
 
-    public bool HasNextPage => PageIndex < TotalPages;
+    public bool HasNextPage => this.PageIndex < this.TotalPages;
 
     public static PaginatedList<T> Create(IQueryable<T> source, int pageIndex, int pageSize)
     {

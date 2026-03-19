@@ -1,15 +1,20 @@
+// <copyright file="DtoFactory.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
+namespace ELearning.Application.Tests.Helpers;
+
 using ELearning.Application.Courses.Dtos;
 using ELearning.Application.Enrollments.Dtos;
 using ELearning.Application.Instructors.Dtos;
 using ELearning.Application.Students.Dtos;
 using ELearning.Application.Submissions.Dtos;
 
-namespace ELearning.Application.Tests.Helpers;
-
 internal static class DtoFactory
 {
     private static readonly Guid FixedId = Guid.Parse("00000000-0000-0000-0000-000000000001");
     private static readonly DateTime FixedUtc = new(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+
     public static AssignmentDto CreateAssignmentDto(
         string title = "Assignment 1",
         int maxPoints = 100) =>
@@ -235,5 +240,3 @@ internal static class DtoFactory
             2,
             new[] { CreateEnrollmentProgressDto() });
 }
-
-

@@ -1,9 +1,13 @@
-﻿using ELearning.Domain.Entities.EnrollmentAggregate;
+﻿// <copyright file="CourseRatedEvent.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
+namespace ELearning.Domain.Entities.CourseAggregate.Events;
+
+using ELearning.Domain.Entities.EnrollmentAggregate;
 using ELearning.Domain.Entities.UserAggregate;
 using ELearning.Domain.ValueObjects;
 using ELearning.SharedKernel.Abstractions;
-
-namespace ELearning.Domain.Entities.CourseAggregate.Events;
 
 public sealed class CourseRatedEvent : IDomainEvent
 {
@@ -19,10 +23,10 @@ public sealed class CourseRatedEvent : IDomainEvent
 
     public CourseRatedEvent(Student student, Course course, Enrollment enrollment, Rating rating)
     {
-        Student = student ?? throw new ArgumentNullException(nameof(student));
-        Course = course ?? throw new ArgumentNullException(nameof(course));
-        Enrollment = enrollment ?? throw new ArgumentNullException(nameof(enrollment));
-        Rating = rating ?? throw new ArgumentNullException(nameof(rating));
-        OccurredOnUTC = DateTime.UtcNow;
+        this.Student = student ?? throw new ArgumentNullException(nameof(student));
+        this.Course = course ?? throw new ArgumentNullException(nameof(course));
+        this.Enrollment = enrollment ?? throw new ArgumentNullException(nameof(enrollment));
+        this.Rating = rating ?? throw new ArgumentNullException(nameof(rating));
+        this.OccurredOnUTC = DateTime.UtcNow;
     }
 }

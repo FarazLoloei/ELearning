@@ -1,9 +1,13 @@
+// <copyright file="IStudentReadService.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
+namespace ELearning.Application.Students.ReadModels;
+
 using ELearning.Application.Students.Dtos;
 using ELearning.SharedKernel;
 using ELearning.SharedKernel.Abstractions;
 using ELearning.SharedKernel.Models;
-
-namespace ELearning.Application.Students.ReadModels;
 
 public interface IStudentReadService : IReadRepository<StudentDto, Guid>
 {

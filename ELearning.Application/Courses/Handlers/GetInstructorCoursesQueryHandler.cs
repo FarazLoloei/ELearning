@@ -1,3 +1,9 @@
+// <copyright file="GetInstructorCoursesQueryHandler.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
+namespace ELearning.Application.Courses.Handlers;
+
 using ELearning.Application.Common.Exceptions;
 using ELearning.Application.Common.Model;
 using ELearning.Application.Courses.Queries;
@@ -6,10 +12,8 @@ using ELearning.Domain.Entities.CourseAggregate.Enums;
 using ELearning.Domain.Entities.UserAggregate.Abstractions.Repositories;
 using MediatR;
 
-namespace ELearning.Application.Courses.Handlers;
-
 /// <summary>
-/// Handler for GetInstructorCoursesQuery
+/// Handler for GetInstructorCoursesQuery.
 /// </summary>
 public class GetInstructorCoursesQueryHandler(
         IInstructorReadRepository instructorReadRepository)

@@ -1,8 +1,12 @@
-﻿using ELearning.Domain.Entities.EnrollmentAggregate;
-using ELearning.Domain.Entities.EnrollmentAggregate.Abstractions.Repositories;
-using Microsoft.EntityFrameworkCore;
+﻿// <copyright file="EnrollmentRepository.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace ELearning.Infrastructure.Data.Repositories;
+
+using ELearning.Domain.Entities.EnrollmentAggregate;
+using ELearning.Domain.Entities.EnrollmentAggregate.Abstractions.Repositories;
+using Microsoft.EntityFrameworkCore;
 
 public class EnrollmentRepository(ApplicationDbContext context) : IEnrollmentRepository
 {

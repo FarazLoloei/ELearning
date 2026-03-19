@@ -1,3 +1,9 @@
+// <copyright file="GetPendingSubmissionsQueryHandler.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
+namespace ELearning.Application.Submissions.Handlers;
+
 using ELearning.Application.Common.Exceptions;
 using ELearning.Application.Common.Interfaces;
 using ELearning.Application.Common.Model;
@@ -10,10 +16,8 @@ using ELearning.SharedKernel;
 using ELearning.SharedKernel.Models;
 using MediatR;
 
-namespace ELearning.Application.Submissions.Handlers;
-
 /// <summary>
-/// Handler for GetPendingSubmissionsQuery
+/// Handler for GetPendingSubmissionsQuery.
 /// </summary>
 public class GetPendingSubmissionsQueryHandler(
         ICourseRepository courseRepository,
@@ -25,13 +29,17 @@ public class GetPendingSubmissionsQueryHandler(
     public async Task<Result<PaginatedList<SubmissionDto>>> Handle(GetPendingSubmissionsQuery request, CancellationToken cancellationToken)
     {
         if (!currentUserService.IsAuthenticated || currentUserService.UserId is null)
+        {
             throw new ForbiddenAccessException();
+        }
 
         // Ensure current user is the instructor or an admin
         var currentUserId = currentUserService.UserId.Value;
 
         if (currentUserId != request.InstructorId && !currentUserService.IsInRole("Admin"))
+        {
             throw new ForbiddenAccessException();
+        }
 
         // Get all courses by this instructor
         var courseIds = (await courseRepository.GetByInstructorIdAsync(request.InstructorId, cancellationToken))

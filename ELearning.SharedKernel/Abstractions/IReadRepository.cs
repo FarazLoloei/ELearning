@@ -1,6 +1,10 @@
-﻿using ELearning.SharedKernel.Models;
+﻿// <copyright file="IReadRepository.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace ELearning.SharedKernel.Abstractions;
+
+using ELearning.SharedKernel.Models;
 
 public interface IReadRepository<T, TKey>
 {

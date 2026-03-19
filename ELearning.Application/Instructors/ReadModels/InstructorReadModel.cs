@@ -1,3 +1,7 @@
+// <copyright file="InstructorReadModel.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
 namespace ELearning.Application.Instructors.ReadModels;
 
 public sealed record InstructorReadModel(
@@ -12,5 +16,5 @@ public sealed record InstructorReadModel(
     int TotalStudents,
     int TotalCourses)
 {
-    public string FullName => $"{FirstName} {LastName}".Trim();
+    public string FullName => $"{this.FirstName} {this.LastName}".Trim();
 }

@@ -1,7 +1,11 @@
-﻿using FluentValidation;
-using MediatR;
+﻿// <copyright file="ValidationBehavior.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace ELearning.Application.Common.Behaviors;
+
+using FluentValidation;
+using MediatR;
 
 public class ValidationBehavior<TRequest, TResponse>
     (IEnumerable<IValidator<TRequest>> validators)

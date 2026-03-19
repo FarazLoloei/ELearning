@@ -1,11 +1,15 @@
+// <copyright file="DatabaseInitializerTests.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
+namespace ELearning.IntegrationTests;
+
 using ELearning.API.Infrastructure;
 using ELearning.Infrastructure;
 using ELearning.Infrastructure.Data;
 using FluentAssertions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-
-namespace ELearning.IntegrationTests;
 
 public sealed class DatabaseInitializerTests
 {
@@ -31,7 +35,7 @@ public sealed class DatabaseInitializerTests
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
                 ["Database:Provider"] = "SqliteInMemory",
-                ["Database:SqliteInMemoryConnection"] = "Data Source=:memory:;Cache=Shared"
+                ["Database:SqliteInMemoryConnection"] = "Data Source=:memory:;Cache=Shared",
             })
             .Build();
 

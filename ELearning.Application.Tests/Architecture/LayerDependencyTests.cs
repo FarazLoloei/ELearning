@@ -1,7 +1,11 @@
-using FluentAssertions;
-using NetArchTest.Rules;
+// <copyright file="LayerDependencyTests.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace ELearning.Application.Tests.Architecture;
+
+using FluentAssertions;
+using NetArchTest.Rules;
 
 public sealed class LayerDependencyTests
 {

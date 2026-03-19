@@ -1,12 +1,16 @@
+// <copyright file="InstructorReadRepository.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
+namespace ELearning.Infrastructure.Data.Repositories;
+
+using System.Data;
 using Dapper;
 using ELearning.Application.Instructors.ReadModels;
 using ELearning.Domain.Entities.UserAggregate.Abstractions.Repositories;
 using ELearning.SharedKernel;
 using ELearning.SharedKernel.Models;
 using Microsoft.EntityFrameworkCore;
-using System.Data;
-
-namespace ELearning.Infrastructure.Data.Repositories;
 
 public class InstructorReadRepository(ApplicationDbContext context) : IInstructorReadRepository
 {
@@ -220,7 +224,7 @@ public class InstructorReadRepository(ApplicationDbContext context) : IInstructo
                 new
                 {
                     PageSize = pagination.PageSize,
-                    Offset = pagination.SkipCount
+                    Offset = pagination.SkipCount,
                 },
                 cancellationToken: cancellationToken));
 

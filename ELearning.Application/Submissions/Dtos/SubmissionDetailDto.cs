@@ -1,6 +1,10 @@
-using ELearning.SharedKernel.Abstractions;
+// <copyright file="SubmissionDetailDto.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace ELearning.Application.Submissions.Dtos;
+
+using ELearning.SharedKernel.Abstractions;
 
 // Detailed DTO for submission
 public sealed record SubmissionDetailDto(
@@ -18,5 +22,4 @@ public sealed record SubmissionDetailDto(
     string Feedback,
     Guid? GradedById,
     string GradedByName,
-    DateTime? GradedDate
-) : IDto;
+    DateTime? GradedDate) : IDto;

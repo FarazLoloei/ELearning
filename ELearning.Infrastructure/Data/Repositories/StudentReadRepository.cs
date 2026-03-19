@@ -1,12 +1,16 @@
+// <copyright file="StudentReadRepository.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
+namespace ELearning.Infrastructure.Data.Repositories;
+
+using System.Data;
 using Dapper;
 using ELearning.Application.Students.Abstractions;
 using ELearning.Application.Students.ReadModels;
 using ELearning.SharedKernel;
 using ELearning.SharedKernel.Models;
 using Microsoft.EntityFrameworkCore;
-using System.Data;
-
-namespace ELearning.Infrastructure.Data.Repositories;
 
 public class StudentReadRepository(ApplicationDbContext context) : IStudentReadRepository
 {
@@ -41,7 +45,7 @@ public class StudentReadRepository(ApplicationDbContext context) : IStudentReadR
         var rows = await connection.QueryAsync<StudentReadModel>(
             new CommandDefinition(sql, new { CourseId = courseId }, cancellationToken: cancellationToken));
 
-        return rows.ToList();
+        return [.. rows];
     }
 
     public async Task<IReadOnlyList<StudentCourseReadModel>> GetCoursesByStudentIdAsync(Guid studentId, CancellationToken cancellationToken)
@@ -60,7 +64,7 @@ public class StudentReadRepository(ApplicationDbContext context) : IStudentReadR
         var rows = await connection.QueryAsync<StudentCourseReadModel>(
             new CommandDefinition(sql, new { StudentId = studentId }, cancellationToken: cancellationToken));
 
-        return rows.ToList();
+        return [.. rows];
     }
 
     public async Task<int> GetEnrolledStudentCountAsync(Guid courseId, CancellationToken cancellationToken)
@@ -105,13 +109,13 @@ public class StudentReadRepository(ApplicationDbContext context) : IStudentReadR
                 sql,
                 new
                 {
-                    PageSize = pagination.PageSize,
-                    Offset = pagination.SkipCount
+                    pagination.PageSize,
+                    Offset = pagination.SkipCount,
                 },
                 cancellationToken: cancellationToken));
 
         return new PaginatedList<StudentReadModel>(
-            rows.ToList(),
+            [.. rows],
             totalCount,
             pagination.PageNumber,
             pagination.PageSize);

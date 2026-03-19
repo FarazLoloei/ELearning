@@ -1,8 +1,12 @@
+// <copyright file="OcelotGatewayModeTests.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
+namespace ELearning.IntegrationTests;
+
 using ELearning.API.Infrastructure;
 using FluentAssertions;
 using Microsoft.Extensions.Configuration;
-
-namespace ELearning.IntegrationTests;
 
 public sealed class OcelotGatewayModeTests
 {
@@ -26,7 +30,7 @@ public sealed class OcelotGatewayModeTests
         var configuration = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
-                ["Ocelot:Enabled"] = rawValue
+                ["Ocelot:Enabled"] = rawValue,
             })
             .Build();
 

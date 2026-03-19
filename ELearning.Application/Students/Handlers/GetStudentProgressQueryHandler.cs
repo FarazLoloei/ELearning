@@ -1,3 +1,9 @@
+// <copyright file="GetStudentProgressQueryHandler.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
+namespace ELearning.Application.Students.Handlers;
+
 using ELearning.Application.Common.Exceptions;
 using ELearning.Application.Common.Interfaces;
 using ELearning.Application.Common.Model;
@@ -10,8 +16,6 @@ using ELearning.Domain.Entities.CourseAggregate.Abstractions.Repositories;
 using ELearning.Domain.Entities.EnrollmentAggregate.Abstractions.Repositories;
 using ELearning.Domain.Entities.EnrollmentAggregate.Enums;
 using MediatR;
-
-namespace ELearning.Application.Students.Handlers;
 
 public class GetStudentProgressQueryHandler(
         IStudentReadRepository studentReadRepository,
@@ -69,6 +73,3 @@ public class GetStudentProgressQueryHandler(
         return Result.Success(progressDto);
     }
 }
-
-
-

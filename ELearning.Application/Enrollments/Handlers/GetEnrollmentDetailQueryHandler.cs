@@ -1,3 +1,9 @@
+// <copyright file="GetEnrollmentDetailQueryHandler.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
+namespace ELearning.Application.Enrollments.Handlers;
+
 using ELearning.Application.Common.Exceptions;
 using ELearning.Application.Common.Interfaces;
 using ELearning.Application.Common.Model;
@@ -8,8 +14,6 @@ using ELearning.Application.Enrollments.Queries;
 using ELearning.Application.Submissions.Dtos;
 using ELearning.Domain.Entities.CourseAggregate.Abstractions.Repositories;
 using MediatR;
-
-namespace ELearning.Application.Enrollments.Handlers;
 
 public class GetEnrollmentDetailQueryHandler(
         IEnrollmentReadRepository enrollmentReadRepository,
@@ -65,6 +69,3 @@ public class GetEnrollmentDetailQueryHandler(
         return Result.Success(dto);
     }
 }
-
-
-

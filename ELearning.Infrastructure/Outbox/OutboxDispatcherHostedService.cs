@@ -1,8 +1,12 @@
+// <copyright file="OutboxDispatcherHostedService.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
+namespace ELearning.Infrastructure.Outbox;
+
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-
-namespace ELearning.Infrastructure.Outbox;
 
 public sealed class OutboxDispatcherHostedService(
     IServiceScopeFactory scopeFactory,

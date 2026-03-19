@@ -1,9 +1,13 @@
+// <copyright file="DtoValidationTestHelper.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
+namespace ELearning.Application.Tests.Helpers;
+
 using System.Linq.Expressions;
 using FluentAssertions;
 using FluentValidation;
 using FluentValidation.Results;
-
-namespace ELearning.Application.Tests.Helpers;
 
 internal static class DtoValidationTestHelper
 {
@@ -52,4 +56,3 @@ internal static class DtoValidationTestHelper
         throw new ArgumentException("Expression must target a property.", nameof(property));
     }
 }
-

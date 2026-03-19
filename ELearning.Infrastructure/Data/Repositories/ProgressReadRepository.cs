@@ -1,13 +1,16 @@
+// <copyright file="ProgressReadRepository.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
+namespace ELearning.Infrastructure.Data.Repositories;
+
+using System.Data;
 using Dapper;
 using ELearning.Application.Enrollments.Abstractions;
 using ELearning.Application.Enrollments.ReadModels;
 using ELearning.SharedKernel;
 using ELearning.SharedKernel.Models;
 using Microsoft.EntityFrameworkCore;
-
-using System.Data;
-
-namespace ELearning.Infrastructure.Data.Repositories;
 
 public class ProgressReadRepository(ApplicationDbContext context) : IProgressReadRepository
 {
@@ -65,7 +68,7 @@ public class ProgressReadRepository(ApplicationDbContext context) : IProgressRea
         var rows = await connection.QueryAsync<ProgressReadModel>(
             new CommandDefinition(sql, new { EnrollmentId = enrollmentId }, cancellationToken: cancellationToken));
 
-        return rows.ToList();
+        return [.. rows];
     }
 
     public async Task<ProgressReadModel?> GetByEnrollmentAndLessonIdAsync(Guid enrollmentId, Guid lessonId, CancellationToken cancellationToken = default)
@@ -169,13 +172,13 @@ public class ProgressReadRepository(ApplicationDbContext context) : IProgressRea
                 sql,
                 new
                 {
-                    PageSize = pagination.PageSize,
-                    Offset = pagination.SkipCount
+                    pagination.PageSize,
+                    Offset = pagination.SkipCount,
                 },
                 cancellationToken: cancellationToken));
 
         return new PaginatedList<ProgressReadModel>(
-            rows.ToList(),
+            [.. rows],
             totalCount,
             pagination.PageNumber,
             pagination.PageSize);

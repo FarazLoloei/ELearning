@@ -1,4 +1,8 @@
-﻿namespace ELearning.Application.Submissions.ReadModels;
+﻿// <copyright file="SubmissionReadModel.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
+namespace ELearning.Application.Submissions.ReadModels;
 
 public sealed record SubmissionReadModel(
     Guid Id,

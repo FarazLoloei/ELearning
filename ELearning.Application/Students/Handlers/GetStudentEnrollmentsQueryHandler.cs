@@ -1,3 +1,9 @@
+// <copyright file="GetStudentEnrollmentsQueryHandler.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
+namespace ELearning.Application.Students.Handlers;
+
 using ELearning.Application.Common.Interfaces;
 using ELearning.Application.Common.Model;
 using ELearning.Application.Common.Security;
@@ -6,8 +12,6 @@ using ELearning.Application.Enrollments.Dtos;
 using ELearning.Application.Students.Queries;
 using ELearning.SharedKernel;
 using MediatR;
-
-namespace ELearning.Application.Students.Handlers;
 
 public class GetStudentEnrollmentsQueryHandler(
         IEnrollmentReadRepository enrollmentReadRepository,

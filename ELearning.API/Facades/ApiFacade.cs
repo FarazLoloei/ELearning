@@ -1,10 +1,14 @@
+// <copyright file="ApiFacade.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
+namespace ELearning.API.Facades;
+
 using ELearning.API.Models;
 using ELearning.Application.Common.Interfaces;
 using ELearning.Application.Common.Model;
 using MediatR;
 using ApplicationModel = ELearning.Application.Common.Model;
-
-namespace ELearning.API.Facades;
 
 public sealed class ApiFacade(IMediator mediator, IAuthService authService) : IApiFacade
 {

@@ -1,8 +1,12 @@
-using ELearning.Application.Common.Exceptions;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Mvc;
+// <copyright file="GlobalExceptionMiddleware.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace ELearning.API.Middleware;
+
+using ELearning.Application.Common.Exceptions;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 public sealed class GlobalExceptionMiddleware(RequestDelegate next, ILogger<GlobalExceptionMiddleware> logger)
 {
@@ -14,7 +18,7 @@ public sealed class GlobalExceptionMiddleware(RequestDelegate next, ILogger<Glob
         }
         catch (Exception exception)
         {
-            await HandleExceptionAsync(context, exception);
+            await this.HandleExceptionAsync(context, exception);
         }
     }
 
@@ -28,7 +32,7 @@ public sealed class GlobalExceptionMiddleware(RequestDelegate next, ILogger<Glob
             UnauthorizedAccessException => (StatusCodes.Status401Unauthorized, "Unauthorized"),
             DomainApplicationException => (StatusCodes.Status400BadRequest, "Application error"),
             DbUpdateConcurrencyException => (StatusCodes.Status409Conflict, "Concurrency conflict"),
-            _ => (StatusCodes.Status500InternalServerError, "Internal server error")
+            _ => (StatusCodes.Status500InternalServerError, "Internal server error"),
         };
 
         if (statusCode >= 500)
@@ -45,7 +49,7 @@ public sealed class GlobalExceptionMiddleware(RequestDelegate next, ILogger<Glob
             Status = statusCode,
             Title = title,
             Detail = exception.Message,
-            Instance = context.Request.Path
+            Instance = context.Request.Path,
         };
 
         problemDetails.Extensions["traceId"] = context.TraceIdentifier;

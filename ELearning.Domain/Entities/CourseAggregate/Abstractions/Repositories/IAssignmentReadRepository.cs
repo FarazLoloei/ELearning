@@ -1,4 +1,8 @@
-﻿namespace ELearning.Domain.Entities.CourseAggregate.Abstractions.Repositories;
+﻿// <copyright file="IAssignmentReadRepository.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
+namespace ELearning.Domain.Entities.CourseAggregate.Abstractions.Repositories;
 
 public interface IAssignmentReadRepository
 {

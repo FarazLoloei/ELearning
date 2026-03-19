@@ -1,10 +1,15 @@
-﻿using ELearning.Domain.Exceptions;
+﻿// <copyright file="CourseNotFoundException.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace ELearning.Domain.Entities.CourseAggregate.Exceptions;
+
+using ELearning.Domain.Exceptions;
 
 public sealed class CourseNotFoundException : DomainException
 {
     public CourseNotFoundException(Guid courseId)
         : base($"Course with ID '{courseId}' was not found.")
-    { }
+    {
+    }
 }

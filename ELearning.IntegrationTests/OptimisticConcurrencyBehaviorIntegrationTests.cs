@@ -1,3 +1,9 @@
+// <copyright file="OptimisticConcurrencyBehaviorIntegrationTests.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
+namespace ELearning.IntegrationTests;
+
 using ELearning.Domain.Entities.CourseAggregate;
 using ELearning.Domain.Entities.CourseAggregate.Enums;
 using ELearning.Domain.Entities.UserAggregate;
@@ -9,8 +15,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace ELearning.IntegrationTests;
-
 public sealed class OptimisticConcurrencyBehaviorIntegrationTests
 {
     [Fact]
@@ -21,7 +25,7 @@ public sealed class OptimisticConcurrencyBehaviorIntegrationTests
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
                 ["Database:Provider"] = "SqliteInMemory",
-                ["Database:SqliteInMemoryConnection"] = "Data Source=:memory:;Cache=Shared"
+                ["Database:SqliteInMemoryConnection"] = "Data Source=:memory:;Cache=Shared",
             })
             .Build();
 

@@ -1,7 +1,11 @@
-using ELearning.Application.Tests.Helpers;
-using ELearning.Application.Common.Validators.Dtos;
+// <copyright file="CoursesDtoValidationTests.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace ELearning.Application.Tests.Dtos;
+
+using ELearning.Application.Common.Validators.Dtos;
+using ELearning.Application.Tests.Helpers;
 
 public class CoursesDtoValidationTests
 {
@@ -201,4 +205,3 @@ public class CoursesDtoValidationTests
         DtoValidationTestHelper.AssertInvalidFor(ReviewValidator, dto, x => x.Rating);
     }
 }
-

@@ -1,3 +1,9 @@
+// <copyright file="StudentsController.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
+namespace ELearning.API.Controllers;
+
 using Asp.Versioning;
 using ELearning.API.Contracts;
 using ELearning.API.Facades;
@@ -7,8 +13,6 @@ using ELearning.Application.Students.Queries;
 using ELearning.SharedKernel;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-
-namespace ELearning.API.Controllers;
 
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/[controller]")]
@@ -22,7 +26,7 @@ public class StudentsController(IApiFacade apiFacade) : ApiControllerBase
     {
         var query = new GetStudentProfileQuery { StudentId = id };
         var result = await apiFacade.SendAsync(query, cancellationToken);
-        return FromResult(result, error => error.StartsWith("Student not found", StringComparison.OrdinalIgnoreCase));
+        return this.FromResult(result, error => error.StartsWith("Student not found", StringComparison.OrdinalIgnoreCase));
     }
 
     [HttpGet("{id:guid}/progress")]
@@ -33,7 +37,7 @@ public class StudentsController(IApiFacade apiFacade) : ApiControllerBase
     {
         var query = new GetStudentProgressQuery { StudentId = id };
         var result = await apiFacade.SendAsync(query, cancellationToken);
-        return FromResult(result, error => error.StartsWith("Student", StringComparison.OrdinalIgnoreCase));
+        return this.FromResult(result, error => error.StartsWith("Student", StringComparison.OrdinalIgnoreCase));
     }
 
     [HttpGet("{id:guid}/enrollments")]
@@ -49,10 +53,10 @@ public class StudentsController(IApiFacade apiFacade) : ApiControllerBase
         {
             StudentId = id,
             PageNumber = pageNumber,
-            PageSize = pageSize
+            PageSize = pageSize,
         };
 
         var result = await apiFacade.SendAsync(query, cancellationToken);
-        return FromResult(result);
+        return this.FromResult(result);
     }
 }

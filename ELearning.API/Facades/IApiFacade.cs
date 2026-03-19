@@ -1,10 +1,14 @@
-using ELearning.Application.Common.Model;
+// <copyright file="IApiFacade.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
+namespace ELearning.API.Facades;
+
 using ELearning.API.Models;
+using ELearning.Application.Common.Model;
 using MediatR;
 using ApplicationModel = ELearning.Application.Common.Model;
 using Result = ELearning.Application.Common.Model.Result;
-
-namespace ELearning.API.Facades;
 
 public interface IApiFacade
 {

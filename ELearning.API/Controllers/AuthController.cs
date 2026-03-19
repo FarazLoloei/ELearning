@@ -1,3 +1,9 @@
+// <copyright file="AuthController.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
+namespace ELearning.API.Controllers;
+
 using Asp.Versioning;
 using ELearning.API.Contracts;
 using ELearning.API.Facades;
@@ -7,8 +13,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using LoginRequest = ELearning.API.Models.LoginRequest;
-
-namespace ELearning.API.Controllers;
 
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/[controller]")]
@@ -25,10 +29,10 @@ public class AuthController(IApiFacade apiFacade) : ApiControllerBase
 
         if (result.Success)
         {
-            return Ok(ApiResponse<AuthResult>.Success(result));
+            return this.Ok(ApiResponse<AuthResult>.Success(result));
         }
 
-        return UnauthorizedResponse<AuthResult>(result.ErrorMessage ?? "Authentication failed.");
+        return this.UnauthorizedResponse<AuthResult>(result.ErrorMessage ?? "Authentication failed.");
     }
 
     [HttpPost("register/student")]
@@ -39,8 +43,8 @@ public class AuthController(IApiFacade apiFacade) : ApiControllerBase
         var result = await apiFacade.RegisterStudentAsync(request, cancellationToken);
 
         return result.Success
-            ? Ok(ApiResponse<AuthResult>.Success(result))
-            : BadRequestResponse<AuthResult>(result.ErrorMessage ?? "Registration failed.");
+            ? this.Ok(ApiResponse<AuthResult>.Success(result))
+            : this.BadRequestResponse<AuthResult>(result.ErrorMessage ?? "Registration failed.");
     }
 
     [HttpPost("register/instructor")]
@@ -51,8 +55,8 @@ public class AuthController(IApiFacade apiFacade) : ApiControllerBase
         var result = await apiFacade.RegisterInstructorAsync(request, cancellationToken);
 
         return result.Success
-            ? Ok(ApiResponse<AuthResult>.Success(result))
-            : BadRequestResponse<AuthResult>(result.ErrorMessage ?? "Registration failed.");
+            ? this.Ok(ApiResponse<AuthResult>.Success(result))
+            : this.BadRequestResponse<AuthResult>(result.ErrorMessage ?? "Registration failed.");
     }
 
     [HttpPost("refresh")]
@@ -63,8 +67,8 @@ public class AuthController(IApiFacade apiFacade) : ApiControllerBase
         var result = await apiFacade.RefreshTokenAsync(request, cancellationToken);
 
         return result.Success
-            ? Ok(ApiResponse<AuthResult>.Success(result))
-            : UnauthorizedResponse<AuthResult>(result.ErrorMessage ?? "Refresh token is invalid.");
+            ? this.Ok(ApiResponse<AuthResult>.Success(result))
+            : this.UnauthorizedResponse<AuthResult>(result.ErrorMessage ?? "Refresh token is invalid.");
     }
 
     [HttpPost("revoke")]
@@ -75,6 +79,6 @@ public class AuthController(IApiFacade apiFacade) : ApiControllerBase
     public async Task<ActionResult<ApiResponse<object?>>> RevokeToken(RevokeTokenRequest request, CancellationToken cancellationToken)
     {
         var result = await apiFacade.RevokeTokenAsync(request, cancellationToken);
-        return result.IsSuccess ? Ok(ApiResponse<object?>.Success(null)) : BadRequestResponse<object?>(result.Error);
+        return result.IsSuccess ? this.Ok(ApiResponse<object?>.Success(null)) : this.BadRequestResponse<object?>(result.Error);
     }
 }

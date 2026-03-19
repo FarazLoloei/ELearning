@@ -1,6 +1,10 @@
-﻿using ELearning.SharedKernel;
+﻿// <copyright file="CourseCategory.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace ELearning.Domain.Entities.CourseAggregate.Enums;
+
+using ELearning.SharedKernel;
 
 public sealed class CourseCategory : Enumeration
 {
@@ -24,7 +28,8 @@ public sealed class CourseCategory : Enumeration
 
     public static CourseCategory Other = new CourseCategory(10, nameof(Other));
 
-    private CourseCategory(int id, string name) : base(id, name)
+    private CourseCategory(int id, string name)
+        : base(id, name)
     {
     }
 }

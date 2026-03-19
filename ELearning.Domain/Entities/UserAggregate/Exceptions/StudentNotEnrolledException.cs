@@ -1,6 +1,10 @@
-﻿using ELearning.Domain.Exceptions;
+﻿// <copyright file="StudentNotEnrolledException.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace ELearning.Domain.Entities.UserAggregate.Exceptions;
+
+using ELearning.Domain.Exceptions;
 
 public sealed class StudentNotEnrolledException : DomainException
 {

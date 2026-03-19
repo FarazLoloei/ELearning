@@ -1,7 +1,11 @@
-using ELearning.Application.Tests.Helpers;
-using ELearning.Application.Common.Validators.Dtos;
+// <copyright file="EnrollmentAndStudentDtoValidationTests.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace ELearning.Application.Tests.Dtos;
+
+using ELearning.Application.Common.Validators.Dtos;
+using ELearning.Application.Tests.Helpers;
 
 public class EnrollmentAndStudentDtoValidationTests
 {
@@ -139,4 +143,3 @@ public class EnrollmentAndStudentDtoValidationTests
         DtoValidationTestHelper.AssertInvalidFor(StudentProgressValidator, dto, x => x.Enrollments);
     }
 }
-

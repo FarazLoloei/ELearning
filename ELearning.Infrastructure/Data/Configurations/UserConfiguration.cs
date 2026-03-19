@@ -1,9 +1,13 @@
-﻿using ELearning.Domain.Entities.UserAggregate;
+﻿// <copyright file="UserConfiguration.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
+namespace ELearning.Infrastructure.Data.Configurations;
+
+using ELearning.Domain.Entities.UserAggregate;
 using ELearning.Domain.Entities.UserAggregate.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-
-namespace ELearning.Infrastructure.Data.Configurations;
 
 public class UserConfiguration : IEntityTypeConfiguration<User>
 {

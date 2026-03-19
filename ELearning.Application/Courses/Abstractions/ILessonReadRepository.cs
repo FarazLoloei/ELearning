@@ -1,7 +1,11 @@
-using ELearning.Application.Courses.ReadModels;
-using ELearning.SharedKernel.Abstractions;
+// <copyright file="ILessonReadRepository.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace ELearning.Application.Courses.Abstractions;
+
+using ELearning.Application.Courses.ReadModels;
+using ELearning.SharedKernel.Abstractions;
 
 public interface ILessonReadRepository : IReadRepository<LessonReadModel, Guid>
 {

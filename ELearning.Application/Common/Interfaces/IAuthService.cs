@@ -1,7 +1,11 @@
-﻿using ELearning.Application.Common.Model;
-using ELearning.Domain.Entities.UserAggregate;
+﻿// <copyright file="IAuthService.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace ELearning.Application.Common.Interfaces;
+
+using ELearning.Application.Common.Model;
+using ELearning.Domain.Entities.UserAggregate;
 
 public interface IAuthService
 {

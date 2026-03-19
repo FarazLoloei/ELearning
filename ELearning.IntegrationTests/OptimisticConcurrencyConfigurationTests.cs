@@ -1,3 +1,9 @@
+// <copyright file="OptimisticConcurrencyConfigurationTests.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
+namespace ELearning.IntegrationTests;
+
 using ELearning.Domain.Entities.CourseAggregate;
 using ELearning.Domain.Entities.EnrollmentAggregate;
 using ELearning.Domain.Entities.UserAggregate;
@@ -9,8 +15,6 @@ using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace ELearning.IntegrationTests;
-
 public sealed class OptimisticConcurrencyConfigurationTests
 {
     [Fact]
@@ -20,7 +24,7 @@ public sealed class OptimisticConcurrencyConfigurationTests
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
                 ["Database:Provider"] = "SqliteInMemory",
-                ["Database:SqliteInMemoryConnection"] = "Data Source=:memory:;Cache=Shared"
+                ["Database:SqliteInMemoryConnection"] = "Data Source=:memory:;Cache=Shared",
             })
             .Build();
 
@@ -35,7 +39,8 @@ public sealed class OptimisticConcurrencyConfigurationTests
         AssertRowVersionConfigured<Enrollment>(dbContext);
     }
 
-    private static void AssertRowVersionConfigured<TEntity>(DbContext dbContext) where TEntity : class
+    private static void AssertRowVersionConfigured<TEntity>(DbContext dbContext)
+        where TEntity : class
     {
         var entityType = dbContext.Model.FindEntityType(typeof(TEntity));
         entityType.Should().NotBeNull();

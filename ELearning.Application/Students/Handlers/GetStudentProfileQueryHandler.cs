@@ -1,3 +1,9 @@
+// <copyright file="GetStudentProfileQueryHandler.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
+namespace ELearning.Application.Students.Handlers;
+
 using ELearning.Application.Common.Exceptions;
 using ELearning.Application.Common.Model;
 using ELearning.Application.Students.Abstractions;
@@ -5,11 +11,8 @@ using ELearning.Application.Students.Dtos;
 using ELearning.Application.Students.Queries;
 using MediatR;
 
-namespace ELearning.Application.Students.Handlers;
-
 public class GetStudentProfileQueryHandler(
-        IStudentReadRepository studentReadRepository
-        ) : IRequestHandler<GetStudentProfileQuery, Result<StudentDto>>
+        IStudentReadRepository studentReadRepository) : IRequestHandler<GetStudentProfileQuery, Result<StudentDto>>
 {
     public async Task<Result<StudentDto>> Handle(GetStudentProfileQuery request, CancellationToken cancellationToken)
     {

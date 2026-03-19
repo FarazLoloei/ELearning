@@ -1,16 +1,22 @@
+// <copyright file="Result.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
 namespace ELearning.Application.Common.Model;
 
 public sealed class Result<T>
 {
-    private readonly T? _value;
+    private readonly T? value;
 
     public bool IsSuccess { get; }
-    public bool IsFailure => !IsSuccess;
+
+    public bool IsFailure => !this.IsSuccess;
+
     public string Error { get; }
 
     public T Value =>
-        IsSuccess
-            ? _value!
+        this.IsSuccess
+            ? this.value!
             : throw new InvalidOperationException("Cannot access Value on a failed result.");
 
     private Result(bool isSuccess, T? value, string error)
@@ -18,18 +24,23 @@ public sealed class Result<T>
         if (isSuccess)
         {
             if (!string.IsNullOrEmpty(error))
+            {
                 throw new ArgumentException("Successful result cannot contain an error.", nameof(error));
+            }
+
             if (value is null)
+            {
                 throw new ArgumentNullException(nameof(value), "Successful result must contain a value.");
+            }
         }
         else
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(error);
         }
 
-        IsSuccess = isSuccess;
-        _value = value;
-        Error = error;
+        this.IsSuccess = isSuccess;
+        this.value = value;
+        this.Error = error;
     }
 
     public static Result<T> Success(T value)
@@ -44,14 +55,16 @@ public sealed class Result<T>
     {
         ArgumentNullException.ThrowIfNull(onSuccess);
         ArgumentNullException.ThrowIfNull(onFailure);
-        return IsSuccess ? onSuccess(Value) : onFailure(Error);
+        return this.IsSuccess ? onSuccess(this.Value) : onFailure(this.Error);
     }
 }
 
 public sealed class Result
 {
     public bool IsSuccess { get; }
-    public bool IsFailure => !IsSuccess;
+
+    public bool IsFailure => !this.IsSuccess;
+
     public string Error { get; }
 
     private Result(bool isSuccess, string error)
@@ -59,15 +72,17 @@ public sealed class Result
         if (isSuccess)
         {
             if (!string.IsNullOrEmpty(error))
+            {
                 throw new ArgumentException("Successful result cannot contain an error.", nameof(error));
+            }
         }
         else
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(error);
         }
 
-        IsSuccess = isSuccess;
-        Error = error;
+        this.IsSuccess = isSuccess;
+        this.Error = error;
     }
 
     public static Result Success() => new Result(true, string.Empty);
@@ -82,6 +97,6 @@ public sealed class Result
     {
         ArgumentNullException.ThrowIfNull(onSuccess);
         ArgumentNullException.ThrowIfNull(onFailure);
-        return IsSuccess ? onSuccess() : onFailure(Error);
+        return this.IsSuccess ? onSuccess() : onFailure(this.Error);
     }
 }

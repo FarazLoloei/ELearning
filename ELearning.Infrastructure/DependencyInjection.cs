@@ -1,3 +1,9 @@
+// <copyright file="DependencyInjection.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
+namespace ELearning.Infrastructure;
+
 using ELearning.Application.Common.Interfaces;
 using ELearning.Application.Courses.Abstractions;
 using ELearning.Application.Enrollments.Abstractions;
@@ -16,8 +22,6 @@ using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-
-namespace ELearning.Infrastructure;
 
 public static class DependencyInjection
 {

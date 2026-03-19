@@ -1,15 +1,19 @@
-using ELearning.Application.Students.Dtos;
-using FluentValidation;
+// <copyright file="StudentDtoValidator.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace ELearning.Application.Common.Validators.Dtos;
+
+using ELearning.Application.Students.Dtos;
+using FluentValidation;
 
 public sealed class StudentDtoValidator : AbstractValidator<StudentDto>
 {
     public StudentDtoValidator()
     {
-        RuleFor(x => x.Id).NotEmpty();
-        RuleFor(x => x.FullName).NotEmpty();
-        RuleFor(x => x.Email).NotEmpty();
-        RuleFor(x => x.ProfilePictureUrl).NotEmpty();
+        this.RuleFor(x => x.Id).NotEmpty();
+        this.RuleFor(x => x.FullName).NotEmpty();
+        this.RuleFor(x => x.Email).NotEmpty();
+        this.RuleFor(x => x.ProfilePictureUrl).NotEmpty();
     }
 }

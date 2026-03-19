@@ -1,8 +1,12 @@
+// <copyright file="ISubmissionReadRepository.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
+namespace ELearning.Application.Submissions.Abstractions;
+
 using ELearning.Application.Enrollments.ReadModels;
 using ELearning.Application.Submissions.ReadModels;
 using ELearning.SharedKernel.Abstractions;
-
-namespace ELearning.Application.Submissions.Abstractions;
 
 public interface ISubmissionReadRepository : IReadRepository<SubmissionReadModel, Guid>
 {

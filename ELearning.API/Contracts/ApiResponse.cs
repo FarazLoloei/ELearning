@@ -1,3 +1,7 @@
+// <copyright file="ApiResponse.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
 namespace ELearning.API.Contracts;
 
 public sealed class ApiResponse<T>
@@ -12,13 +16,13 @@ public sealed class ApiResponse<T>
         new()
         {
             Succeeded = true,
-            Data = data
+            Data = data,
         };
 
     public static ApiResponse<T> Failure(string code, string message) =>
         new()
         {
             Succeeded = false,
-            Error = new ApiError(code, message)
+            Error = new ApiError(code, message),
         };
 }

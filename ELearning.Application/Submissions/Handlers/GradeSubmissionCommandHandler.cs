@@ -1,3 +1,9 @@
+// <copyright file="GradeSubmissionCommandHandler.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
+namespace ELearning.Application.Submissions.Handlers;
+
 using ELearning.Application.Common.Exceptions;
 using ELearning.Application.Common.Interfaces;
 using ELearning.Application.Common.Model;
@@ -7,8 +13,6 @@ using ELearning.Domain.Entities.CourseAggregate.Abstractions.Repositories;
 using ELearning.Domain.Entities.EnrollmentAggregate;
 using ELearning.Domain.Entities.EnrollmentAggregate.Abstractions.Repositories;
 using MediatR;
-
-namespace ELearning.Application.Submissions.Handlers;
 
 public class GradeSubmissionCommandHandler(
         IEnrollmentRepository enrollmentRepository,
@@ -30,14 +34,18 @@ public class GradeSubmissionCommandHandler(
             ?? throw new NotFoundException(nameof(Submission), request.SubmissionId);
 
         if (submission.IsGraded)
+        {
             return Result.Failure("Submission is already graded.");
+        }
 
         // Get the assignment to check max points
         var assignment = await assignmentRepository.GetByIdAsync(submission.AssignmentId, cancellationToken)
             ?? throw new NotFoundException(nameof(Assignment), submission.AssignmentId);
 
         if (request.Score > assignment.MaxPoints)
+        {
             return Result.Failure($"Score cannot exceed maximum points ({assignment.MaxPoints}).");
+        }
 
         // Grade the submission
         enrollment.GradeSubmission(request.SubmissionId, request.Score, request.Feedback, instructorId);

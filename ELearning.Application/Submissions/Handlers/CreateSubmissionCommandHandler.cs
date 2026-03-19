@@ -1,3 +1,9 @@
+// <copyright file="CreateSubmissionCommandHandler.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
+namespace ELearning.Application.Submissions.Handlers;
+
 using ELearning.Application.Common.Exceptions;
 using ELearning.Application.Common.Interfaces;
 using ELearning.Application.Common.Model;
@@ -9,8 +15,6 @@ using ELearning.Domain.Entities.EnrollmentAggregate.Abstractions.Repositories;
 using ELearning.Domain.Entities.UserAggregate.Exceptions;
 using MediatR;
 
-namespace ELearning.Application.Submissions.Handlers;
-
 public class CreateSubmissionCommandHandler(
         IAssignmentReadRepository assignmentRepository,
         IEnrollmentRepository enrollmentRepository,
@@ -20,7 +24,9 @@ public class CreateSubmissionCommandHandler(
     public async Task<Result> Handle(CreateSubmissionCommand request, CancellationToken cancellationToken)
     {
         if (!currentUserService.IsAuthenticated || currentUserService.UserId is null)
+        {
             throw new ForbiddenAccessException();
+        }
 
         var studentId = currentUserService.UserId.Value;
 
@@ -30,7 +36,9 @@ public class CreateSubmissionCommandHandler(
 
         // Verify submission eligibility
         if (!await assignmentService.CanSubmitAssignmentAsync(studentId, request.AssignmentId, cancellationToken))
+        {
             return Result.Failure("You are not enrolled in the course or the assignment is not available.");
+        }
 
         // Get module and enrollment
         var module = await assignmentRepository.GetModuleForAssignmentAsync(request.AssignmentId, cancellationToken)

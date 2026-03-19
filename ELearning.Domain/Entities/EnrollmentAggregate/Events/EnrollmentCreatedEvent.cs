@@ -1,8 +1,12 @@
-﻿using ELearning.Domain.Entities.CourseAggregate;
-using ELearning.Domain.Entities.UserAggregate;
-using ELearning.SharedKernel.Abstractions;
+﻿// <copyright file="EnrollmentCreatedEvent.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace ELearning.Domain.Entities.EnrollmentAggregate.Events;
+
+using ELearning.Domain.Entities.CourseAggregate;
+using ELearning.Domain.Entities.UserAggregate;
+using ELearning.SharedKernel.Abstractions;
 
 public sealed class EnrollmentCreatedEvent : IDomainEvent
 {
@@ -16,9 +20,9 @@ public sealed class EnrollmentCreatedEvent : IDomainEvent
 
     public EnrollmentCreatedEvent(Student student, Course course, Enrollment enrollment)
     {
-        Student = student ?? throw new ArgumentNullException(nameof(student));
-        Course = course ?? throw new ArgumentNullException(nameof(course));
-        Enrollment = enrollment ?? throw new ArgumentNullException(nameof(enrollment));
-        OccurredOnUTC = DateTime.UtcNow;
+        this.Student = student ?? throw new ArgumentNullException(nameof(student));
+        this.Course = course ?? throw new ArgumentNullException(nameof(course));
+        this.Enrollment = enrollment ?? throw new ArgumentNullException(nameof(enrollment));
+        this.OccurredOnUTC = DateTime.UtcNow;
     }
 }

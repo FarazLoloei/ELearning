@@ -1,6 +1,11 @@
-﻿namespace ELearning.SharedKernel.Abstractions;
+﻿// <copyright file="IEntityFrameworkRepository.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
-public interface IEntityFrameworkRepository<T> where T : BaseEntity
+namespace ELearning.SharedKernel.Abstractions;
+
+public interface IEntityFrameworkRepository<T>
+    where T : BaseEntity
 {
     Task<T?> GetByIdForUpdateAsync(Guid id, CancellationToken cancellationToken = default);
 

@@ -1,7 +1,11 @@
-﻿using ELearning.Application.Common.Model;
-using MediatR;
+﻿// <copyright file="GradeSubmissionCommand.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace ELearning.Application.Submissions.Commands;
+
+using ELearning.Application.Common.Model;
+using MediatR;
 
 public sealed record GradeSubmissionCommand : IRequest<Result>
 {

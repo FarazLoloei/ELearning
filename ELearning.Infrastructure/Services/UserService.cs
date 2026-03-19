@@ -1,8 +1,12 @@
-using ELearning.Domain.Entities.UserAggregate.Abstractions.Repositories;
-using ELearning.Domain.Entities.UserAggregate.Abstractions.Services;
-using System.Security.Cryptography;
+// <copyright file="UserService.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace ELearning.Infrastructure.Services;
+
+using System.Security.Cryptography;
+using ELearning.Domain.Entities.UserAggregate.Abstractions.Repositories;
+using ELearning.Domain.Entities.UserAggregate.Abstractions.Services;
 
 public class UserService(IUserRepository userRepository) : IUserService
 {
@@ -14,7 +18,9 @@ public class UserService(IUserRepository userRepository) : IUserService
     {
         var existingUser = await userRepository.GetByEmailAsync(email, cancellationToken);
         if (existingUser is null)
+        {
             return true;
+        }
 
         return excludeUserId.HasValue && existingUser.Id == excludeUserId.Value;
     }
@@ -22,7 +28,9 @@ public class UserService(IUserRepository userRepository) : IUserService
     public string HashPassword(string password)
     {
         if (string.IsNullOrWhiteSpace(password))
+        {
             throw new ArgumentException("Password cannot be empty.", nameof(password));
+        }
 
         Span<byte> salt = stackalloc byte[SaltSize];
         RandomNumberGenerator.Fill(salt);
@@ -41,11 +49,15 @@ public class UserService(IUserRepository userRepository) : IUserService
     public async Task<bool> VerifyPasswordAsync(string hashedPassword, string providedPassword)
     {
         if (string.IsNullOrWhiteSpace(hashedPassword) || string.IsNullOrWhiteSpace(providedPassword))
+        {
             return false;
+        }
 
         var parts = hashedPassword.Split('.');
         if (parts.Length != 3 || !int.TryParse(parts[0], out var iterations))
+        {
             return false;
+        }
 
         byte[] salt;
         byte[] expectedKey;

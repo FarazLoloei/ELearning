@@ -1,10 +1,14 @@
+// <copyright file="DependencyInjection.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
+namespace ELearning.Application;
+
+using System.Reflection;
 using ELearning.Application.Common.Behaviors;
 using FluentValidation;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
-using System.Reflection;
-
-namespace ELearning.Application;
 
 public static class DependencyInjection
 {
@@ -30,5 +34,3 @@ public static class DependencyInjection
         return services;
     }
 }
-
-

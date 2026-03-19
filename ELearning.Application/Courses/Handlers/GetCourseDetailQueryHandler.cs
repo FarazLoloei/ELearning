@@ -1,4 +1,10 @@
-﻿using AutoMapper;
+﻿// <copyright file="GetCourseDetailQueryHandler.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
+namespace ELearning.Application.Courses.Handlers;
+
+using AutoMapper;
 using ELearning.Application.Common.Exceptions;
 using ELearning.Application.Common.Model;
 using ELearning.Application.Courses.Dtos;
@@ -6,8 +12,6 @@ using ELearning.Application.Courses.Queries;
 using ELearning.Domain.Entities.CourseAggregate;
 using ELearning.Domain.Entities.CourseAggregate.Abstractions.Repositories;
 using MediatR;
-
-namespace ELearning.Application.Courses.Handlers;
 
 public class GetCourseDetailQueryHandler(
         ICourseRepository courseRepository,
@@ -22,7 +26,6 @@ public class GetCourseDetailQueryHandler(
         var courseDto = mapper.Map<CourseDto>(course);
 
         // Optionally enrich with additional data not handled by AutoMapper
-
         return Result.Success(courseDto);
     }
 }

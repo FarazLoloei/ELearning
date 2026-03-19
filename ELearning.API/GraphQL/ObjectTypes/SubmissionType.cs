@@ -1,6 +1,10 @@
-﻿using ELearning.Application.Submissions.Dtos;
+﻿// <copyright file="SubmissionType.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace ELearning.API.GraphQL.ObjectTypes;
+
+using ELearning.Application.Submissions.Dtos;
 
 public class SubmissionType : ObjectType<SubmissionDetailDto>
 {

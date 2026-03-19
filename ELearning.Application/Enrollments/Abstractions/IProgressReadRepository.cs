@@ -1,7 +1,11 @@
-using ELearning.Application.Enrollments.ReadModels;
-using ELearning.SharedKernel.Abstractions;
+// <copyright file="IProgressReadRepository.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace ELearning.Application.Enrollments.Abstractions;
+
+using ELearning.Application.Enrollments.ReadModels;
+using ELearning.SharedKernel.Abstractions;
 
 public interface IProgressReadRepository : IReadRepository<ProgressReadModel, Guid>
 {

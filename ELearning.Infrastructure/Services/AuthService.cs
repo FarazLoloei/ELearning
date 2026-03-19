@@ -1,5 +1,15 @@
-using ELearning.Application.Common.Interfaces;
+// <copyright file="AuthService.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
+namespace ELearning.Infrastructure.Services;
+
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Security.Cryptography;
+using System.Text;
 using ELearning.Application.Common.Exceptions;
+using ELearning.Application.Common.Interfaces;
 using ELearning.Application.Common.Model;
 using ELearning.Domain.Entities.UserAggregate;
 using ELearning.Domain.Entities.UserAggregate.Abstractions.Repositories;
@@ -12,12 +22,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Security.Cryptography;
-using System.Text;
-
-namespace ELearning.Infrastructure.Services;
 
 public class AuthService(
         IUserRepository userRepository,
@@ -39,28 +43,28 @@ public class AuthService(
 
             if (user == null)
             {
-                await PersistAuditOnlyAsync(null, "auth.login", false, "User not found", cancellationToken);
+                await this.PersistAuditOnlyAsync(null, "auth.login", false, "User not found", cancellationToken);
                 return AuthResult.Failed("Authentication failed.");
             }
 
             if (!await userService.VerifyPasswordAsync(user.PasswordHash, password))
             {
-                await PersistAuditOnlyAsync(user.Id, "auth.login", false, "Invalid password", cancellationToken);
+                await this.PersistAuditOnlyAsync(user.Id, "auth.login", false, "Invalid password", cancellationToken);
                 return AuthResult.Failed("Authentication failed.");
             }
 
             if (!user.IsActive)
             {
-                await PersistAuditOnlyAsync(user.Id, "auth.login", false, "User inactive", cancellationToken);
+                await this.PersistAuditOnlyAsync(user.Id, "auth.login", false, "User inactive", cancellationToken);
                 return AuthResult.Failed("Authentication failed.");
             }
 
             user.RecordLogin();
             await userRepository.UpdateAsync(user, cancellationToken);
 
-            var token = await GenerateJwtToken(user);
-            var refreshToken = await IssueRefreshTokenAsync(user.Id, cancellationToken);
-            AddSecurityAuditEvent(user.Id, "auth.login", true, "User login succeeded.");
+            var token = await this.GenerateJwtToken(user);
+            var refreshToken = await this.IssueRefreshTokenAsync(user.Id, cancellationToken);
+            this.AddSecurityAuditEvent(user.Id, "auth.login", true, "User login succeeded.");
 
             await unitOfWork.SaveChangesAsync(cancellationToken);
 
@@ -85,7 +89,7 @@ public class AuthService(
         {
             if (!await userService.IsEmailUniqueAsync(email, cancellationToken: cancellationToken))
             {
-                await PersistAuditOnlyAsync(null, "auth.register.student", false, "Email already in use", cancellationToken);
+                await this.PersistAuditOnlyAsync(null, "auth.register.student", false, "Email already in use", cancellationToken);
                 return AuthResult.Failed("Email is already in use.");
             }
 
@@ -99,9 +103,9 @@ public class AuthService(
 
             await userRepository.AddAsync(student, cancellationToken);
 
-            var token = await GenerateJwtToken(student);
-            var refreshToken = await IssueRefreshTokenAsync(student.Id, cancellationToken);
-            AddSecurityAuditEvent(student.Id, "auth.register.student", true, "Student registration succeeded.");
+            var token = await this.GenerateJwtToken(student);
+            var refreshToken = await this.IssueRefreshTokenAsync(student.Id, cancellationToken);
+            this.AddSecurityAuditEvent(student.Id, "auth.register.student", true, "Student registration succeeded.");
 
             await unitOfWork.SaveChangesAsync(cancellationToken);
 
@@ -126,7 +130,7 @@ public class AuthService(
         {
             if (!await userService.IsEmailUniqueAsync(email, cancellationToken: cancellationToken))
             {
-                await PersistAuditOnlyAsync(null, "auth.register.instructor", false, "Email already in use", cancellationToken);
+                await this.PersistAuditOnlyAsync(null, "auth.register.instructor", false, "Email already in use", cancellationToken);
                 return AuthResult.Failed("Email is already in use.");
             }
 
@@ -142,9 +146,9 @@ public class AuthService(
 
             await userRepository.AddAsync(instructor, cancellationToken);
 
-            var token = await GenerateJwtToken(instructor);
-            var refreshToken = await IssueRefreshTokenAsync(instructor.Id, cancellationToken);
-            AddSecurityAuditEvent(instructor.Id, "auth.register.instructor", true, "Instructor registration succeeded.");
+            var token = await this.GenerateJwtToken(instructor);
+            var refreshToken = await this.IssueRefreshTokenAsync(instructor.Id, cancellationToken);
+            this.AddSecurityAuditEvent(instructor.Id, "auth.register.instructor", true, "Instructor registration succeeded.");
 
             await unitOfWork.SaveChangesAsync(cancellationToken);
 
@@ -173,14 +177,14 @@ public class AuthService(
 
             if (existingToken == null || existingToken.RevokedAtUtc.HasValue || existingToken.ExpiresAtUtc <= DateTime.UtcNow)
             {
-                await PersistAuditOnlyAsync(null, "auth.refresh", false, "Refresh token invalid or expired", cancellationToken);
+                await this.PersistAuditOnlyAsync(null, "auth.refresh", false, "Refresh token invalid or expired", cancellationToken);
                 return AuthResult.Failed("Refresh token is invalid.");
             }
 
             var user = await userRepository.GetByIdForUpdateAsync(existingToken.UserId, cancellationToken);
             if (user == null || !user.IsActive)
             {
-                await PersistAuditOnlyAsync(existingToken.UserId, "auth.refresh", false, "User not found or inactive", cancellationToken);
+                await this.PersistAuditOnlyAsync(existingToken.UserId, "auth.refresh", false, "User not found or inactive", cancellationToken);
                 return AuthResult.Failed("Refresh token is invalid.");
             }
 
@@ -195,13 +199,13 @@ public class AuthService(
             {
                 UserId = user.Id,
                 TokenHash = newRefreshTokenHash,
-                ExpiresAtUtc = DateTime.UtcNow.AddDays(GetRefreshTokenExpiryDays()),
-                CreatedByIp = GetRemoteIpAddress(),
-                UserAgent = GetUserAgent()
+                ExpiresAtUtc = DateTime.UtcNow.AddDays(this.GetRefreshTokenExpiryDays()),
+                CreatedByIp = this.GetRemoteIpAddress(),
+                UserAgent = this.GetUserAgent(),
             });
 
-            var jwtToken = await GenerateJwtToken(user);
-            AddSecurityAuditEvent(user.Id, "auth.refresh", true, "Refresh token rotated.");
+            var jwtToken = await this.GenerateJwtToken(user);
+            this.AddSecurityAuditEvent(user.Id, "auth.refresh", true, "Refresh token rotated.");
             await unitOfWork.SaveChangesAsync(cancellationToken);
 
             return AuthResult.Succeeded(
@@ -234,7 +238,7 @@ public class AuthService(
 
             if (existingToken == null)
             {
-                await PersistAuditOnlyAsync(null, "auth.revoke", false, "Refresh token not found", cancellationToken);
+                await this.PersistAuditOnlyAsync(null, "auth.revoke", false, "Refresh token not found", cancellationToken);
                 return Result.Failure("Refresh token was not found.");
             }
 
@@ -250,7 +254,7 @@ public class AuthService(
                 existingToken.RevokedReason = "Revoked by request";
             }
 
-            AddSecurityAuditEvent(existingToken.UserId, "auth.revoke", true, "Refresh token revoked.");
+            this.AddSecurityAuditEvent(existingToken.UserId, "auth.revoke", true, "Refresh token revoked.");
             await unitOfWork.SaveChangesAsync(cancellationToken);
 
             return Result.Success();
@@ -287,7 +291,7 @@ public class AuthService(
             new Claim(JwtRegisteredClaimNames.Email, user.Email.Value),
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
             new Claim(ClaimTypes.Name, user.FullName),
-            new Claim(ClaimTypes.Role, user.Role.Name)
+            new Claim(ClaimTypes.Role, user.Role.Name),
         };
 
         var token = new JwtSecurityToken(
@@ -309,9 +313,9 @@ public class AuthService(
         {
             UserId = userId,
             TokenHash = tokenHash,
-            ExpiresAtUtc = DateTime.UtcNow.AddDays(GetRefreshTokenExpiryDays()),
-            CreatedByIp = GetRemoteIpAddress(),
-            UserAgent = GetUserAgent()
+            ExpiresAtUtc = DateTime.UtcNow.AddDays(this.GetRefreshTokenExpiryDays()),
+            CreatedByIp = this.GetRemoteIpAddress(),
+            UserAgent = this.GetUserAgent(),
         });
 
         await Task.CompletedTask;
@@ -345,9 +349,9 @@ public class AuthService(
             EventType = eventType,
             Succeeded = succeeded,
             Detail = detail,
-            IpAddress = GetRemoteIpAddress(),
-            UserAgent = GetUserAgent(),
-            OccurredOnUtc = DateTime.UtcNow
+            IpAddress = this.GetRemoteIpAddress(),
+            UserAgent = this.GetUserAgent(),
+            OccurredOnUtc = DateTime.UtcNow,
         });
     }
 
@@ -355,7 +359,7 @@ public class AuthService(
     {
         try
         {
-            AddSecurityAuditEvent(userId, eventType, succeeded, detail);
+            this.AddSecurityAuditEvent(userId, eventType, succeeded, detail);
             await dbContext.SaveChangesAsync(cancellationToken);
         }
         catch (Exception ex)

@@ -1,3 +1,9 @@
+// <copyright file="EnrollmentsController.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
+namespace ELearning.API.Controllers;
+
 using Asp.Versioning;
 using ELearning.API.Contracts;
 using ELearning.API.Facades;
@@ -6,8 +12,6 @@ using ELearning.Application.Enrollments.Dtos;
 using ELearning.Application.Enrollments.Queries;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-
-namespace ELearning.API.Controllers;
 
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/[controller]")]
@@ -22,7 +26,7 @@ public class EnrollmentsController(IApiFacade apiFacade) : ApiControllerBase
     {
         var query = new GetEnrollmentDetailQuery { EnrollmentId = id };
         var result = await apiFacade.SendAsync(query, cancellationToken);
-        return FromResult(result, error => error.StartsWith("Enrollment not found", StringComparison.OrdinalIgnoreCase));
+        return this.FromResult(result, error => error.StartsWith("Enrollment not found", StringComparison.OrdinalIgnoreCase));
     }
 
     [HttpPost]
@@ -36,10 +40,10 @@ public class EnrollmentsController(IApiFacade apiFacade) : ApiControllerBase
         var result = await apiFacade.SendAsync(command, cancellationToken);
         if (!result.IsSuccess)
         {
-            return BadRequestResponse<object?>(result.Error);
+            return this.BadRequestResponse<object?>(result.Error);
         }
 
-        return CreatedResponse();
+        return this.CreatedResponse();
     }
 
     [HttpPut("{id:guid}/status")]
@@ -54,10 +58,10 @@ public class EnrollmentsController(IApiFacade apiFacade) : ApiControllerBase
     {
         if (id != command.EnrollmentId)
         {
-            return BadRequestResponse<object?>("Route id does not match payload EnrollmentId.");
+            return this.BadRequestResponse<object?>("Route id does not match payload EnrollmentId.");
         }
 
         var result = await apiFacade.SendAsync(command, cancellationToken);
-        return FromResult(result, error => error.StartsWith("Enrollment not found", StringComparison.OrdinalIgnoreCase));
+        return this.FromResult(result, error => error.StartsWith("Enrollment not found", StringComparison.OrdinalIgnoreCase));
     }
 }

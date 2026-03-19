@@ -1,6 +1,10 @@
-﻿using ELearning.SharedKernel.Abstractions;
+﻿// <copyright file="IEnrollmentRepository.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace ELearning.Domain.Entities.EnrollmentAggregate.Abstractions.Repositories;
+
+using ELearning.SharedKernel.Abstractions;
 
 public interface IEnrollmentRepository : IEntityFrameworkRepository<Enrollment>
 {

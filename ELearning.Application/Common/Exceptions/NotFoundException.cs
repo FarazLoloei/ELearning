@@ -1,9 +1,14 @@
+// <copyright file="NotFoundException.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
 namespace ELearning.Application.Common.Exceptions;
 
 // Exception for when an entity is not found.
 public class NotFoundException : DomainApplicationException
 {
     public string? EntityName { get; }
+
     public object? Key { get; }
 
     public NotFoundException()
@@ -19,7 +24,7 @@ public class NotFoundException : DomainApplicationException
     public NotFoundException(string entityName, object key)
         : base($"Entity '{entityName}' ({key}) was not found.")
     {
-        EntityName = entityName;
-        Key = key;
+        this.EntityName = entityName;
+        this.Key = key;
     }
 }

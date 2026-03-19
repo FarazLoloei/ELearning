@@ -1,9 +1,13 @@
-﻿using ELearning.Domain.Entities.EnrollmentAggregate.Enums;
+﻿// <copyright file="Enrollment.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
+namespace ELearning.Domain.Entities.EnrollmentAggregate;
+
+using ELearning.Domain.Entities.EnrollmentAggregate.Enums;
 using ELearning.Domain.ValueObjects;
 using ELearning.SharedKernel;
 using ELearning.SharedKernel.Abstractions;
-
-namespace ELearning.Domain.Entities.EnrollmentAggregate;
 
 public class Enrollment : BaseEntity, IAggregateRoot<Enrollment>
 {
@@ -20,84 +24,89 @@ public class Enrollment : BaseEntity, IAggregateRoot<Enrollment>
     public string? Review { get; private set; }
 
     /// <summary>
-    /// Optimistic concurrency token.
+    /// Gets optimistic concurrency token.
     /// </summary>
     public byte[]? RowVersion { get; private set; }
 
-    private readonly List<Progress> _progressRecords = new();
+    private readonly List<Progress> progressRecords = new();
 
-    private readonly List<Submission> _submissions = new();
+    private readonly List<Submission> submissions = new();
 
-    public IReadOnlyCollection<Progress> ProgressRecords => _progressRecords.AsReadOnly();
+    public IReadOnlyCollection<Progress> ProgressRecords => this.progressRecords.AsReadOnly();
 
-    public IReadOnlyCollection<Submission> Submissions => _submissions.AsReadOnly();
+    public IReadOnlyCollection<Submission> Submissions => this.submissions.AsReadOnly();
 
     private Enrollment()
-    { }
+    {
+    }
 
     public Enrollment(Guid studentId, Guid courseId, EnrollmentStatus? enrollmentStatus = null, string? review = null)
     {
-        StudentId = studentId;
-        CourseId = courseId;
-        Status = enrollmentStatus ?? EnrollmentStatus.Active;
-        Review = review;
+        this.StudentId = studentId;
+        this.CourseId = courseId;
+        this.Status = enrollmentStatus ?? EnrollmentStatus.Active;
+        this.Review = review;
     }
 
     public void MarkAsCompleted()
     {
-        Status = EnrollmentStatus.Completed;
-        CompletedDateUTC = DateTime.UtcNow;
-        UpdatedAt(DateTime.UtcNow);
+        this.Status = EnrollmentStatus.Completed;
+        this.CompletedDateUTC = DateTime.UtcNow;
+        this.UpdatedAt(DateTime.UtcNow);
     }
 
     public void AddProgress(Progress progress)
     {
-        _progressRecords.Add(progress);
-        UpdatedAt(DateTime.UtcNow);
+        this.progressRecords.Add(progress);
+        this.UpdatedAt(DateTime.UtcNow);
     }
 
     public void AddSubmission(Submission submission)
     {
         ArgumentNullException.ThrowIfNull(submission);
 
-        _submissions.Add(submission);
-        UpdatedAt(DateTime.UtcNow);
+        this.submissions.Add(submission);
+        this.UpdatedAt(DateTime.UtcNow);
     }
 
     public Submission SubmitAssignment(Guid assignmentId, string? content = null, string? fileUrl = null)
     {
-        if (_submissions.Any(s => s.AssignmentId == assignmentId))
+        if (this.submissions.Any(s => s.AssignmentId == assignmentId))
+        {
             throw new InvalidOperationException("Assignment has already been submitted for this enrollment.");
+        }
 
-        var submission = new Submission(Id, assignmentId, content, fileUrl);
-        _submissions.Add(submission);
-        UpdatedAt(DateTime.UtcNow);
+        var submission = new Submission(this.Id, assignmentId, content, fileUrl);
+        this.submissions.Add(submission);
+        this.UpdatedAt(DateTime.UtcNow);
 
         return submission;
     }
 
     public void GradeSubmission(Guid submissionId, int score, string feedback, Guid gradedById)
     {
-        var submission = _submissions.FirstOrDefault(s => s.Id == submissionId)
+        var submission = this.submissions.FirstOrDefault(s => s.Id == submissionId)
             ?? throw new InvalidOperationException("Submission does not belong to this enrollment.");
 
         submission.Grade(score, feedback, gradedById);
-        UpdatedAt(DateTime.UtcNow);
+        this.UpdatedAt(DateTime.UtcNow);
     }
 
     public void RateCourse(Rating rating, string? review = null)
     {
-        if (Status != EnrollmentStatus.Completed)
+        if (this.Status != EnrollmentStatus.Completed)
+        {
             throw new InvalidOperationException("Cannot rate a course before completing it");
+        }
 
-        CourseRating = rating;
-        Review = review;
-        UpdatedAt(DateTime.UtcNow);
+        this.CourseRating = rating;
+        this.Review = review;
+        this.UpdatedAt(DateTime.UtcNow);
     }
 
     public void SetStatus(EnrollmentStatus status)
     {
-        Status = status;
-        UpdatedAt(DateTime.UtcNow);
+        this.Status = status;
+        this.UpdatedAt(DateTime.UtcNow);
     }
 }

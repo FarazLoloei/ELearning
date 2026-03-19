@@ -1,3 +1,7 @@
+// <copyright file="EnrollmentReadModel.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
 namespace ELearning.Application.Enrollments.ReadModels;
 
 public sealed record EnrollmentDetailReadModel(

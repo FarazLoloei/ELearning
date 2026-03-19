@@ -1,3 +1,9 @@
+// <copyright file="AuthAndAuthorizationIntegrationTests.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
+namespace ELearning.IntegrationTests;
+
 using System.IdentityModel.Tokens.Jwt;
 using System.Net;
 using System.Net.Http.Headers;
@@ -13,21 +19,19 @@ using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 
-namespace ELearning.IntegrationTests;
-
 public sealed class AuthAndAuthorizationIntegrationTests : IClassFixture<RealAuthWebApplicationFactory>
 {
     private const string JwtIssuer = "integration-tests";
     private const string JwtAudience = "integration-tests";
     private const string JwtSecret = "integration-tests-secret-key-with-32chars";
 
-    private readonly RealAuthWebApplicationFactory _factory;
-    private readonly HttpClient _client;
+    private readonly RealAuthWebApplicationFactory factory;
+    private readonly HttpClient client;
 
     public AuthAndAuthorizationIntegrationTests(RealAuthWebApplicationFactory factory)
     {
-        _factory = factory;
-        _client = factory.CreateClient();
+        this.factory = factory;
+        this.client = factory.CreateClient();
     }
 
     [Fact]
@@ -37,12 +41,12 @@ public sealed class AuthAndAuthorizationIntegrationTests : IClassFixture<RealAut
         var email = $"auth.login.{Guid.NewGuid():N}@tests.io";
         const string password = "P@ssword123!";
 
-        await SeedStudentAsync(email, password, cancellationToken);
+        await this.SeedStudentAsync(email, password, cancellationToken);
 
-        var response = await _client.PostAsJsonAsync("/api/auth/login", new
+        var response = await this.client.PostAsJsonAsync("/api/auth/login", new
         {
             Email = email,
-            Password = password
+            Password = password,
         }, cancellationToken);
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -67,12 +71,12 @@ public sealed class AuthAndAuthorizationIntegrationTests : IClassFixture<RealAut
         var email = $"refresh.flow.{Guid.NewGuid():N}@tests.io";
         const string password = "P@ssword123!";
 
-        await SeedStudentAsync(email, password, cancellationToken);
+        await this.SeedStudentAsync(email, password, cancellationToken);
 
-        var loginResponse = await _client.PostAsJsonAsync("/api/auth/login", new
+        var loginResponse = await this.client.PostAsJsonAsync("/api/auth/login", new
         {
             Email = email,
-            Password = password
+            Password = password,
         }, cancellationToken);
         loginResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
@@ -81,9 +85,9 @@ public sealed class AuthAndAuthorizationIntegrationTests : IClassFixture<RealAut
         var firstRefreshToken = loginJson.RootElement.GetProperty("data").GetProperty("refreshToken").GetString();
         firstRefreshToken.Should().NotBeNullOrWhiteSpace();
 
-        var refreshResponse = await _client.PostAsJsonAsync("/api/auth/refresh", new
+        var refreshResponse = await this.client.PostAsJsonAsync("/api/auth/refresh", new
         {
-            RefreshToken = firstRefreshToken
+            RefreshToken = firstRefreshToken,
         }, cancellationToken);
         refreshResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
@@ -100,19 +104,19 @@ public sealed class AuthAndAuthorizationIntegrationTests : IClassFixture<RealAut
             Content = JsonContent.Create(new
             {
                 RefreshToken = rotatedRefreshToken
-            })
+            }),
         };
         revokeRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-        var revokeResponse = await _client.SendAsync(revokeRequest, cancellationToken);
+        var revokeResponse = await this.client.SendAsync(revokeRequest, cancellationToken);
         revokeResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var revokedRefreshResponse = await _client.PostAsJsonAsync("/api/auth/refresh", new
+        var revokedRefreshResponse = await this.client.PostAsJsonAsync("/api/auth/refresh", new
         {
-            RefreshToken = rotatedRefreshToken
+            RefreshToken = rotatedRefreshToken,
         }, cancellationToken);
         revokedRefreshResponse.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
 
-        using var scope = _factory.Services.CreateScope();
+        using var scope = this.factory.Services.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
         var auditTypes = dbContext.SecurityAuditEvents
             .Select(x => x.EventType)
@@ -128,12 +132,12 @@ public sealed class AuthAndAuthorizationIntegrationTests : IClassFixture<RealAut
         var cancellationToken = TestContext.Current.CancellationToken;
         var ownerEmail = $"revoke.owner.{Guid.NewGuid():N}@tests.io";
         const string ownerPassword = "P@ssword123!";
-        await SeedStudentAsync(ownerEmail, ownerPassword, cancellationToken);
+        await this.SeedStudentAsync(ownerEmail, ownerPassword, cancellationToken);
 
-        var loginResponse = await _client.PostAsJsonAsync("/api/auth/login", new
+        var loginResponse = await this.client.PostAsJsonAsync("/api/auth/login", new
         {
             Email = ownerEmail,
-            Password = ownerPassword
+            Password = ownerPassword,
         }, cancellationToken);
         loginResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
@@ -147,11 +151,11 @@ public sealed class AuthAndAuthorizationIntegrationTests : IClassFixture<RealAut
             Content = JsonContent.Create(new
             {
                 RefreshToken = ownerRefreshToken
-            })
+            }),
         };
         revokeRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", CreateJwt(Guid.NewGuid(), "Student"));
 
-        var revokeResponse = await _client.SendAsync(revokeRequest, cancellationToken);
+        var revokeResponse = await this.client.SendAsync(revokeRequest, cancellationToken);
         revokeResponse.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 
@@ -159,7 +163,7 @@ public sealed class AuthAndAuthorizationIntegrationTests : IClassFixture<RealAut
     public async Task ProtectedEndpoint_WithoutToken_ReturnsUnauthorized()
     {
         var cancellationToken = TestContext.Current.CancellationToken;
-        var response = await _client.GetAsync($"/api/students/{Guid.NewGuid()}/progress", cancellationToken);
+        var response = await this.client.GetAsync($"/api/students/{Guid.NewGuid()}/progress", cancellationToken);
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
@@ -172,7 +176,7 @@ public sealed class AuthAndAuthorizationIntegrationTests : IClassFixture<RealAut
         using var request = new HttpRequestMessage(HttpMethod.Get, $"/api/instructors/{Guid.NewGuid()}/pending-submissions");
         request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", CreateJwt(studentId, "Student"));
 
-        var response = await _client.SendAsync(request, cancellationToken);
+        var response = await this.client.SendAsync(request, cancellationToken);
 
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
@@ -187,14 +191,14 @@ public sealed class AuthAndAuthorizationIntegrationTests : IClassFixture<RealAut
         using var request = new HttpRequestMessage(HttpMethod.Get, $"/api/students/{requestedStudentId}/progress");
         request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", CreateJwt(tokenOwnerId, "Student"));
 
-        var response = await _client.SendAsync(request, cancellationToken);
+        var response = await this.client.SendAsync(request, cancellationToken);
 
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 
     private async Task<Guid> SeedStudentAsync(string email, string password, CancellationToken cancellationToken)
     {
-        using var scope = _factory.Services.CreateScope();
+        using var scope = this.factory.Services.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
         var userService = scope.ServiceProvider.GetRequiredService<ELearning.Domain.Entities.UserAggregate.Abstractions.Services.IUserService>();
 
@@ -218,7 +222,7 @@ public sealed class AuthAndAuthorizationIntegrationTests : IClassFixture<RealAut
             new Claim(ClaimTypes.NameIdentifier, userId.ToString()),
             new Claim(JwtRegisteredClaimNames.Sub, userId.ToString()),
             new Claim(ClaimTypes.Role, role),
-            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
         };
 
         var token = new JwtSecurityToken(

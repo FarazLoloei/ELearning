@@ -1,3 +1,9 @@
+// <copyright file="SubmissionReadRepository.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
+namespace ELearning.Infrastructure.Data.Repositories;
+
 using System.Data;
 using Dapper;
 using ELearning.Application.Submissions.Abstractions;
@@ -5,8 +11,6 @@ using ELearning.Application.Submissions.ReadModels;
 using ELearning.SharedKernel;
 using ELearning.SharedKernel.Models;
 using Microsoft.EntityFrameworkCore;
-
-namespace ELearning.Infrastructure.Data.Repositories;
 
 public class SubmissionReadRepository(ApplicationDbContext context) : ISubmissionReadRepository
 {
@@ -40,7 +44,7 @@ public class SubmissionReadRepository(ApplicationDbContext context) : ISubmissio
         var rows = await connection.QueryAsync<SubmissionReadModel>(
             new CommandDefinition(sql, new { AssignmentId = assignmentId }, cancellationToken: cancellationToken));
 
-        return rows.ToList();
+        return [.. rows];
     }
 
     public async Task<IReadOnlyList<SubmissionReadModel>> GetByStudentIdAsync(Guid studentId, CancellationToken cancellationToken = default)
@@ -59,7 +63,7 @@ public class SubmissionReadRepository(ApplicationDbContext context) : ISubmissio
         var rows = await connection.QueryAsync<SubmissionReadModel>(
             new CommandDefinition(sql, new { StudentId = studentId }, cancellationToken: cancellationToken));
 
-        return rows.ToList();
+        return [.. rows];
     }
 
     public async Task<SubmissionReadModel?> GetByStudentAndAssignmentIdAsync(Guid studentId, Guid assignmentId, CancellationToken cancellationToken = default)
@@ -95,7 +99,7 @@ public class SubmissionReadRepository(ApplicationDbContext context) : ISubmissio
         var rows = await connection.QueryAsync<SubmissionReadModel>(
             new CommandDefinition(sql, cancellationToken: cancellationToken));
 
-        return rows.ToList();
+        return [.. rows];
     }
 
     public async Task<PaginatedList<SubmissionReadModel>> ListAsync(PaginationParameters pagination, CancellationToken cancellationToken = default)
@@ -123,13 +127,13 @@ public class SubmissionReadRepository(ApplicationDbContext context) : ISubmissio
                 sql,
                 new
                 {
-                    PageSize = pagination.PageSize,
-                    Offset = pagination.SkipCount
+                    pagination.PageSize,
+                    Offset = pagination.SkipCount,
                 },
                 cancellationToken: cancellationToken));
 
         return new PaginatedList<SubmissionReadModel>(
-            rows.ToList(),
+            [.. rows],
             totalCount,
             pagination.PageNumber,
             pagination.PageSize);

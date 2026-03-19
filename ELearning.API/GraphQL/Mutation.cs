@@ -1,3 +1,9 @@
+// <copyright file="Mutation.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
+namespace ELearning.API.GraphQL;
+
 using ELearning.API.GraphQL.InputTypes;
 using ELearning.API.GraphQL.Payloads;
 using ELearning.Application.Common.Interfaces;
@@ -7,8 +13,6 @@ using ELearning.Application.Enrollments.Commands;
 using ELearning.Application.Submissions.Commands;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
-
-namespace ELearning.API.GraphQL;
 
 /// <summary>
 /// GraphQL mutation root type.
@@ -31,8 +35,7 @@ public class Mutation(ILogger<Mutation> logger)
                 LevelId: input.LevelId,
                 Price: input.Price,
                 DurationHours: input.DurationHours,
-                DurationMinutes: input.DurationMinutes
-            );
+                DurationMinutes: input.DurationMinutes);
 
             var result = await mediator.Send(command);
             return result.IsSuccess ? new CoursePayload() : new CoursePayload(result.Error);
@@ -52,7 +55,7 @@ public class Mutation(ILogger<Mutation> logger)
     {
         var command = new CreateEnrollmentCommand
         {
-            CourseId = input.CourseId
+            CourseId = input.CourseId,
         };
 
         var result = await mediator.Send(command);
@@ -69,7 +72,7 @@ public class Mutation(ILogger<Mutation> logger)
         {
             AssignmentId = input.AssignmentId,
             Content = input.Content,
-            FileUrl = input.FileUrl
+            FileUrl = input.FileUrl,
         };
 
         var result = await mediator.Send(command);
@@ -86,7 +89,7 @@ public class Mutation(ILogger<Mutation> logger)
         {
             SubmissionId = input.SubmissionId,
             Score = input.Score,
-            Feedback = input.Feedback
+            Feedback = input.Feedback,
         };
 
         var result = await mediator.Send(command);
@@ -137,7 +140,7 @@ public class Mutation(ILogger<Mutation> logger)
         var command = new UpdateEnrollmentStatusCommand
         {
             EnrollmentId = input.EnrollmentId,
-            Status = input.Status
+            Status = input.Status,
         };
 
         var result = await mediator.Send(command);

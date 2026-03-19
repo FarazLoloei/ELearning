@@ -1,7 +1,11 @@
-﻿using MediatR;
-using Microsoft.Extensions.Logging;
+﻿// <copyright file="LoggingBehavior.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace ELearning.Application.Common.Behaviors;
+
+using MediatR;
+using Microsoft.Extensions.Logging;
 
 // Logging behavior for request pipeline
 public class LoggingBehavior<TRequest, TResponse>

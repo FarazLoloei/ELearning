@@ -1,13 +1,19 @@
+// <copyright file="ModuleReadRepository.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
+namespace ELearning.Infrastructure.Data.Repositories;
+
+using System.Net.Http.Json;
 using Dapr.Client;
 using ELearning.Application.Courses.Abstractions;
 using ELearning.Application.Courses.Dtos;
+using ELearning.Infrastructure.DaprServices;
 using ELearning.Infrastructure.ReadModels;
 using ELearning.SharedKernel;
 using ELearning.SharedKernel.Models;
 
-namespace ELearning.Infrastructure.Data.Repositories;
-
-public class ModuleReadRepository(DaprClient daprClient) : IModuleReadRepository
+public class ModuleReadRepository(DaprClient daprClient, IHttpClientFactory httpClientFactory) : IModuleReadRepository
 {
     private const string CourseStateStoreName = "coursestore";
     private const string CourseServiceAppId = "courseservice";
@@ -15,13 +21,13 @@ public class ModuleReadRepository(DaprClient daprClient) : IModuleReadRepository
 
     public async Task<ModuleReadModel?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        var modules = await LoadAllModulesAsync(cancellationToken);
+        var modules = await this.LoadAllModulesAsync(cancellationToken);
         return modules.FirstOrDefault(m => m.Id == id);
     }
 
     public async Task<IReadOnlyList<ModuleReadModel>> GetByCourseIdAsync(Guid courseId, CancellationToken cancellationToken = default)
     {
-        var course = await LoadCourseAsync(courseId, cancellationToken);
+        var course = await this.LoadCourseAsync(courseId, cancellationToken);
         return course?.Modules
             .OrderBy(m => m.Order)
             .ThenBy(m => m.Title)
@@ -32,12 +38,12 @@ public class ModuleReadRepository(DaprClient daprClient) : IModuleReadRepository
                 m.Order,
                 courseId))
             .ToList()
-            ?? new List<ModuleReadModel>();
+            ?? [];
     }
 
     public async Task<PaginatedList<ModuleReadModel>> ListAsync(PaginationParameters pagination, CancellationToken cancellationToken = default)
     {
-        var modules = await LoadAllModulesAsync(cancellationToken);
+        var modules = await this.LoadAllModulesAsync(cancellationToken);
         var items = modules
             .Skip(pagination.SkipCount)
             .Take(pagination.PageSize)
@@ -52,12 +58,12 @@ public class ModuleReadRepository(DaprClient daprClient) : IModuleReadRepository
 
     private async Task<List<ModuleReadModel>> LoadAllModulesAsync(CancellationToken cancellationToken)
     {
-        var courseIds = await LoadAllCourseIdsAsync(cancellationToken);
+        var courseIds = await this.LoadAllCourseIdsAsync(cancellationToken);
         var modules = new List<ModuleReadModel>();
 
         foreach (var courseId in courseIds)
         {
-            var course = await LoadCourseAsync(courseId, cancellationToken);
+            var course = await this.LoadCourseAsync(courseId, cancellationToken);
             if (course is null)
             {
                 continue;
@@ -71,11 +77,10 @@ public class ModuleReadRepository(DaprClient daprClient) : IModuleReadRepository
                 courseId)));
         }
 
-        return modules
+        return [.. modules
             .OrderBy(m => m.CourseId)
             .ThenBy(m => m.Order)
-            .ThenBy(m => m.Title)
-            .ToList();
+            .ThenBy(m => m.Title)];
     }
 
     private async Task<List<Guid>> LoadAllCourseIdsAsync(CancellationToken cancellationToken)
@@ -86,9 +91,7 @@ public class ModuleReadRepository(DaprClient daprClient) : IModuleReadRepository
 
         while (courseIds.Count < totalCount)
         {
-            var response = await daprClient.InvokeMethodAsync<PaginatedResponse<CourseListDto>>(
-                HttpMethod.Get,
-                CourseServiceAppId,
+            var response = await this.InvokeGetAsync<PaginatedResponse<CourseListDto>>(
                 $"api/courses?pageNumber={pageNumber}&pageSize={CourseDiscoveryPageSize}",
                 cancellationToken);
 
@@ -111,5 +114,20 @@ public class ModuleReadRepository(DaprClient daprClient) : IModuleReadRepository
             CourseStateStoreName,
             courseId.ToString(),
             cancellationToken: cancellationToken);
+    }
+
+    private async Task<TResponse> InvokeGetAsync<TResponse>(string methodPath, CancellationToken cancellationToken)
+    {
+        var httpClient = httpClientFactory.CreateClient(DaprConfig.SidecarHttpClientName);
+
+        using var response = await httpClient.GetAsync(
+            $"{CourseServiceAppId}/method/{methodPath}",
+            cancellationToken);
+
+        response.EnsureSuccessStatusCode();
+
+        return await response.Content.ReadFromJsonAsync<TResponse>(cancellationToken: cancellationToken)
+            ?? throw new InvalidOperationException(
+                $"Dapr service invocation returned no content for '{CourseServiceAppId}/{methodPath}'.");
     }
 }

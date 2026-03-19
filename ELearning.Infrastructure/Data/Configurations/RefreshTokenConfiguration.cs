@@ -1,8 +1,12 @@
+// <copyright file="RefreshTokenConfiguration.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
+namespace ELearning.Infrastructure.Data.Configurations;
+
 using ELearning.Infrastructure.Data.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-
-namespace ELearning.Infrastructure.Data.Configurations;
 
 public sealed class RefreshTokenConfiguration : IEntityTypeConfiguration<RefreshToken>
 {

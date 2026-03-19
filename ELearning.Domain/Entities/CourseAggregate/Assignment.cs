@@ -1,43 +1,48 @@
-﻿using ELearning.Domain.Entities.CourseAggregate.Enums;
-using ELearning.SharedKernel;
+﻿// <copyright file="Assignment.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace ELearning.Domain.Entities.CourseAggregate;
+
+using ELearning.Domain.Entities.CourseAggregate.Enums;
+using ELearning.SharedKernel;
 
 public class Assignment : BaseEntity
 {
     /// <summary>
-    /// Name of the assignment
+    /// Gets name of the assignment.
     /// </summary>
     public string Title { get; private set; } = string.Empty;
 
     /// <summary>
-    /// Instructions and requirements
+    /// Gets instructions and requirements.
     /// </summary>
     public string Description { get; private set; } = string.Empty;
 
     /// <summary>
-    /// Format (Quiz, Essay, Project, Exam)
+    /// Gets format (Quiz, Essay, Project, Exam).
     /// </summary>
     public AssignmentType Type { get; private set; } = null!;
 
     /// <summary>
-    /// Maximum score possible
+    /// Gets maximum score possible.
     /// </summary>
     public int MaxPoints { get; private set; }
 
     /// <summary>
-    /// Deadline for submission
+    /// Gets deadline for submission.
     /// </summary>
     public DateTime? DueDate { get; private set; }
 
     /// <summary>
-    /// Reference to the parent module
+    /// Gets reference to the parent module.
     /// </summary>
     public Guid ModuleId { get; private set; }
 
     // Private constructor for EF Core
     private Assignment()
-    { }
+    {
+    }
 
     public Assignment(
         string title,
@@ -48,34 +53,40 @@ public class Assignment : BaseEntity
         DateTime? dueDate = null)
     {
         if (string.IsNullOrWhiteSpace(title))
+        {
             throw new ArgumentException("Assignment title cannot be empty", nameof(title));
+        }
 
         if (maxPoints <= 0)
+        {
             throw new ArgumentException("Maximum points must be positive", nameof(maxPoints));
+        }
 
-        Title = title;
-        Description = description;
-        Type = type;
-        MaxPoints = maxPoints;
-        ModuleId = moduleId;
-        DueDate = dueDate;
+        this.Title = title;
+        this.Description = description;
+        this.Type = type;
+        this.MaxPoints = maxPoints;
+        this.ModuleId = moduleId;
+        this.DueDate = dueDate;
     }
 
     public void UpdateDetails(string title, string description, AssignmentType type, int maxPoints)
     {
         if (maxPoints <= 0)
+        {
             throw new ArgumentException("Maximum points must be positive", nameof(maxPoints));
+        }
 
-        Title = title;
-        Description = description;
-        Type = type;
-        MaxPoints = maxPoints;
-        UpdatedAt(DateTime.UtcNow);
+        this.Title = title;
+        this.Description = description;
+        this.Type = type;
+        this.MaxPoints = maxPoints;
+        this.UpdatedAt(DateTime.UtcNow);
     }
 
     public void SetDueDate(DateTime? dueDate)
     {
-        DueDate = dueDate;
-        UpdatedAt(DateTime.UtcNow);
+        this.DueDate = dueDate;
+        this.UpdatedAt(DateTime.UtcNow);
     }
 }

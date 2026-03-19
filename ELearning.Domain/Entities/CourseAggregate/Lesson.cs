@@ -1,8 +1,12 @@
-﻿using ELearning.Domain.Entities.CourseAggregate.Enums;
-using ELearning.Domain.ValueObjects;
-using ELearning.SharedKernel;
+﻿// <copyright file="Lesson.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace ELearning.Domain.Entities.CourseAggregate;
+
+using ELearning.Domain.Entities.CourseAggregate.Enums;
+using ELearning.Domain.ValueObjects;
+using ELearning.SharedKernel;
 
 public class Lesson : BaseEntity
 {
@@ -21,7 +25,8 @@ public class Lesson : BaseEntity
     public Guid ModuleId { get; private set; }
 
     private Lesson()
-    { }
+    {
+    }
 
     public Lesson(
         string title,
@@ -33,53 +38,63 @@ public class Lesson : BaseEntity
         string? videoUrl = null)
     {
         if (string.IsNullOrWhiteSpace(title))
+        {
             throw new ArgumentException("Lesson title cannot be empty", nameof(title));
+        }
 
         if (type == LessonType.Video)
         {
             if (string.IsNullOrWhiteSpace(videoUrl))
+            {
                 throw new ArgumentException("Video URL must be provided for video lessons", nameof(videoUrl));
+            }
 
             if (duration == null)
+            {
                 throw new ArgumentException("Duration must be provided for video lessons", nameof(duration));
+            }
         }
 
-        Title = title;
-        Content = content;
-        Type = type;
-        Order = order;
-        ModuleId = moduleId;
-        Duration = duration ?? Duration.CreateDefault();
-        VideoUrl = videoUrl;
+        this.Title = title;
+        this.Content = content;
+        this.Type = type;
+        this.Order = order;
+        this.ModuleId = moduleId;
+        this.Duration = duration ?? Duration.CreateDefault();
+        this.VideoUrl = videoUrl;
     }
 
     public void UpdateDetails(string title, string content, LessonType type)
     {
-        Title = title;
-        Content = content;
-        Type = type;
-        UpdatedAt(DateTime.UtcNow);
+        this.Title = title;
+        this.Content = content;
+        this.Type = type;
+        this.UpdatedAt(DateTime.UtcNow);
     }
 
     public void UpdateVideo(string? videoUrl, Duration duration)
     {
-        if (Type == LessonType.Video)
+        if (this.Type == LessonType.Video)
         {
             if (string.IsNullOrWhiteSpace(videoUrl))
+            {
                 throw new ArgumentException("Video URL must be provided for video lessons", nameof(videoUrl));
+            }
 
             if (duration == null)
+            {
                 throw new ArgumentException("Duration must be provided for video lessons", nameof(duration));
+            }
         }
 
-        VideoUrl = videoUrl;
-        Duration = duration;
-        UpdatedAt(DateTime.UtcNow);
+        this.VideoUrl = videoUrl;
+        this.Duration = duration;
+        this.UpdatedAt(DateTime.UtcNow);
     }
 
     public void UpdateOrder(int order)
     {
-        Order = order;
-        UpdatedAt(DateTime.UtcNow);
+        this.Order = order;
+        this.UpdatedAt(DateTime.UtcNow);
     }
 }

@@ -1,3 +1,9 @@
+// <copyright file="TestWebApplicationFactory.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
+namespace ELearning.IntegrationTests.Infrastructure;
+
 using ELearning.Application.Common.Interfaces;
 using ELearning.Application.Common.Model;
 using ELearning.Domain.Entities.UserAggregate;
@@ -6,8 +12,6 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-
-namespace ELearning.IntegrationTests.Infrastructure;
 
 public sealed class TestWebApplicationFactory : WebApplicationFactory<Program>
 {
@@ -24,7 +28,7 @@ public sealed class TestWebApplicationFactory : WebApplicationFactory<Program>
                 ["JwtSettings:Issuer"] = "integration-tests",
                 ["JwtSettings:Audience"] = "integration-tests",
                 ["JwtSettings:Secret"] = "integration-tests-secret-key-with-32chars",
-                ["JwtSettings:ExpiryInDays"] = "7"
+                ["JwtSettings:ExpiryInDays"] = "7",
             };
 
             configBuilder.AddInMemoryCollection(testSettings);

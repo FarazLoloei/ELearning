@@ -1,37 +1,41 @@
-﻿using FluentValidation;
+﻿// <copyright file="UpdateCourseCommandValidator.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace ELearning.Application.Courses.Commands.Validators;
 
+using FluentValidation;
+
 /// <summary>
-/// Validator for UpdateCourseCommand
+/// Validator for UpdateCourseCommand.
 /// </summary>
 public class UpdateCourseCommandValidator : AbstractValidator<UpdateCourseCommand>
 {
     public UpdateCourseCommandValidator()
     {
-        RuleFor(v => v.CourseId)
+        this.RuleFor(v => v.CourseId)
             .NotEmpty().WithMessage("Course ID is required.");
 
-        RuleFor(v => v.Title)
+        this.RuleFor(v => v.Title)
             .NotEmpty().WithMessage("Title is required.")
             .MaximumLength(200).WithMessage("Title must not exceed 200 characters.");
 
-        RuleFor(v => v.Description)
+        this.RuleFor(v => v.Description)
             .NotEmpty().WithMessage("Description is required.");
 
-        RuleFor(v => v.CategoryId)
+        this.RuleFor(v => v.CategoryId)
             .NotEmpty().WithMessage("Category is required.");
 
-        RuleFor(v => v.LevelId)
+        this.RuleFor(v => v.LevelId)
             .NotEmpty().WithMessage("Level is required.");
 
-        RuleFor(v => v.Price)
+        this.RuleFor(v => v.Price)
             .GreaterThanOrEqualTo(0).WithMessage("Price must be greater than or equal to 0.");
 
-        RuleFor(v => v.DurationHours)
+        this.RuleFor(v => v.DurationHours)
             .GreaterThanOrEqualTo(0).WithMessage("Duration hours must be greater than or equal to 0.");
 
-        RuleFor(v => v.DurationMinutes)
+        this.RuleFor(v => v.DurationMinutes)
             .GreaterThanOrEqualTo(0).WithMessage("Duration minutes must be greater than or equal to 0.")
             .LessThan(60).WithMessage("Duration minutes must be less than 60.");
     }

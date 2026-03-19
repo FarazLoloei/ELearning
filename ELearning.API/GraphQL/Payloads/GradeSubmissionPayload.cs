@@ -1,17 +1,21 @@
-﻿namespace ELearning.API.GraphQL.Payloads;
+﻿// <copyright file="GradeSubmissionPayload.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
+namespace ELearning.API.GraphQL.Payloads;
 
 public class GradeSubmissionPayload : PayloadBase
 {
     public bool Success { get; }
 
-    public GradeSubmissionPayload()//(bool success)
+    public GradeSubmissionPayload() // (bool success)
     {
-        //Success = success;
+        // Success = success;
     }
 
     public GradeSubmissionPayload(string error)
         : base(new Error("GRADING_ERROR", error))
     {
-        Success = false;
+        this.Success = false;
     }
 }

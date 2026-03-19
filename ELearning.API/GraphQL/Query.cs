@@ -1,4 +1,10 @@
-﻿using ELearning.Application.Courses.Dtos;
+﻿// <copyright file="Query.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
+namespace ELearning.API.GraphQL;
+
+using ELearning.Application.Courses.Dtos;
 using ELearning.Application.Courses.Queries;
 using ELearning.Application.Enrollments.Dtos;
 using ELearning.Application.Enrollments.Queries;
@@ -11,17 +17,16 @@ using ELearning.Application.Submissions.Queries;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 
-namespace ELearning.API.GraphQL;
-
 /// <summary>
-/// GraphQL query root type
+/// GraphQL query root type.
 /// </summary>
 [GraphQLDescription("The query root type for the E-Learning API")]
 public class Query
 {
     /// <summary>
-    /// Get a paginated list of courses with optional filtering
+    /// Get a paginated list of courses with optional filtering.
     /// </summary>
+    /// <returns><placeholder>A <see cref="Task"/> representing the asynchronous operation.</placeholder></returns>
     [UsePaging]
     [UseFiltering]
     [UseSorting]
@@ -42,7 +47,7 @@ public class Query
             LevelId = levelId,
             IsFeatured = isFeatured,
             PageNumber = pageNumber,
-            PageSize = pageSize
+            PageSize = pageSize,
         };
 
         var result = await mediator.Send(query);
@@ -50,8 +55,9 @@ public class Query
     }
 
     /// <summary>
-    /// Get course details by ID
+    /// Get course details by ID.
     /// </summary>
+    /// <returns><placeholder>A <see cref="Task"/> representing the asynchronous operation.</placeholder></returns>
     [GraphQLDescription("Get course details by ID")]
     public async Task<CourseDto?> GetCourse(
         [Service] IMediator mediator,
@@ -63,8 +69,9 @@ public class Query
     }
 
     /// <summary>
-    /// Get featured courses
+    /// Get featured courses.
     /// </summary>
+    /// <returns><placeholder>A <see cref="Task"/> representing the asynchronous operation.</placeholder></returns>
     [GraphQLDescription("Get featured courses")]
     public async Task<List<CourseListDto>> GetFeaturedCourses(
         [Service] IMediator mediator,
@@ -74,7 +81,7 @@ public class Query
         var query = new GetCoursesListQuery
         {
             IsFeatured = true,
-            PageSize = count
+            PageSize = count,
         };
 
         var result = await mediator.Send(query);
@@ -82,8 +89,9 @@ public class Query
     }
 
     /// <summary>
-    /// Get courses by category
+    /// Get courses by category.
     /// </summary>
+    /// <returns><placeholder>A <see cref="Task"/> representing the asynchronous operation.</placeholder></returns>
     [GraphQLDescription("Get courses by category ID")]
     public async Task<List<CourseListDto>> GetCoursesByCategory(
         [Service] IMediator mediator,
@@ -91,7 +99,7 @@ public class Query
     {
         var query = new GetCoursesListQuery
         {
-            CategoryId = categoryId
+            CategoryId = categoryId,
         };
 
         var result = await mediator.Send(query);
@@ -99,8 +107,9 @@ public class Query
     }
 
     /// <summary>
-    /// Get student profile by ID
+    /// Get student profile by ID.
     /// </summary>
+    /// <returns><placeholder>A <see cref="Task"/> representing the asynchronous operation.</placeholder></returns>
     [GraphQLDescription("Get student profile by ID")]
     public async Task<StudentDto?> GetStudent(
         [Service] IMediator mediator,
@@ -112,8 +121,9 @@ public class Query
     }
 
     /// <summary>
-    /// Get student progress by ID
+    /// Get student progress by ID.
     /// </summary>
+    /// <returns><placeholder>A <see cref="Task"/> representing the asynchronous operation.</placeholder></returns>
     [GraphQLDescription("Get student progress by student ID")]
     [Authorize]
     public async Task<StudentProgressDto?> GetStudentProgress(
@@ -126,8 +136,9 @@ public class Query
     }
 
     /// <summary>
-    /// Get instructor profile by ID
+    /// Get instructor profile by ID.
     /// </summary>
+    /// <returns><placeholder>A <see cref="Task"/> representing the asynchronous operation.</placeholder></returns>
     [GraphQLDescription("Get instructor profile by ID")]
     public async Task<InstructorDto?> GetInstructor(
         [Service] IMediator mediator,
@@ -139,8 +150,9 @@ public class Query
     }
 
     /// <summary>
-    /// Get instructor profile with courses by ID
+    /// Get instructor profile with courses by ID.
     /// </summary>
+    /// <returns><placeholder>A <see cref="Task"/> representing the asynchronous operation.</placeholder></returns>
     [GraphQLDescription("Get instructor with courses by ID")]
     public async Task<InstructorCoursesDto?> GetInstructorWithCourses(
         [Service] IMediator mediator,
@@ -152,8 +164,9 @@ public class Query
     }
 
     /// <summary>
-    /// Get pending submissions for instructor
+    /// Get pending submissions for instructor.
     /// </summary>
+    /// <returns><placeholder>A <see cref="Task"/> representing the asynchronous operation.</placeholder></returns>
     [UsePaging]
     [UseFiltering]
     [UseSorting]
@@ -169,7 +182,7 @@ public class Query
         {
             InstructorId = instructorId,
             PageNumber = pageNumber,
-            PageSize = pageSize
+            PageSize = pageSize,
         };
 
         var result = await mediator.Send(query);
@@ -177,8 +190,9 @@ public class Query
     }
 
     /// <summary>
-    /// Get enrollment details by ID
+    /// Get enrollment details by ID.
     /// </summary>
+    /// <returns><placeholder>A <see cref="Task"/> representing the asynchronous operation.</placeholder></returns>
     [GraphQLDescription("Get enrollment details by ID")]
     [Authorize]
     public async Task<EnrollmentDetailDto?> GetEnrollment(
@@ -191,8 +205,9 @@ public class Query
     }
 
     /// <summary>
-    /// Get submission details by ID
+    /// Get submission details by ID.
     /// </summary>
+    /// <returns><placeholder>A <see cref="Task"/> representing the asynchronous operation.</placeholder></returns>
     [GraphQLDescription("Get submission details by ID")]
     [Authorize]
     public async Task<SubmissionDetailDto?> GetSubmission(
@@ -205,8 +220,9 @@ public class Query
     }
 
     /// <summary>
-    /// Get a student's enrollments
+    /// Get a student's enrollments.
     /// </summary>
+    /// <returns><placeholder>A <see cref="Task"/> representing the asynchronous operation.</placeholder></returns>
     [UsePaging]
     [UseFiltering]
     [UseSorting]
@@ -222,7 +238,7 @@ public class Query
         {
             StudentId = studentId,
             PageNumber = pageNumber,
-            PageSize = pageSize
+            PageSize = pageSize,
         };
 
         var result = await mediator.Send(query);

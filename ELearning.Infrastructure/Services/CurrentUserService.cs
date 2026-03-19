@@ -1,11 +1,15 @@
-﻿using ELearning.Application.Common.Interfaces;
-using Microsoft.AspNetCore.Http;
-using System.Security.Claims;
+﻿// <copyright file="CurrentUserService.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace ELearning.Infrastructure.Services;
 
+using System.Security.Claims;
+using ELearning.Application.Common.Interfaces;
+using Microsoft.AspNetCore.Http;
+
 /// <summary>
-/// Implementation of ICurrentUserService that extracts user information from HTTP context
+/// Implementation of ICurrentUserService that extracts user information from HTTP context.
 /// </summary>
 public class CurrentUserService(IHttpContextAccessor httpContextAccessor) : ICurrentUserService
 {

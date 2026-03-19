@@ -1,10 +1,14 @@
-﻿using ELearning.Application.Common.Model;
+﻿// <copyright file="GetStudentEnrollmentsQuery.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
+namespace ELearning.Application.Students.Queries;
+
+using ELearning.Application.Common.Model;
 using ELearning.Application.Enrollments.Dtos;
 using ELearning.SharedKernel;
 using ELearning.SharedKernel.Abstractions;
 using MediatR;
-
-namespace ELearning.Application.Students.Queries;
 
 public sealed record GetStudentEnrollmentsQuery : IRequest<Result<PaginatedList<EnrollmentDto>>>, IPaginatable
 {

@@ -1,15 +1,19 @@
-﻿using ELearning.Domain.Entities.UserAggregate;
+﻿// <copyright file="UserReadRepository.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
+namespace ELearning.Infrastructure.Data.Repositories;
+
+using System;
+using System.Collections.Generic;
+using System.Text;
+using ELearning.Domain.Entities.UserAggregate;
 using ELearning.Domain.Entities.UserAggregate.Abstractions.Repositories;
 using ELearning.Domain.Entities.UserAggregate.Enums;
 using ELearning.SharedKernel.Models;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
-namespace ELearning.Infrastructure.Data.Repositories;
-
-public class UserReadRepository(ApplicationDbContext _context) : IUserReadRepository
+public class UserReadRepository(ApplicationDbContext context) : IUserReadRepository
 {
     /// <summary>
     /// Retrieves a read-only list of users by their role.
@@ -18,7 +22,7 @@ public class UserReadRepository(ApplicationDbContext _context) : IUserReadReposi
     /// <param name="cancellationToken">A token to observe while waiting for the task to complete.</param>
     /// <returns>A read-only list of users matching the specified role.</returns>
     public async Task<IReadOnlyList<User>> GetByRoleAsync(UserRole role, CancellationToken cancellationToken) =>
-        await _context.Users
+        await context.Users
             .AsNoTracking()
             .Where(u => u.Role == role)
             .ToListAsync(cancellationToken);
@@ -32,7 +36,7 @@ public class UserReadRepository(ApplicationDbContext _context) : IUserReadReposi
     /// <returns>A read-only list of users matching the search criteria and pagination.</returns>
     public async Task<IReadOnlyList<User>> SearchUsersAsync(string searchTerm, PaginationParameters pagination, CancellationToken cancellationToken)
     {
-        var query = _context.Users
+        var query = context.Users
             .AsNoTracking()
             .AsQueryable();
 
