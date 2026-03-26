@@ -104,29 +104,26 @@ public class ProgressReadRepository(ApplicationDbContext context) : IProgressRea
         await connection.EnsureOpenAsync(cancellationToken);
 
         const string sql = """
-                           WITH EnrollmentCourse AS (
-                               SELECT CourseId
-                               FROM Enrollments
-                               WHERE Id = @EnrollmentId
-                           ),
-                           TotalLessons AS (
-                               SELECT COUNT(1) AS TotalCount
-                               FROM Lessons l
-                               INNER JOIN Modules m ON m.Id = l.ModuleId
-                               INNER JOIN EnrollmentCourse ec ON ec.CourseId = m.CourseId
-                           ),
-                           CompletedLessons AS (
-                               SELECT COUNT(1) AS CompletedCount
-                               FROM Progresses
-                               WHERE EnrollmentId = @EnrollmentId AND Status = 3
-                           )
                            SELECT
                                CASE
-                                   WHEN tl.TotalCount = 0 THEN 0.0
-                                   ELSE (CAST(cl.CompletedCount AS FLOAT) / CAST(tl.TotalCount AS FLOAT)) * 100.0
+                                   WHEN stats.TotalLessons = 0 THEN 0.0
+                                   ELSE (CAST(stats.CompletedLessons AS FLOAT) / CAST(stats.TotalLessons AS FLOAT)) * 100.0
                                END
-                           FROM TotalLessons tl
-                           CROSS JOIN CompletedLessons cl
+                           FROM (
+                               SELECT
+                                   (
+                                       SELECT COUNT(1)
+                                       FROM Lessons l
+                                       INNER JOIN Modules m ON m.Id = l.ModuleId
+                                       INNER JOIN Enrollments e ON e.CourseId = m.CourseId
+                                       WHERE e.Id = @EnrollmentId
+                                   ) AS TotalLessons,
+                                   (
+                                       SELECT COUNT(1)
+                                       FROM Progresses
+                                       WHERE EnrollmentId = @EnrollmentId AND Status = 3
+                                   ) AS CompletedLessons
+                           ) stats
                            """;
 
         var percentage = await connection.QuerySingleOrDefaultAsync<double?>(
