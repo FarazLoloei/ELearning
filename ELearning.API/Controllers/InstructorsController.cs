@@ -1,5 +1,5 @@
-// <copyright file="InstructorsController.cs" company="PlaceholderCompany">
-// Copyright (c) PlaceholderCompany. All rights reserved.
+// <copyright file="InstructorsController.cs" company="FarazLoloei">
+// Copyright (c) FarazLoloei. All rights reserved.
 // </copyright>
 
 namespace ELearning.API.Controllers;

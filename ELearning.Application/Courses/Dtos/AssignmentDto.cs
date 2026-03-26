@@ -1,5 +1,5 @@
-// <copyright file="AssignmentDto.cs" company="PlaceholderCompany">
-// Copyright (c) PlaceholderCompany. All rights reserved.
+// <copyright file="AssignmentDto.cs" company="FarazLoloei">
+// Copyright (c) FarazLoloei. All rights reserved.
 // </copyright>
 
 namespace ELearning.Application.Courses.Dtos;

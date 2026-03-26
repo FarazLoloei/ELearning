@@ -1,5 +1,5 @@
-// <copyright file="LessonReadModel.cs" company="PlaceholderCompany">
-// Copyright (c) PlaceholderCompany. All rights reserved.
+// <copyright file="LessonReadModel.cs" company="FarazLoloei">
+// Copyright (c) FarazLoloei. All rights reserved.
 // </copyright>
 
 namespace ELearning.Application.Courses.ReadModels;

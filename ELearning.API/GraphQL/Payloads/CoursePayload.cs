@@ -1,5 +1,5 @@
-// <copyright file="CoursePayload.cs" company="PlaceholderCompany">
-// Copyright (c) PlaceholderCompany. All rights reserved.
+// <copyright file="CoursePayload.cs" company="FarazLoloei">
+// Copyright (c) FarazLoloei. All rights reserved.
 // </copyright>
 
 namespace ELearning.API.GraphQL.Payloads;

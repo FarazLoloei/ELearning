@@ -1,5 +1,5 @@
-// <copyright file="IStudentReadRepository.cs" company="PlaceholderCompany">
-// Copyright (c) PlaceholderCompany. All rights reserved.
+// <copyright file="IStudentReadRepository.cs" company="FarazLoloei">
+// Copyright (c) FarazLoloei. All rights reserved.
 // </copyright>
 
 namespace ELearning.Application.Students.Abstractions;

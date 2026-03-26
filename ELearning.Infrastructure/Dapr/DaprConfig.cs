@@ -1,5 +1,5 @@
-// <copyright file="DaprConfig.cs" company="PlaceholderCompany">
-// Copyright (c) PlaceholderCompany. All rights reserved.
+// <copyright file="DaprConfig.cs" company="FarazLoloei">
+// Copyright (c) FarazLoloei. All rights reserved.
 // </copyright>
 
 namespace ELearning.Infrastructure.DaprServices;

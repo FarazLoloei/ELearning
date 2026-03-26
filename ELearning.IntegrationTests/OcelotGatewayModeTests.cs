@@ -1,5 +1,5 @@
-// <copyright file="OcelotGatewayModeTests.cs" company="PlaceholderCompany">
-// Copyright (c) PlaceholderCompany. All rights reserved.
+// <copyright file="OcelotGatewayModeTests.cs" company="FarazLoloei">
+// Copyright (c) FarazLoloei. All rights reserved.
 // </copyright>
 
 namespace ELearning.IntegrationTests;

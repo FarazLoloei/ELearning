@@ -1,5 +1,5 @@
-﻿// <copyright file="GetEnrollmentDetailQuery.cs" company="PlaceholderCompany">
-// Copyright (c) PlaceholderCompany. All rights reserved.
+// <copyright file="GetEnrollmentDetailQuery.cs" company="FarazLoloei">
+// Copyright (c) FarazLoloei. All rights reserved.
 // </copyright>
 
 namespace ELearning.Application.Enrollments.Queries;

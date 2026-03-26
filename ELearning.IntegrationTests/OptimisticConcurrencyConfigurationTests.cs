@@ -1,5 +1,5 @@
-// <copyright file="OptimisticConcurrencyConfigurationTests.cs" company="PlaceholderCompany">
-// Copyright (c) PlaceholderCompany. All rights reserved.
+// <copyright file="OptimisticConcurrencyConfigurationTests.cs" company="FarazLoloei">
+// Copyright (c) FarazLoloei. All rights reserved.
 // </copyright>
 
 namespace ELearning.IntegrationTests;

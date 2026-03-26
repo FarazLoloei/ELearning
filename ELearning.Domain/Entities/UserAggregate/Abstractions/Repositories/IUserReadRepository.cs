@@ -1,5 +1,5 @@
-﻿// <copyright file="IUserReadRepository.cs" company="PlaceholderCompany">
-// Copyright (c) PlaceholderCompany. All rights reserved.
+// <copyright file="IUserReadRepository.cs" company="FarazLoloei">
+// Copyright (c) FarazLoloei. All rights reserved.
 // </copyright>
 
 namespace ELearning.Domain.Entities.UserAggregate.Abstractions.Repositories;

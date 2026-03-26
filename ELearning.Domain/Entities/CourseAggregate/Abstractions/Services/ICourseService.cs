@@ -1,5 +1,5 @@
-﻿// <copyright file="ICourseService.cs" company="PlaceholderCompany">
-// Copyright (c) PlaceholderCompany. All rights reserved.
+// <copyright file="ICourseService.cs" company="FarazLoloei">
+// Copyright (c) FarazLoloei. All rights reserved.
 // </copyright>
 
 namespace ELearning.Domain.Entities.CourseAggregate.Abstractions.Services;

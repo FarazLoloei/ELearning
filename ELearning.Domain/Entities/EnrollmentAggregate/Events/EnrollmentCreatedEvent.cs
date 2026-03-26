@@ -1,5 +1,5 @@
-﻿// <copyright file="EnrollmentCreatedEvent.cs" company="PlaceholderCompany">
-// Copyright (c) PlaceholderCompany. All rights reserved.
+// <copyright file="EnrollmentCreatedEvent.cs" company="FarazLoloei">
+// Copyright (c) FarazLoloei. All rights reserved.
 // </copyright>
 
 namespace ELearning.Domain.Entities.EnrollmentAggregate.Events;

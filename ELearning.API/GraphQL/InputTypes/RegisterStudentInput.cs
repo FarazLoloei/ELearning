@@ -1,5 +1,5 @@
-// <copyright file="RegisterStudentInput.cs" company="PlaceholderCompany">
-// Copyright (c) PlaceholderCompany. All rights reserved.
+// <copyright file="RegisterStudentInput.cs" company="FarazLoloei">
+// Copyright (c) FarazLoloei. All rights reserved.
 // </copyright>
 
 namespace ELearning.API.GraphQL.InputTypes;

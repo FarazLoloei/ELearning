@@ -11,4 +11,8 @@
     <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="9.0.0" PrivateAssets="all" />
     <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.556" PrivateAssets="all" />
   </ItemGroup>
+
+  <ItemGroup Condition="'$(MSBuildProjectExtension)' == '.csproj' and Exists('$(MSBuildThisFileDirectory)stylecop.json')">
+    <AdditionalFiles Include="$(MSBuildThisFileDirectory)stylecop.json" Link="stylecop.json" />
+  </ItemGroup>
 </Project>

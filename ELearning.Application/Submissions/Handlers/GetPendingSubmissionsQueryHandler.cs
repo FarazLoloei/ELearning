@@ -1,5 +1,5 @@
-// <copyright file="GetPendingSubmissionsQueryHandler.cs" company="PlaceholderCompany">
-// Copyright (c) PlaceholderCompany. All rights reserved.
+// <copyright file="GetPendingSubmissionsQueryHandler.cs" company="FarazLoloei">
+// Copyright (c) FarazLoloei. All rights reserved.
 // </copyright>
 
 namespace ELearning.Application.Submissions.Handlers;

@@ -1,5 +1,5 @@
-﻿// <copyright file="IEntityFrameworkRepository.cs" company="PlaceholderCompany">
-// Copyright (c) PlaceholderCompany. All rights reserved.
+// <copyright file="IEntityFrameworkRepository.cs" company="FarazLoloei">
+// Copyright (c) FarazLoloei. All rights reserved.
 // </copyright>
 
 namespace ELearning.SharedKernel.Abstractions;

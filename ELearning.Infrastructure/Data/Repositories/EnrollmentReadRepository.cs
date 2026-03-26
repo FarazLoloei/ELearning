@@ -1,5 +1,5 @@
-// <copyright file="EnrollmentReadRepository.cs" company="PlaceholderCompany">
-// Copyright (c) PlaceholderCompany. All rights reserved.
+// <copyright file="EnrollmentReadRepository.cs" company="FarazLoloei">
+// Copyright (c) FarazLoloei. All rights reserved.
 // </copyright>
 
 namespace ELearning.Infrastructure.Data.Repositories;
@@ -73,8 +73,8 @@ public class EnrollmentReadRepository(ApplicationDbContext context) : IEnrollmen
         }
 
         var enrollmentIds = new[] { id };
-        var lessonProgressLookup = await LoadLessonProgressLookupAsync(connection, enrollmentIds, cancellationToken);
-        var submissionLookup = await LoadSubmissionLookupAsync(connection, enrollmentIds, cancellationToken);
+        var lessonProgressLookup = await this.LoadLessonProgressLookupAsync(connection, enrollmentIds, cancellationToken);
+        var submissionLookup = await this.LoadSubmissionLookupAsync(connection, enrollmentIds, cancellationToken);
 
         return MapToDetailReadModel(
             row,
@@ -237,8 +237,8 @@ public class EnrollmentReadRepository(ApplicationDbContext context) : IEnrollmen
         }
 
         var enrollmentIds = rows.Select(row => row.Id).ToArray();
-        var lessonProgressLookup = await LoadLessonProgressLookupAsync(connection, enrollmentIds, cancellationToken);
-        var submissionLookup = await LoadSubmissionLookupAsync(connection, enrollmentIds, cancellationToken);
+        var lessonProgressLookup = await this.LoadLessonProgressLookupAsync(connection, enrollmentIds, cancellationToken);
+        var submissionLookup = await this.LoadSubmissionLookupAsync(connection, enrollmentIds, cancellationToken);
 
         var items = rows.Select(row => MapToDetailReadModel(
             row,

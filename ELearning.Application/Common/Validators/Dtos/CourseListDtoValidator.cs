@@ -1,5 +1,5 @@
-// <copyright file="CourseListDtoValidator.cs" company="PlaceholderCompany">
-// Copyright (c) PlaceholderCompany. All rights reserved.
+// <copyright file="CourseListDtoValidator.cs" company="FarazLoloei">
+// Copyright (c) FarazLoloei. All rights reserved.
 // </copyright>
 
 namespace ELearning.Application.Common.Validators.Dtos;

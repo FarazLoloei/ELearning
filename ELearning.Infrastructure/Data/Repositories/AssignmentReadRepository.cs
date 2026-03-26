@@ -1,5 +1,5 @@
-﻿// <copyright file="AssignmentReadRepository.cs" company="PlaceholderCompany">
-// Copyright (c) PlaceholderCompany. All rights reserved.
+// <copyright file="AssignmentReadRepository.cs" company="FarazLoloei">
+// Copyright (c) FarazLoloei. All rights reserved.
 // </copyright>
 
 namespace ELearning.Infrastructure.Data.Repositories;
