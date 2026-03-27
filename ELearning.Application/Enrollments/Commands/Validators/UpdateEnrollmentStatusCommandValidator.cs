@@ -18,7 +18,7 @@ public class UpdateEnrollmentStatusCommandValidator : AbstractValidator<UpdateEn
 
         this.RuleFor(v => v.Status)
             .NotEmpty().WithMessage("Status is required.")
-            .Must(status => new[] { "Active", "Paused", "Completed", "Abandoned" }.Contains(status))
-            .WithMessage("Status must be one of: Active, Paused, Completed, Abandoned");
+            .Must(status => new[] { "Active", "Paused", "Abandoned" }.Contains(status, StringComparer.OrdinalIgnoreCase))
+            .WithMessage("Status must be one of: Active, Paused, Abandoned");
     }
 }

@@ -57,6 +57,11 @@ public class Progress : BaseEntity
 
     public void MarkAsCompleted()
     {
+        if (this.Status == ProgressStatus.Completed)
+        {
+            return;
+        }
+
         this.Status = ProgressStatus.Completed;
         this.CompletedDate = DateTime.UtcNow;
         this.UpdatedAt(DateTime.UtcNow);
@@ -69,6 +74,7 @@ public class Progress : BaseEntity
             throw new ArgumentException("Time spent must be positive", nameof(seconds));
         }
 
+        this.MarkAsStarted();
         this.TimeSpentSeconds += seconds;
         this.UpdatedAt(DateTime.UtcNow);
     }

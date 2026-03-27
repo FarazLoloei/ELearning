@@ -10,7 +10,6 @@ using ELearning.Application.Common.Model;
 using ELearning.Application.Enrollments.Commands;
 using ELearning.Domain.Entities.EnrollmentAggregate;
 using ELearning.Domain.Entities.EnrollmentAggregate.Abstractions.Repositories;
-using ELearning.Domain.Entities.EnrollmentAggregate.Enums;
 using MediatR;
 
 /// <summary>
@@ -21,14 +20,6 @@ public class UpdateEnrollmentStatusCommandHandler(
         ICurrentUserService currentUserService)
     : IRequestHandler<UpdateEnrollmentStatusCommand, Result>
 {
-    private static readonly Dictionary<string, EnrollmentStatus> StatusMap = new(StringComparer.OrdinalIgnoreCase)
-    {
-        ["Active"] = EnrollmentStatus.Active,
-        ["Paused"] = EnrollmentStatus.Paused,
-        ["Completed"] = EnrollmentStatus.Completed,
-        ["Abandoned"] = EnrollmentStatus.Abandoned,
-    };
-
     public async Task<Result> Handle(UpdateEnrollmentStatusCommand request, CancellationToken cancellationToken)
     {
         this.EnsureAuthenticated();
@@ -38,16 +29,34 @@ public class UpdateEnrollmentStatusCommandHandler(
 
         this.EnsureAuthorized(enrollment);
 
-        if (!StatusMap.TryGetValue(request.Status, out var newStatus))
+        try
         {
-            return Result.Failure("Invalid status value.");
+            var status = request.Status.Trim();
+
+            if (status.Equals("Active", StringComparison.OrdinalIgnoreCase))
+            {
+                enrollment.Resume();
+            }
+            else if (status.Equals("Paused", StringComparison.OrdinalIgnoreCase))
+            {
+                enrollment.Pause();
+            }
+            else if (status.Equals("Abandoned", StringComparison.OrdinalIgnoreCase))
+            {
+                enrollment.Abandon();
+            }
+            else if (status.Equals("Completed", StringComparison.OrdinalIgnoreCase))
+            {
+                return Result.Failure("Course completion is driven by lesson progression and cannot be set manually.");
+            }
+            else
+            {
+                return Result.Failure("Invalid status value.");
+            }
         }
-
-        enrollment.SetStatus(newStatus);
-
-        if (newStatus == EnrollmentStatus.Completed)
+        catch (InvalidOperationException ex)
         {
-            enrollment.MarkAsCompleted();
+            return Result.Failure(ex.Message);
         }
 
         await enrollmentRepository.UpdateAsync(enrollment, cancellationToken);
@@ -66,7 +75,7 @@ public class UpdateEnrollmentStatusCommandHandler(
     private void EnsureAuthorized(Enrollment enrollment)
     {
         var isOwner = enrollment.StudentId == currentUserService.UserId;
-        var isAuthorized = isOwner || currentUserService.IsInRole("Instructor") || currentUserService.IsInRole("Admin");
+        var isAuthorized = isOwner || currentUserService.IsInRole("Admin");
 
         if (!isAuthorized)
         {

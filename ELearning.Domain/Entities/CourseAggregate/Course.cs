@@ -266,13 +266,28 @@ public class Course : BaseEntity, IAggregateRoot<Course>
 
     public bool IsPubliclyVisible() => this.Status == CourseStatus.Published;
 
+    public bool IsAvailableForLearning() => this.Status == CourseStatus.Published;
+
     public bool CanAcceptNewEnrollments() => this.Status == CourseStatus.Published;
+
+    public bool ContainsLesson(Guid lessonId) =>
+        this.modules.SelectMany(module => module.Lessons).Any(lesson => lesson.Id == lessonId);
+
+    public int GetTotalLessonCount() => this.modules.Sum(module => module.Lessons.Count);
 
     public void EnsureCanAcceptNewEnrollments()
     {
         if (!this.CanAcceptNewEnrollments())
         {
             throw new InvalidOperationException("Students can enroll only in published courses.");
+        }
+    }
+
+    public void EnsureAvailableForLearning()
+    {
+        if (!this.IsAvailableForLearning())
+        {
+            throw new InvalidOperationException("Lesson progression is available only for published courses.");
         }
     }
 

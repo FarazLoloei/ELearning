@@ -48,16 +48,75 @@ public class Enrollment : BaseEntity, IAggregateRoot<Enrollment>
         this.Review = review;
     }
 
-    public void MarkAsCompleted()
+    public void StartLesson(Guid lessonId)
     {
-        this.Status = EnrollmentStatus.Completed;
-        this.CompletedDateUTC = DateTime.UtcNow;
+        this.EnsureCanProgress();
+
+        var progress = this.GetOrCreateProgress(lessonId);
+        progress.MarkAsStarted();
         this.UpdatedAt(DateTime.UtcNow);
     }
 
-    public void AddProgress(Progress progress)
+    public void CompleteLesson(Guid lessonId, int totalLessonsInCourse)
     {
-        this.progressRecords.Add(progress);
+        this.EnsureCanProgress();
+
+        var progress = this.GetOrCreateProgress(lessonId);
+        progress.MarkAsCompleted();
+        this.MarkCourseCompletedIfEligible(totalLessonsInCourse);
+        this.UpdatedAt(DateTime.UtcNow);
+    }
+
+    public void Pause()
+    {
+        if (this.Status == EnrollmentStatus.Paused)
+        {
+            return;
+        }
+
+        if (this.Status != EnrollmentStatus.Active)
+        {
+            throw new InvalidOperationException("Only active enrollments can be paused.");
+        }
+
+        this.Status = EnrollmentStatus.Paused;
+        this.UpdatedAt(DateTime.UtcNow);
+    }
+
+    public void Resume()
+    {
+        if (this.Status == EnrollmentStatus.Active)
+        {
+            return;
+        }
+
+        if (this.Status != EnrollmentStatus.Paused)
+        {
+            throw new InvalidOperationException("Only paused enrollments can be resumed.");
+        }
+
+        this.Status = EnrollmentStatus.Active;
+        this.UpdatedAt(DateTime.UtcNow);
+    }
+
+    public void Abandon()
+    {
+        if (this.Status == EnrollmentStatus.Abandoned)
+        {
+            return;
+        }
+
+        if (this.Status == EnrollmentStatus.Completed)
+        {
+            throw new InvalidOperationException("Completed enrollments cannot be abandoned.");
+        }
+
+        if (this.Status != EnrollmentStatus.Active && this.Status != EnrollmentStatus.Paused)
+        {
+            throw new InvalidOperationException("Only active or paused enrollments can be abandoned.");
+        }
+
+        this.Status = EnrollmentStatus.Abandoned;
         this.UpdatedAt(DateTime.UtcNow);
     }
 
@@ -104,9 +163,51 @@ public class Enrollment : BaseEntity, IAggregateRoot<Enrollment>
         this.UpdatedAt(DateTime.UtcNow);
     }
 
-    public void SetStatus(EnrollmentStatus status)
+    private Progress GetOrCreateProgress(Guid lessonId)
     {
-        this.Status = status;
-        this.UpdatedAt(DateTime.UtcNow);
+        if (lessonId == Guid.Empty)
+        {
+            throw new ArgumentException("Lesson ID is required.", nameof(lessonId));
+        }
+
+        var progress = this.progressRecords.FirstOrDefault(record => record.LessonId == lessonId);
+        if (progress is not null)
+        {
+            return progress;
+        }
+
+        progress = new Progress(this.Id, lessonId, timeSpendInSeconds: null);
+        this.progressRecords.Add(progress);
+        return progress;
+    }
+
+    private void EnsureCanProgress()
+    {
+        if (this.Status != EnrollmentStatus.Active)
+        {
+            throw new InvalidOperationException("Only active enrollments can record lesson progress.");
+        }
+    }
+
+    private void MarkCourseCompletedIfEligible(int totalLessonsInCourse)
+    {
+        if (this.Status == EnrollmentStatus.Completed || totalLessonsInCourse <= 0)
+        {
+            return;
+        }
+
+        var completedLessons = this.progressRecords
+            .Where(progress => progress.Status == ProgressStatus.Completed)
+            .Select(progress => progress.LessonId)
+            .Distinct()
+            .Count();
+
+        if (completedLessons < totalLessonsInCourse)
+        {
+            return;
+        }
+
+        this.Status = EnrollmentStatus.Completed;
+        this.CompletedDateUTC = DateTime.UtcNow;
     }
 }

@@ -180,8 +180,34 @@ public class Mutation(ILogger<Mutation> logger)
             : new OperationPayload(new Error("COURSE_ARCHIVE_ERROR", result.Error));
     }
 
-    [GraphQLDescription("Update enrollment status")]
-    [Authorize]
+    [GraphQLDescription("Mark a lesson as started for an enrolled student")]
+    [Authorize(Roles = "Student")]
+    public async Task<OperationPayload> StartLesson(
+        [Service] IMediator mediator,
+        Guid enrollmentId,
+        Guid lessonId)
+    {
+        var result = await mediator.Send(new StartLessonCommand(enrollmentId, lessonId));
+        return result.IsSuccess
+            ? new OperationPayload()
+            : new OperationPayload(new Error("LESSON_START_ERROR", result.Error));
+    }
+
+    [GraphQLDescription("Mark a lesson as completed for an enrolled student")]
+    [Authorize(Roles = "Student")]
+    public async Task<OperationPayload> CompleteLesson(
+        [Service] IMediator mediator,
+        Guid enrollmentId,
+        Guid lessonId)
+    {
+        var result = await mediator.Send(new CompleteLessonCommand(enrollmentId, lessonId));
+        return result.IsSuccess
+            ? new OperationPayload()
+            : new OperationPayload(new Error("LESSON_COMPLETION_ERROR", result.Error));
+    }
+
+    [GraphQLDescription("Pause, resume, or abandon an enrollment without affecting completion rules")]
+    [Authorize(Roles = "Student,Admin")]
     public async Task<OperationPayload> UpdateEnrollmentStatus(
         [Service] IMediator mediator,
         UpdateEnrollmentStatusInput input)

@@ -46,8 +46,36 @@ public class EnrollmentsController(IApiFacade apiFacade) : ApiControllerBase
         return this.CreatedResponse();
     }
 
+    [HttpPost("{id:guid}/lessons/{lessonId:guid}/start")]
+    [Authorize(Roles = "Student")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<ApiResponse<object?>>> StartLesson(
+        Guid id,
+        Guid lessonId,
+        CancellationToken cancellationToken)
+    {
+        var result = await apiFacade.SendAsync(new StartLessonCommand(id, lessonId), cancellationToken);
+        return this.FromResult(result, error => error.StartsWith("Enrollment not found", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [HttpPost("{id:guid}/lessons/{lessonId:guid}/complete")]
+    [Authorize(Roles = "Student")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<ApiResponse<object?>>> CompleteLesson(
+        Guid id,
+        Guid lessonId,
+        CancellationToken cancellationToken)
+    {
+        var result = await apiFacade.SendAsync(new CompleteLessonCommand(id, lessonId), cancellationToken);
+        return this.FromResult(result, error => error.StartsWith("Enrollment not found", StringComparison.OrdinalIgnoreCase));
+    }
+
     [HttpPut("{id:guid}/status")]
-    [Authorize]
+    [Authorize(Roles = "Student,Admin")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
