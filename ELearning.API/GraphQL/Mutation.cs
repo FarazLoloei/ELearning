@@ -131,6 +131,55 @@ public class Mutation(ILogger<Mutation> logger)
             : new OperationPayload(new Error("COURSE_DELETE_ERROR", result.Error));
     }
 
+    [GraphQLDescription("Submit a course for admin review")]
+    [Authorize(Roles = "Instructor")]
+    public async Task<OperationPayload> SubmitCourseForReview(
+        [Service] IMediator mediator,
+        Guid courseId)
+    {
+        var result = await mediator.Send(new SubmitCourseForReviewCommand(courseId));
+        return result.IsSuccess
+            ? new OperationPayload()
+            : new OperationPayload(new Error("COURSE_REVIEW_SUBMISSION_ERROR", result.Error));
+    }
+
+    [GraphQLDescription("Approve a course for publication")]
+    [Authorize(Roles = "Admin")]
+    public async Task<OperationPayload> ApproveCoursePublication(
+        [Service] IMediator mediator,
+        Guid courseId)
+    {
+        var result = await mediator.Send(new ApproveCoursePublicationCommand(courseId));
+        return result.IsSuccess
+            ? new OperationPayload()
+            : new OperationPayload(new Error("COURSE_APPROVAL_ERROR", result.Error));
+    }
+
+    [GraphQLDescription("Reject a course review submission")]
+    [Authorize(Roles = "Admin")]
+    public async Task<OperationPayload> RejectCoursePublication(
+        [Service] IMediator mediator,
+        Guid courseId,
+        string reason)
+    {
+        var result = await mediator.Send(new RejectCoursePublicationCommand(courseId, reason));
+        return result.IsSuccess
+            ? new OperationPayload()
+            : new OperationPayload(new Error("COURSE_REJECTION_ERROR", result.Error));
+    }
+
+    [GraphQLDescription("Archive a course")]
+    [Authorize(Roles = "Admin")]
+    public async Task<OperationPayload> ArchiveCourse(
+        [Service] IMediator mediator,
+        Guid courseId)
+    {
+        var result = await mediator.Send(new ArchiveCourseCommand(courseId));
+        return result.IsSuccess
+            ? new OperationPayload()
+            : new OperationPayload(new Error("COURSE_ARCHIVE_ERROR", result.Error));
+    }
+
     [GraphQLDescription("Update enrollment status")]
     [Authorize]
     public async Task<OperationPayload> UpdateEnrollmentStatus(

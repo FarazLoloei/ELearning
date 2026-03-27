@@ -1,4 +1,4 @@
-// <copyright file="DeleteCourseCommandHandler.cs" company="FarazLoloei">
+// <copyright file="ApproveCoursePublicationCommandHandler.cs" company="FarazLoloei">
 // Copyright (c) FarazLoloei. All rights reserved.
 // </copyright>
 
@@ -12,17 +12,14 @@ using ELearning.Domain.Entities.CourseAggregate;
 using ELearning.Domain.Entities.CourseAggregate.Abstractions.Repositories;
 using MediatR;
 
-/// <summary>
-/// Handler for DeleteCourseCommand.
-/// </summary>
-public class DeleteCourseCommandHandler(
+public sealed class ApproveCoursePublicationCommandHandler(
         ICourseRepository courseRepository,
         ICurrentUserService currentUserService)
-    : IRequestHandler<DeleteCourseCommand, Result>
+    : IRequestHandler<ApproveCoursePublicationCommand, Result>
 {
-    public async Task<Result> Handle(DeleteCourseCommand request, CancellationToken cancellationToken)
+    public async Task<Result> Handle(ApproveCoursePublicationCommand request, CancellationToken cancellationToken)
     {
-        if (!currentUserService.IsAuthenticated || currentUserService.UserId is null)
+        if (!currentUserService.IsAuthenticated || !currentUserService.IsInRole("Admin"))
         {
             throw new ForbiddenAccessException();
         }
@@ -30,23 +27,16 @@ public class DeleteCourseCommandHandler(
         var course = await courseRepository.GetByIdForUpdateAsync(request.CourseId, cancellationToken) ??
             throw new NotFoundException(nameof(Course), request.CourseId);
 
-        var isInstructorOwner = course.IsOwnedBy(currentUserService.UserId.Value);
-
-        if (!isInstructorOwner && !currentUserService.IsInRole("Admin"))
-        {
-            throw new ForbiddenAccessException();
-        }
-
         try
         {
-            course.EnsureCanBeDeleted();
+            course.ApprovePublication();
         }
         catch (InvalidOperationException ex)
         {
             return Result.Failure(ex.Message);
         }
 
-        await courseRepository.DeleteAsync(course, cancellationToken);
+        await courseRepository.UpdateAsync(course, cancellationToken);
 
         return Result.Success();
     }

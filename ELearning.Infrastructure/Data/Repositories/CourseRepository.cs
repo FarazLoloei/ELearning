@@ -71,6 +71,7 @@ public class CourseRepository : ICourseRepository
     {
         var query = this.context.Courses
             .AsNoTracking()
+            .Where(c => c.Status == CourseStatus.Published)
             .AsQueryable();
 
         if (!string.IsNullOrWhiteSpace(searchTerm))

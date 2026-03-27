@@ -140,4 +140,56 @@ public class CoursesController(IApiFacade apiFacade) : ApiControllerBase
         var result = await apiFacade.SendAsync(new DeleteCourseCommand(id), cancellationToken);
         return this.FromResult(result, error => error.StartsWith("Course not found", StringComparison.OrdinalIgnoreCase));
     }
+
+    [HttpPost("{id:guid}/submit-for-review")]
+    [Authorize(Roles = "Instructor")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<ApiResponse<object?>>> SubmitForReview(Guid id, CancellationToken cancellationToken)
+    {
+        var result = await apiFacade.SendAsync(new SubmitCourseForReviewCommand(id), cancellationToken);
+        return this.FromResult(result, error => error.StartsWith("Course not found", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [HttpPost("{id:guid}/approve-publication")]
+    [Authorize(Roles = "Admin")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<ApiResponse<object?>>> ApprovePublication(Guid id, CancellationToken cancellationToken)
+    {
+        var result = await apiFacade.SendAsync(new ApproveCoursePublicationCommand(id), cancellationToken);
+        return this.FromResult(result, error => error.StartsWith("Course not found", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [HttpPost("{id:guid}/reject-publication")]
+    [Authorize(Roles = "Admin")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<ApiResponse<object?>>> RejectPublication(
+        Guid id,
+        RejectCoursePublicationCommand command,
+        CancellationToken cancellationToken)
+    {
+        if (id != command.CourseId)
+        {
+            return this.BadRequestResponse<object?>("Route id does not match payload CourseId.");
+        }
+
+        var result = await apiFacade.SendAsync(command, cancellationToken);
+        return this.FromResult(result, error => error.StartsWith("Course not found", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [HttpPost("{id:guid}/archive")]
+    [Authorize(Roles = "Admin")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<ApiResponse<object?>>> Archive(Guid id, CancellationToken cancellationToken)
+    {
+        var result = await apiFacade.SendAsync(new ArchiveCourseCommand(id), cancellationToken);
+        return this.FromResult(result, error => error.StartsWith("Course not found", StringComparison.OrdinalIgnoreCase));
+    }
 }

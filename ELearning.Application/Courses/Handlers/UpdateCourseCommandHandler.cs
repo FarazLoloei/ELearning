@@ -11,6 +11,7 @@ using ELearning.Application.Courses.Commands;
 using ELearning.Domain.Entities.CourseAggregate;
 using ELearning.Domain.Entities.CourseAggregate.Abstractions.Repositories;
 using ELearning.Domain.Entities.CourseAggregate.Enums;
+using ELearning.Domain.ValueObjects;
 using MediatR;
 
 /// <summary>
@@ -31,15 +32,13 @@ public class UpdateCourseCommandHandler(
         var course = await courseRepository.GetByIdForUpdateAsync(request.CourseId, cancellationToken) ??
             throw new NotFoundException(nameof(Course), request.CourseId);
 
-        // Check if the current user is the instructor of this course or an admin
-        var isInstructor = course.InstructorId == currentUserService.UserId;
+        var isInstructorOwner = course.IsOwnedBy(currentUserService.UserId.Value);
 
-        if (!isInstructor && !currentUserService.IsInRole("Admin"))
+        if (!isInstructorOwner)
         {
             throw new ForbiddenAccessException();
         }
 
-        // Get category and level from enumeration values
         var category = CourseCategory.GetAll<CourseCategory>()
             .FirstOrDefault(c => c.Id == request.CategoryId);
 
@@ -51,17 +50,21 @@ public class UpdateCourseCommandHandler(
             return Result.Failure($"Invalid category or level. Category: {category?.Name ?? "null"}, Level: {level?.Name ?? "null"}");
         }
 
-        // Create duration value object
-        // var duration = Duration.Create(request.DurationHours, request.DurationMinutes);
-
-        // Update course details
-        course.UpdateDetails(request.Title, request.Description, category, level);
-        course.UpdatePrice(request.Price);
-
-        // Toggle featured status if needed
-        if (course.IsFeatured != request.IsFeatured)
+        try
         {
-            course.ToggleFeatured();
+            var duration = Duration.Create(request.DurationHours, request.DurationMinutes);
+
+            course.UpdateDetails(request.Title, request.Description, category, level, duration);
+            course.UpdatePrice(request.Price);
+
+            if (course.IsFeatured != request.IsFeatured)
+            {
+                course.ToggleFeatured();
+            }
+        }
+        catch (Exception ex) when (ex is InvalidOperationException or ArgumentException)
+        {
+            return Result.Failure(ex.Message);
         }
 
         await courseRepository.UpdateAsync(course, cancellationToken);

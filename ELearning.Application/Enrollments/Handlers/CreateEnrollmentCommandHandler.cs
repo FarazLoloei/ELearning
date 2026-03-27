@@ -40,6 +40,15 @@ public class CreateEnrollmentCommandHandler(
         var course = await courseRepository.GetByIdForUpdateAsync(request.CourseId, cancellationToken) ??
             throw new NotFoundException(nameof(Course), request.CourseId);
 
+        try
+        {
+            course.EnsureCanAcceptNewEnrollments();
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Result.Failure(ex.Message);
+        }
+
         // Check if student is already enrolled
         var alreadyEnrolled = await enrollmentRepository.GetByStudentAndCourseIdAsync(studentId, request.CourseId, cancellationToken) is not null;
         if (alreadyEnrolled)

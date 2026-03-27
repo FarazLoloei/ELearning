@@ -9,6 +9,7 @@ using System.Text;
 using Dapper;
 using ELearning.Application.Courses.Abstractions;
 using ELearning.Application.Courses.ReadModels;
+using ELearning.Domain.Entities.CourseAggregate.Enums;
 using ELearning.SharedKernel;
 using ELearning.SharedKernel.Models;
 using Microsoft.EntityFrameworkCore;
@@ -29,6 +30,7 @@ public class CourseReadRepository(ApplicationDbContext context) : ICourseReadRep
         var parameters = new DynamicParameters();
         parameters.Add("PageSize", pagination.PageSize);
         parameters.Add("Offset", pagination.SkipCount);
+        parameters.Add("PublishedStatusId", CourseStatus.Published.Id);
 
         var whereClause = BuildWhereClause(searchTerm, categoryId, levelId, isFeatured, parameters);
 
@@ -88,6 +90,8 @@ public class CourseReadRepository(ApplicationDbContext context) : ICourseReadRep
         DynamicParameters parameters)
     {
         var filters = new List<string>();
+
+        filters.Add("c.Status = @PublishedStatusId");
 
         if (!string.IsNullOrWhiteSpace(searchTerm))
         {

@@ -1,4 +1,4 @@
-// <copyright file="DeleteCourseCommandHandler.cs" company="FarazLoloei">
+// <copyright file="SubmitCourseForReviewCommandHandler.cs" company="FarazLoloei">
 // Copyright (c) FarazLoloei. All rights reserved.
 // </copyright>
 
@@ -12,15 +12,12 @@ using ELearning.Domain.Entities.CourseAggregate;
 using ELearning.Domain.Entities.CourseAggregate.Abstractions.Repositories;
 using MediatR;
 
-/// <summary>
-/// Handler for DeleteCourseCommand.
-/// </summary>
-public class DeleteCourseCommandHandler(
+public sealed class SubmitCourseForReviewCommandHandler(
         ICourseRepository courseRepository,
         ICurrentUserService currentUserService)
-    : IRequestHandler<DeleteCourseCommand, Result>
+    : IRequestHandler<SubmitCourseForReviewCommand, Result>
 {
-    public async Task<Result> Handle(DeleteCourseCommand request, CancellationToken cancellationToken)
+    public async Task<Result> Handle(SubmitCourseForReviewCommand request, CancellationToken cancellationToken)
     {
         if (!currentUserService.IsAuthenticated || currentUserService.UserId is null)
         {
@@ -30,23 +27,21 @@ public class DeleteCourseCommandHandler(
         var course = await courseRepository.GetByIdForUpdateAsync(request.CourseId, cancellationToken) ??
             throw new NotFoundException(nameof(Course), request.CourseId);
 
-        var isInstructorOwner = course.IsOwnedBy(currentUserService.UserId.Value);
-
-        if (!isInstructorOwner && !currentUserService.IsInRole("Admin"))
+        if (!course.IsOwnedBy(currentUserService.UserId.Value))
         {
             throw new ForbiddenAccessException();
         }
 
         try
         {
-            course.EnsureCanBeDeleted();
+            course.SubmitForReview();
         }
         catch (InvalidOperationException ex)
         {
             return Result.Failure(ex.Message);
         }
 
-        await courseRepository.DeleteAsync(course, cancellationToken);
+        await courseRepository.UpdateAsync(course, cancellationToken);
 
         return Result.Success();
     }

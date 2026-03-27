@@ -33,7 +33,7 @@ public class Course : BaseEntity, IAggregateRoot<Course>
     public Guid InstructorId { get; private set; }
 
     /// <summary>
-    /// Gets current state of the course (Draft, Published, Unpublished, Archived).
+    /// Gets current lifecycle state of the course.
     /// </summary>
     public CourseStatus Status { get; private set; } = null!;
 
@@ -60,7 +60,12 @@ public class Course : BaseEntity, IAggregateRoot<Course>
     /// <summary>
     /// Gets the date when the course was made available to students.
     /// </summary>
-    public DateTime PublishedDate { get; private set; }
+    public DateTime? PublishedDate { get; private set; }
+
+    /// <summary>
+    /// Gets the latest moderation feedback when a review submission is rejected.
+    /// </summary>
+    public string? RejectionReason { get; private set; }
 
     /// <summary>
     /// Gets a value indicating whether boolean indicating if the course is highlighted on the platform.
@@ -111,6 +116,11 @@ public class Course : BaseEntity, IAggregateRoot<Course>
             throw new ArgumentException("Course description cannot be empty", nameof(description));
         }
 
+        if (price < 0)
+        {
+            throw new ArgumentException("Price cannot be negative", nameof(price));
+        }
+
         this.Title = title;
         this.Description = description;
         this.InstructorId = instructorId;
@@ -126,27 +136,49 @@ public class Course : BaseEntity, IAggregateRoot<Course>
 
     public void AddModule(Module module)
     {
+        this.EnsureEditableByInstructor();
         this.modules.Add(module);
         this.UpdatedAt(DateTime.UtcNow);
     }
 
     public void RemoveModule(Module module)
     {
+        this.EnsureEditableByInstructor();
         this.modules.Remove(module);
         this.UpdatedAt(DateTime.UtcNow);
     }
 
-    public void UpdateDetails(string title, string description, CourseCategory category, CourseLevel level)
+    public void UpdateDetails(
+        string title,
+        string description,
+        CourseCategory category,
+        CourseLevel level,
+        Duration duration)
     {
+        this.EnsureEditableByInstructor();
+
+        if (string.IsNullOrWhiteSpace(title))
+        {
+            throw new ArgumentException("Course title cannot be empty", nameof(title));
+        }
+
+        if (string.IsNullOrWhiteSpace(description))
+        {
+            throw new ArgumentException("Course description cannot be empty", nameof(description));
+        }
+
         this.Title = title;
         this.Description = description;
         this.Category = category;
         this.Level = level;
+        this.Duration = duration;
         this.UpdatedAt(DateTime.UtcNow);
     }
 
     public void UpdatePrice(decimal price)
     {
+        this.EnsureEditableByInstructor();
+
         if (price < 0)
         {
             throw new ArgumentException("Price cannot be negative", nameof(price));
@@ -156,26 +188,67 @@ public class Course : BaseEntity, IAggregateRoot<Course>
         this.UpdatedAt(DateTime.UtcNow);
     }
 
-    public void Publish()
+    public void SubmitForReview()
     {
-        if (this.modules.Count == 0)
+        if (this.Status != CourseStatus.Draft && this.Status != CourseStatus.Rejected)
         {
-            throw new InvalidOperationException("Cannot publish a course without any modules");
+            throw new InvalidOperationException("Only draft or rejected courses can be submitted for review.");
+        }
+
+        if (!this.MeetsMinimumStructureRequirements())
+        {
+            throw new InvalidOperationException("A course must include at least one module before it can be submitted for review.");
+        }
+
+        this.Status = CourseStatus.ReadyForReview;
+        this.RejectionReason = null;
+        this.UpdatedAt(DateTime.UtcNow);
+    }
+
+    public void ApprovePublication()
+    {
+        if (this.Status != CourseStatus.ReadyForReview)
+        {
+            throw new InvalidOperationException("Only courses that are ready for review can be approved for publication.");
         }
 
         this.Status = CourseStatus.Published;
         this.PublishedDate = DateTime.UtcNow;
+        this.RejectionReason = null;
         this.UpdatedAt(DateTime.UtcNow);
     }
 
-    public void Unpublish()
+    public void RejectPublication(string reason)
     {
-        this.Status = CourseStatus.Unpublished;
+        if (this.Status != CourseStatus.ReadyForReview)
+        {
+            throw new InvalidOperationException("Only courses that are ready for review can be rejected.");
+        }
+
+        if (string.IsNullOrWhiteSpace(reason))
+        {
+            throw new ArgumentException("A rejection reason is required.", nameof(reason));
+        }
+
+        this.Status = CourseStatus.Rejected;
+        this.RejectionReason = reason.Trim();
+        this.UpdatedAt(DateTime.UtcNow);
+    }
+
+    public void Archive()
+    {
+        if (this.Status == CourseStatus.Archived)
+        {
+            throw new InvalidOperationException("The course is already archived.");
+        }
+
+        this.Status = CourseStatus.Archived;
         this.UpdatedAt(DateTime.UtcNow);
     }
 
     public void ToggleFeatured()
     {
+        this.EnsureEditableByInstructor();
         this.IsFeatured = !this.IsFeatured;
         this.UpdatedAt(DateTime.UtcNow);
     }
@@ -184,5 +257,45 @@ public class Course : BaseEntity, IAggregateRoot<Course>
     {
         this.AverageRating = newRating;
         this.UpdatedAt(DateTime.UtcNow);
+    }
+
+    public bool IsOwnedBy(Guid instructorId) => this.InstructorId == instructorId;
+
+    public bool IsEditableByInstructor() =>
+        this.Status == CourseStatus.Draft || this.Status == CourseStatus.Rejected;
+
+    public bool IsPubliclyVisible() => this.Status == CourseStatus.Published;
+
+    public bool CanAcceptNewEnrollments() => this.Status == CourseStatus.Published;
+
+    public void EnsureCanAcceptNewEnrollments()
+    {
+        if (!this.CanAcceptNewEnrollments())
+        {
+            throw new InvalidOperationException("Students can enroll only in published courses.");
+        }
+    }
+
+    public void EnsureCanBeDeleted()
+    {
+        if (!this.IsEditableByInstructor())
+        {
+            throw new InvalidOperationException("Only draft or rejected courses can be deleted.");
+        }
+
+        if (this.enrollments.Count > 0)
+        {
+            throw new InvalidOperationException("Cannot delete a course with enrollments. Archive it instead.");
+        }
+    }
+
+    private bool MeetsMinimumStructureRequirements() => this.modules.Count > 0;
+
+    private void EnsureEditableByInstructor()
+    {
+        if (!this.IsEditableByInstructor())
+        {
+            throw new InvalidOperationException("Only draft or rejected courses can be edited by the instructor.");
+        }
     }
 }

@@ -23,6 +23,9 @@ public class CourseConfiguration : IEntityTypeConfiguration<Course>
         builder.Property(c => c.Description)
             .IsRequired();
 
+        builder.Property(c => c.RejectionReason)
+            .HasMaxLength(1000);
+
         builder.Property(c => c.RowVersion)
             .IsRowVersion();
 
