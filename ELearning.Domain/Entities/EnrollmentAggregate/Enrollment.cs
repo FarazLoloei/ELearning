@@ -23,6 +23,8 @@ public class Enrollment : BaseEntity, IAggregateRoot<Enrollment>
 
     public string? Review { get; private set; }
 
+    public DateTime? ReviewedAtUTC { get; private set; }
+
     /// <summary>
     /// Gets optimistic concurrency token.
     /// </summary>
@@ -162,15 +164,26 @@ public class Enrollment : BaseEntity, IAggregateRoot<Enrollment>
         this.UpdatedAt(DateTime.UtcNow);
     }
 
-    public void RateCourse(Rating rating, string? review = null)
+    public void ReviewCourse(decimal ratingValue, string? review = null)
     {
         if (this.Status != EnrollmentStatus.Completed)
         {
-            throw new InvalidOperationException("Cannot rate a course before completing it");
+            throw new InvalidOperationException("Cannot review a course before completing it.");
         }
 
-        this.CourseRating = rating;
-        this.Review = review;
+        if (this.CourseRating is not null)
+        {
+            throw new InvalidOperationException("A completed enrollment can only submit one review.");
+        }
+
+        if (ratingValue < 1 || ratingValue > 5)
+        {
+            throw new ArgumentOutOfRangeException(nameof(ratingValue), "Rating must be between 1 and 5.");
+        }
+
+        this.CourseRating = Rating.Create(ratingValue, 1);
+        this.Review = string.IsNullOrWhiteSpace(review) ? null : review.Trim();
+        this.ReviewedAtUTC = DateTime.UtcNow;
         this.UpdatedAt(DateTime.UtcNow);
     }
 

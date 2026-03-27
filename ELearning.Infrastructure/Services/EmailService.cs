@@ -30,4 +30,25 @@ public class EmailService(ILogger<EmailService> logger) : IEmailService
         var body = $"Dear {studentName},\n\nYour assignment {assignmentName} has been graded. You received {score} points.\n\nBest regards,\nE-Learning Team";
         return this.SendEmailAsync(to, subject, body);
     }
+
+    public Task SendCourseApprovedAsync(string to, string instructorName, string courseName)
+    {
+        var subject = $"{courseName} is now published";
+        var body = $"Dear {instructorName},\n\nYour course {courseName} has been approved and published.\n\nBest regards,\nE-Learning Team";
+        return this.SendEmailAsync(to, subject, body);
+    }
+
+    public Task SendCourseRejectedAsync(string to, string instructorName, string courseName, string reason)
+    {
+        var subject = $"{courseName} needs changes before publication";
+        var body = $"Dear {instructorName},\n\nYour course {courseName} was rejected during review.\nReason: {reason}\n\nYou can update the course and resubmit it for review.\n\nBest regards,\nE-Learning Team";
+        return this.SendEmailAsync(to, subject, body);
+    }
+
+    public Task SendCertificateIssuedAsync(string to, string studentName, string courseName, string certificateCode)
+    {
+        var subject = $"Your certificate for {courseName} is ready";
+        var body = $"Dear {studentName},\n\nCongratulations on completing {courseName}.\nYour certificate code is {certificateCode}.\n\nBest regards,\nE-Learning Team";
+        return this.SendEmailAsync(to, subject, body);
+    }
 }

@@ -7,6 +7,7 @@ namespace ELearning.API.Controllers;
 using Asp.Versioning;
 using ELearning.API.Contracts;
 using ELearning.API.Facades;
+using ELearning.API.Models;
 using ELearning.Application.Enrollments.Commands;
 using ELearning.Application.Enrollments.Dtos;
 using ELearning.Application.Enrollments.Queries;
@@ -90,6 +91,23 @@ public class EnrollmentsController(IApiFacade apiFacade) : ApiControllerBase
         }
 
         var result = await apiFacade.SendAsync(command, cancellationToken);
+        return this.FromResult(result, error => error.StartsWith("Enrollment not found", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [HttpPost("{id:guid}/review")]
+    [Authorize(Roles = "Student")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<ApiResponse<object?>>> ReviewCourse(
+        Guid id,
+        ReviewCourseRequest request,
+        CancellationToken cancellationToken)
+    {
+        var result = await apiFacade.SendAsync(
+            new ReviewCourseCommand(id, request.Rating, request.Review),
+            cancellationToken);
+
         return this.FromResult(result, error => error.StartsWith("Enrollment not found", StringComparison.OrdinalIgnoreCase));
     }
 }

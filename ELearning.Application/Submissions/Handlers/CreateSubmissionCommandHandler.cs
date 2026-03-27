@@ -4,6 +4,7 @@
 
 namespace ELearning.Application.Submissions.Handlers;
 
+using ELearning.Application.Certificates.Services;
 using ELearning.Application.Common.Exceptions;
 using ELearning.Application.Common.Interfaces;
 using ELearning.Application.Common.Model;
@@ -18,6 +19,7 @@ public class CreateSubmissionCommandHandler(
         IAssignmentReadRepository assignmentRepository,
         IEnrollmentRepository enrollmentRepository,
         ICourseRepository courseRepository,
+        CertificateIssuanceCoordinator certificateIssuanceCoordinator,
         ICurrentUserService currentUserService) : IRequestHandler<CreateSubmissionCommand, Result>
 {
     public async Task<Result> Handle(CreateSubmissionCommand request, CancellationToken cancellationToken)
@@ -64,6 +66,7 @@ public class CreateSubmissionCommandHandler(
         }
 
         await enrollmentRepository.UpdateAsync(enrollment, cancellationToken);
+        await certificateIssuanceCoordinator.TryIssueForCompletedEnrollmentAsync(enrollment, course, cancellationToken);
 
         return Result.Success();
     }

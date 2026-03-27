@@ -5,6 +5,7 @@
 namespace ELearning.Infrastructure.Data;
 
 using System.Text.Json;
+using ELearning.Domain.Entities.CertificateAggregate;
 using ELearning.Domain.Entities.CourseAggregate;
 using ELearning.Domain.Entities.CourseAggregate.Events;
 using ELearning.Domain.Entities.EnrollmentAggregate;
@@ -46,6 +47,8 @@ public class ApplicationDbContext : DbContext
     public DbSet<Progress> Progresses { get; set; } = null!;
 
     public DbSet<Submission> Submissions { get; set; } = null!;
+
+    public DbSet<Certificate> Certificates { get; set; } = null!;
 
     public DbSet<RefreshToken> RefreshTokens { get; set; } = null!;
 

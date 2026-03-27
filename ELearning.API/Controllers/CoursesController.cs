@@ -54,6 +54,15 @@ public class CoursesController(IApiFacade apiFacade) : ApiControllerBase
         return this.FromResult(result, error => error.StartsWith("Course not found", StringComparison.OrdinalIgnoreCase));
     }
 
+    [HttpGet("{id:guid}/reviews")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<ApiResponse<IReadOnlyList<ReviewDto>>>> GetCourseReviews(Guid id, CancellationToken cancellationToken)
+    {
+        var result = await apiFacade.SendAsync(new GetCourseReviewsQuery(id), cancellationToken);
+        return this.FromResult(result, error => error.StartsWith("Course not found", StringComparison.OrdinalIgnoreCase));
+    }
+
     [HttpGet("featured")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<List<CourseListDto>>>> GetFeaturedCourses(

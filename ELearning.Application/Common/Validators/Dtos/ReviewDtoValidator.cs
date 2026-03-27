@@ -13,7 +13,7 @@ public sealed class ReviewDtoValidator : AbstractValidator<ReviewDto>
     {
         this.RuleFor(x => x.Id).NotEmpty();
         this.RuleFor(x => x.StudentName).NotEmpty();
-        this.RuleFor(x => x.Rating).InclusiveBetween(0, 5);
-        this.RuleFor(x => x.Comment).NotEmpty();
+        this.RuleFor(x => x.Rating).InclusiveBetween(1, 5);
+        this.RuleFor(x => x.Comment).MaximumLength(1000);
     }
 }

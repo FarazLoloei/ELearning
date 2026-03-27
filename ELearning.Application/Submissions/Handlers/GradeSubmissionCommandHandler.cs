@@ -12,12 +12,16 @@ using ELearning.Domain.Entities.CourseAggregate;
 using ELearning.Domain.Entities.CourseAggregate.Abstractions.Repositories;
 using ELearning.Domain.Entities.EnrollmentAggregate;
 using ELearning.Domain.Entities.EnrollmentAggregate.Abstractions.Repositories;
+using ELearning.Domain.Entities.UserAggregate;
+using ELearning.Domain.Entities.UserAggregate.Abstractions.Repositories;
 using MediatR;
 
 public class GradeSubmissionCommandHandler(
         IEnrollmentRepository enrollmentRepository,
         IAssignmentReadRepository assignmentRepository,
         ICourseRepository courseRepository,
+        IUserRepository userRepository,
+        IEmailService emailService,
         ICurrentUserService currentUserService)
     : IRequestHandler<GradeSubmissionCommand, Result>
 {
@@ -70,6 +74,15 @@ public class GradeSubmissionCommandHandler(
         }
 
         await enrollmentRepository.UpdateAsync(enrollment, cancellationToken);
+
+        var student = await userRepository.GetByIdForUpdateAsync(enrollment.StudentId, cancellationToken)
+            ?? throw new NotFoundException(nameof(User), enrollment.StudentId);
+
+        await emailService.SendAssignmentGradedAsync(
+            student.Email.Value,
+            student.FullName,
+            assignment.Title,
+            request.Score);
 
         return Result.Success();
     }

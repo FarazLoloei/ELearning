@@ -5,11 +5,13 @@
 namespace ELearning.Infrastructure;
 
 using ELearning.Application.Auth.Abstractions;
+using ELearning.Application.Certificates.Abstractions;
 using ELearning.Application.Common.Interfaces;
 using ELearning.Application.Courses.Abstractions;
 using ELearning.Application.Enrollments.Abstractions;
 using ELearning.Application.Students.Abstractions;
 using ELearning.Application.Submissions.Abstractions;
+using ELearning.Domain.Entities.CertificateAggregate.Abstractions.Repositories;
 using ELearning.Domain.Entities.CourseAggregate.Abstractions.Repositories;
 using ELearning.Domain.Entities.EnrollmentAggregate.Abstractions.Repositories;
 using ELearning.Domain.Entities.UserAggregate.Abstractions.Repositories;
@@ -64,12 +66,14 @@ public static class DependencyInjection
         }
 
         services.AddScoped<ICourseRepository, CourseRepository>();
+        services.AddScoped<ICertificateRepository, CertificateRepository>();
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IUserReadRepository, UserReadRepository>();
         services.AddScoped<IStudentReadRepository, StudentReadRepository>();
         services.AddScoped<IInstructorReadRepository, InstructorReadRepository>();
         services.AddScoped<IEnrollmentRepository, EnrollmentRepository>();
         services.AddScoped<IEnrollmentReadRepository, EnrollmentReadRepository>();
+        services.AddScoped<ICertificateReadRepository, CertificateReadRepository>();
         services.AddScoped<ICourseReadRepository, CourseReadRepository>();
         services.AddScoped<IAssignmentReadRepository, AssignmentReadRepository>();
         services.AddScoped<ISubmissionReadRepository, SubmissionReadRepository>();

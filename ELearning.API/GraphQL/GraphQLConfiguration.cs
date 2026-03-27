@@ -15,6 +15,7 @@ public static class GraphQLConfiguration
             .AddQueryType<Query>()
             .AddMutationType<Mutation>()
             .AddType<CourseType>()
+            .AddType<CertificateType>()
             .AddType<StudentType>()
             .AddType<InstructorType>()
             .AddType<EnrollmentType>()

@@ -20,6 +20,7 @@ public class CreateEnrollmentCommandHandler(
             IUserRepository userRepository,
             ICourseRepository courseRepository,
             IEnrollmentRepository enrollmentRepository,
+            IEmailService emailService,
             ICurrentUserService currentUserService)
     : IRequestHandler<CreateEnrollmentCommand, Result>
 {
@@ -58,6 +59,7 @@ public class CreateEnrollmentCommandHandler(
 
         var enrollment = new Enrollment(studentId, course.Id);
         await enrollmentRepository.AddAsync(enrollment, cancellationToken);
+        await emailService.SendEnrollmentConfirmationAsync(student.Email.Value, student.FullName, course.Title);
 
         return Result.Success();
     }

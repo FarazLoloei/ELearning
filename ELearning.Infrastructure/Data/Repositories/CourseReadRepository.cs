@@ -134,6 +134,32 @@ public class CourseReadRepository(ApplicationDbContext context) : ICourseReadRep
         throw new NotImplementedException();
     }
 
+    public async Task<IReadOnlyList<CourseReviewReadModel>> GetReviewsByCourseIdAsync(
+        Guid courseId,
+        CancellationToken cancellationToken = default)
+    {
+        var connection = context.Database.GetDbConnection();
+        await connection.EnsureOpenAsync(cancellationToken);
+
+        const string sql = """
+                           SELECT e.Id,
+                                  u.FirstName || ' ' || u.LastName AS StudentName,
+                                  e.CourseRatingValue AS Rating,
+                                  COALESCE(e.Review, '') AS Comment,
+                                  COALESCE(e.ReviewedAtUTC, e.updatedAtUTC, e.createdAtUTC) AS CreatedAt
+                           FROM Enrollments e
+                           INNER JOIN Users u ON u.Id = e.StudentId
+                           WHERE e.CourseId = @CourseId
+                             AND e.CourseRatingValue IS NOT NULL
+                           ORDER BY CreatedAt DESC, e.Id DESC
+                           """;
+
+        var rows = await connection.QueryAsync<CourseReviewReadModel>(
+            new CommandDefinition(sql, new { CourseId = courseId }, cancellationToken: cancellationToken));
+
+        return [.. rows];
+    }
+
     public Task<PaginatedList<CourseReadModel>> ListAsync(PaginationParameters pagination, CancellationToken cancellationToken = default)
     {
         throw new NotImplementedException();

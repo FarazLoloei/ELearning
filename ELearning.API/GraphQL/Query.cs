@@ -4,6 +4,8 @@
 
 namespace ELearning.API.GraphQL;
 
+using ELearning.Application.Certificates.Dtos;
+using ELearning.Application.Certificates.Queries;
 using ELearning.Application.Courses.Dtos;
 using ELearning.Application.Courses.Queries;
 using ELearning.Application.Enrollments.Dtos;
@@ -66,6 +68,15 @@ public class Query
         var query = new GetCourseDetailQuery { CourseId = id };
         var result = await mediator.Send(query);
         return result.IsSuccess ? result.Value : null;
+    }
+
+    [GraphQLDescription("Get public reviews for a course")]
+    public async Task<IEnumerable<ReviewDto>> GetCourseReviews(
+        [Service] IMediator mediator,
+        Guid courseId)
+    {
+        var result = await mediator.Send(new GetCourseReviewsQuery(courseId));
+        return result.IsSuccess ? result.Value : [];
     }
 
     /// <summary>
@@ -201,6 +212,25 @@ public class Query
     {
         var query = new GetEnrollmentDetailQuery { EnrollmentId = id };
         var result = await mediator.Send(query);
+        return result.IsSuccess ? result.Value : null;
+    }
+
+    [GraphQLDescription("Get the certificate issued for an enrollment")]
+    [Authorize]
+    public async Task<CertificateDto?> GetEnrollmentCertificate(
+        [Service] IMediator mediator,
+        Guid enrollmentId)
+    {
+        var result = await mediator.Send(new GetEnrollmentCertificateQuery(enrollmentId));
+        return result.IsSuccess ? result.Value : null;
+    }
+
+    [GraphQLDescription("Verify a certificate by public certificate code")]
+    public async Task<CertificateDto?> VerifyCertificate(
+        [Service] IMediator mediator,
+        string certificateCode)
+    {
+        var result = await mediator.Send(new VerifyCertificateQuery(certificateCode));
         return result.IsSuccess ? result.Value : null;
     }
 

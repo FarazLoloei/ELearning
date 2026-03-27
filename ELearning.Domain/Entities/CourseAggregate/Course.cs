@@ -253,9 +253,9 @@ public class Course : BaseEntity, IAggregateRoot<Course>
         this.UpdatedAt(DateTime.UtcNow);
     }
 
-    public void UpdateRating(Rating newRating)
+    public void AddReviewRating(decimal ratingValue)
     {
-        this.AverageRating = newRating;
+        this.AverageRating = this.AverageRating.AddRating(ratingValue);
         this.UpdatedAt(DateTime.UtcNow);
     }
 

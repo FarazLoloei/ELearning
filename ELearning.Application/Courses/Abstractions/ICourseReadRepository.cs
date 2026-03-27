@@ -18,4 +18,8 @@ public interface ICourseReadRepository : IReadRepository<CourseReadModel, Guid>
         bool? isFeatured,
         PaginationParameters pagination,
         CancellationToken cancellationToken = default);
+
+    Task<IReadOnlyList<CourseReviewReadModel>> GetReviewsByCourseIdAsync(
+        Guid courseId,
+        CancellationToken cancellationToken = default);
 }

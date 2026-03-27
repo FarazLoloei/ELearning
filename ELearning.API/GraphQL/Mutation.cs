@@ -7,6 +7,7 @@ namespace ELearning.API.GraphQL;
 using ELearning.API.GraphQL.InputTypes;
 using ELearning.API.GraphQL.Payloads;
 using ELearning.Application.Auth.Commands;
+using ELearning.Application.Certificates.Commands;
 using ELearning.Application.Common.Model;
 using ELearning.Application.Courses.Commands;
 using ELearning.Application.Enrollments.Commands;
@@ -204,6 +205,32 @@ public class Mutation(ILogger<Mutation> logger)
         return result.IsSuccess
             ? new OperationPayload()
             : new OperationPayload(new Error("LESSON_COMPLETION_ERROR", result.Error));
+    }
+
+    [GraphQLDescription("Submit a review for a completed enrollment")]
+    [Authorize(Roles = "Student")]
+    public async Task<OperationPayload> ReviewCourse(
+        [Service] IMediator mediator,
+        Guid enrollmentId,
+        decimal rating,
+        string? review)
+    {
+        var result = await mediator.Send(new ReviewCourseCommand(enrollmentId, rating, review));
+        return result.IsSuccess
+            ? new OperationPayload()
+            : new OperationPayload(new Error("COURSE_REVIEW_ERROR", result.Error));
+    }
+
+    [GraphQLDescription("Issue or retrieve the certificate for a completed enrollment")]
+    [Authorize(Roles = "Student,Admin")]
+    public async Task<CertificatePayload> IssueEnrollmentCertificate(
+        [Service] IMediator mediator,
+        Guid enrollmentId)
+    {
+        var result = await mediator.Send(new IssueCertificateForCompletedEnrollmentCommand(enrollmentId));
+        return result.IsSuccess
+            ? new CertificatePayload(result.Value)
+            : new CertificatePayload(new Error("CERTIFICATE_ISSUANCE_ERROR", result.Error));
     }
 
     [GraphQLDescription("Pause, resume, or abandon an enrollment without affecting completion rules")]
