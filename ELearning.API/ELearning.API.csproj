@@ -30,7 +30,6 @@
   <ItemGroup>
     <ProjectReference Include="..\ELearning.Application\ELearning.Application.csproj" />
     <ProjectReference Include="..\ELearning.Infrastructure\ELearning.Infrastructure.csproj" />
-    <ProjectReference Include="..\ELearning.Persistence\ELearning.Persistence.csproj" />
   </ItemGroup>
 
   <ItemGroup>

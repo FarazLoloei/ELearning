@@ -26,12 +26,4 @@ public static class GraphQLConfiguration
 
         return services;
     }
-
-    public static void UseGraphQLEndpoint(this IApplicationBuilder app)
-    {
-        app.UseEndpoints(endpoints =>
-        {
-            endpoints.MapGraphQL();
-        });
-    }
 }

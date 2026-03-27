@@ -17,7 +17,6 @@ COPY ["ELearning.Application/ELearning.Application.csproj", "ELearning.Applicati
 COPY ["ELearning.Domain/ELearning.Domain.csproj", "ELearning.Domain/"]
 COPY ["ELearning.SharedKernel/ELearning.SharedKernel.csproj", "ELearning.SharedKernel/"]
 COPY ["ELearning.Infrastructure/ELearning.Infrastructure.csproj", "ELearning.Infrastructure/"]
-COPY ["ELearning.Persistence/ELearning.Persistence.csproj", "ELearning.Persistence/"]
 RUN dotnet restore "./ELearning.API/ELearning.API.csproj"
 COPY . .
 WORKDIR "/src/ELearning.API"

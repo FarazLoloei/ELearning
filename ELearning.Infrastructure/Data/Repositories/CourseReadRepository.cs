@@ -131,7 +131,8 @@ public class CourseReadRepository(ApplicationDbContext context) : ICourseReadRep
 
     public Task<CourseReadModel?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        var connection = context.Database.GetDbConnection();
+        return GetByIdAsyncCore(connection, id, cancellationToken);
     }
 
     public async Task<IReadOnlyList<CourseReviewReadModel>> GetReviewsByCourseIdAsync(
@@ -161,7 +162,56 @@ public class CourseReadRepository(ApplicationDbContext context) : ICourseReadRep
     }
 
     public Task<PaginatedList<CourseReadModel>> ListAsync(PaginationParameters pagination, CancellationToken cancellationToken = default)
+        => this.SearchAsync(
+            searchTerm: null,
+            categoryId: null,
+            levelId: null,
+            isFeatured: null,
+            pagination,
+            cancellationToken);
+
+    private async Task<CourseReadModel?> GetByIdAsyncCore(
+        IDbConnection connection,
+        Guid id,
+        CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        await connection.EnsureOpenAsync(cancellationToken);
+
+        const string sql = """
+                           SELECT c.Id,
+                                  c.Title,
+                                  c.Description,
+                                  u.FirstName AS InstructorFirstName,
+                                  u.LastName AS InstructorLastName,
+                                  c.Category AS CategoryId,
+                                  c.Level AS LevelId,
+                                  c.Price,
+                                  COALESCE(c.AverageRatingValue, 0) AS AverageRating,
+                                  COALESCE(c.NumberOfRatings, 0) AS NumberOfRatings,
+                                  c.IsFeatured,
+                                  COALESCE(c.DurationHours, 0) AS DurationHours,
+                                  COALESCE(c.DurationMinutes, 0) AS DurationMinutes,
+                                  COALESCE(ec.EnrollmentsCount, 0) AS EnrollmentsCount
+                           FROM Courses c
+                           INNER JOIN Users u ON u.Id = c.InstructorId
+                           LEFT JOIN (
+                               SELECT CourseId,
+                                      COUNT(DISTINCT StudentId) AS EnrollmentsCount
+                               FROM Enrollments
+                               GROUP BY CourseId
+                           ) ec ON ec.CourseId = c.Id
+                           WHERE c.Id = @Id
+                             AND c.Status = @PublishedStatusId
+                           """;
+
+        return await connection.QuerySingleOrDefaultAsync<CourseReadModel>(
+            new CommandDefinition(
+                sql,
+                new
+                {
+                    Id = id,
+                    PublishedStatusId = CourseStatus.Published.Id,
+                },
+                cancellationToken: cancellationToken));
     }
 }

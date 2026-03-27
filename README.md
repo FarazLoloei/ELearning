@@ -1,141 +1,202 @@
 # E-Learning Platform API
 
-Monolith backend sample built with .NET 10 using Clean Architecture, CQRS, and DDD-style domain modeling.
+Production-inspired backend sample for an e-learning platform built as a modular monolith with Clean Architecture and DDD-inspired design.
 
-This repository is curated as portfolio code for senior/backend engineering interviews.
+This repository exists as a senior-level backend portfolio project. The goal is not to showcase every possible feature, but to show deliberate architecture, explicit business workflows, and credible product behavior in a codebase that is still practical to review.
 
-## What This Demonstrates
+## Why This Project Exists
 
-- Clean layer boundaries across API, Application, Domain, Infrastructure, SharedKernel
-- Command/query separation with MediatR pipeline behaviors
-- Aggregate-focused domain model with value objects and invariants
-- Application Facade (`IApiFacade`/`ApiFacade`) as a single API entrypoint for use-case dispatch
-- Provider-aware database startup strategy (SQL Server migrations, sqlite in-memory bootstrap)
-- Outbox pattern for reliable domain-event delivery with background dispatch
-- Optional Ocelot gateway mode with explicit configuration switch
-- Consistent API envelope responses for REST and a secondary GraphQL surface
-- Integration point pattern for external read models (Dapr-style fallback)
-- Optimistic concurrency conflict handling (`DbUpdateConcurrencyException` -> HTTP `409`)
-- Refresh-token rotation/revocation with owner-or-admin revoke policy and security audit events
+Many sample backends stop at CRUD. This project is intentionally shaped around product workflows instead:
 
-## Architecture (Monolith + Clean Architecture)
+- instructors author courses and submit them for review
+- admins govern publication through explicit moderation actions
+- students enroll in published courses
+- learners progress through lessons and assessments
+- course completion is earned through real eligibility rules
+- completed learners can review courses and receive certificates
 
-```text
-ELearning.API                # Web host, REST controllers, GraphQL schema/resolvers
-ELearning.Application        # Use cases (commands/queries), handlers, DTOs, behaviors
-ELearning.Domain             # Aggregates, entities, value objects, domain rules
-ELearning.Infrastructure     # EF Core, repositories, auth, read-model services, gateways
-ELearning.Persistence        # Persistence project boundary
-ELearning.SharedKernel       # Cross-cutting abstractions/base types
-ELearning.Application.Tests  # Application validation/unit tests
-ELearning.IntegrationTests   # API integration tests
-```
+The result is a sample that is closer to a real product backend than a database wrapper.
 
-Dependency direction (intended):
+## Product Overview
 
-- API -> Application
-- Infrastructure -> Application + Domain
-- Application -> Domain + SharedKernel
-- Domain -> SharedKernel
+The platform models three primary actors:
 
-## Domain Scope
+- `Student`
+- `Instructor`
+- `Admin`
 
-Primary business flows currently implemented:
+Core business capabilities currently implemented:
 
-- Authentication and role-based access (Student, Instructor, Admin)
-- Course lifecycle (create/update/delete/list/filter)
-- Enrollment lifecycle and student progress access
-- Assignment submission and instructor grading
-- Instructor pending-submissions workflow
+- identity and access with JWT auth and refresh-token rotation
+- course authoring and explicit course lifecycle governance
+- enrollment with lifecycle-aware eligibility
+- lesson progression and rule-driven course completion
+- assessment submission and grading
+- reviews and ratings
+- certificate issuance and verification
+- lightweight notifications for important outcomes
 
-## Tech Stack
+## Architecture Overview
 
-- .NET 10 / ASP.NET Core
-- EF Core (Sqlite in-memory by default, SQL Server configurable)
-- MediatR + FluentValidation
-- FluentAssertions (test assertions)
-- HotChocolate GraphQL
-- Swagger/OpenAPI
-- Ocelot (optional gateway mode)
-- xUnit v3
+The solution is a modular monolith with clear inward dependency direction:
 
-## Local Run (Quick Start)
+- `ELearning.API`
+  REST controllers, GraphQL schema, transport concerns, composition root
+- `ELearning.Application`
+  commands, queries, handlers, DTOs, orchestration, validation, transaction pipeline
+- `ELearning.Domain`
+  aggregates, entities, value objects, invariants, explicit business behavior
+- `ELearning.Infrastructure`
+  EF Core, Dapper read models, repositories, auth adapters, email delivery, outbox dispatcher
+- `ELearning.SharedKernel`
+  small shared abstractions and base types
+- `ELearning.Application.Tests`
+  domain/application-focused tests
+- `ELearning.IntegrationTests`
+  end-to-end HTTP and authorization coverage
 
-1. Configure required settings (at minimum JWT values):
+High-level dependency direction:
+
+- `API -> Application`
+- `Infrastructure -> Application + Domain`
+- `Application -> Domain + SharedKernel`
+- `Domain -> SharedKernel`
+
+## Domain And Workflow Highlights
+
+This project is intentionally centered on explicit workflows:
+
+- `Course` owns lifecycle transitions such as draft creation, review submission, approval, rejection, and archiving
+- `Enrollment` owns progression, assessment submission, review eligibility, and completion state
+- assessment definitions stay with course authoring, while assessment execution is handled through enrollment-centered workflow
+- certificates are issued only for legitimately completed enrollments and only once per enrollment
+
+Examples of non-CRUD behavior in the current model:
+
+- students can enroll only in published courses
+- only draft/rejected courses are instructor-editable
+- course completion requires lessons and required assessments
+- a course review is allowed only after authoritative completion
+- a certificate can be verified by public certificate code
+
+## Example Workflows
+
+### Course Governance
+
+1. Instructor creates a course in `Draft`
+2. Instructor submits the course for review
+3. Admin approves publication or rejects with feedback
+4. Published courses become visible in the public catalog
+
+### Learning And Completion
+
+1. Student enrolls in a published course
+2. Student starts and completes lessons explicitly
+3. Student submits required assessments
+4. Completion is earned when authoritative eligibility is satisfied
+5. Certificate issuance becomes available for that completed enrollment
+
+### Post-Completion Outcomes
+
+1. Student submits a review for the completed course
+2. Course rating is updated through the domain flow
+3. Student can retrieve or verify the issued certificate
+
+## API Surface Overview
+
+REST is the primary interface. GraphQL is available as a secondary interface that reuses the same application use cases.
+
+Representative REST capabilities:
+
+- auth: login, register, refresh, revoke
+- courses: catalog queries, lifecycle actions, moderation actions, reviews
+- enrollments: enroll, progression actions, review submission
+- submissions: submit assessment, grade assessment
+- certificates: issue, retrieve by enrollment, verify by public code
+
+Transport design notes:
+
+- REST responses use a consistent response envelope
+- GraphQL is intentionally secondary and does not duplicate business logic
+- controllers and GraphQL mutations stay thin and delegate to application handlers
+
+## Key Technical Decisions And Tradeoffs
+
+- The project uses a modular monolith instead of microservices to keep the sample cohesive and reviewable.
+- Domain modeling is DDD-inspired, not dogmatic. Aggregates are used where they add clarity and invariant protection.
+- The application layer orchestrates use cases explicitly instead of relying on broad services or fat controllers.
+- Infrastructure contains adapters and persistence details, not business workflow orchestration.
+- Notifications are intentionally lightweight. The project uses the existing email seam for valuable outcomes instead of building a full notification center.
+- Certificates are simple, verifiable records. This sample does not add document rendering or PDF generation because that would add more infrastructure spectacle than product signal.
+
+## Running The Project
+
+Prerequisites:
+
+- .NET 10 SDK
+
+Configure local secrets for JWT settings:
 
 ```powershell
 dotnet user-secrets set "JwtSettings:Issuer" "elearning-local" --project ELearning.API/ELearning.API.csproj
 dotnet user-secrets set "JwtSettings:Audience" "elearning-local" --project ELearning.API/ELearning.API.csproj
 dotnet user-secrets set "JwtSettings:Secret" "your-long-random-secret-at-least-32-characters" --project ELearning.API/ELearning.API.csproj
 dotnet user-secrets set "JwtSettings:ExpiryInDays" "7" --project ELearning.API/ELearning.API.csproj
+dotnet user-secrets set "JwtSettings:RefreshTokenExpiryInDays" "14" --project ELearning.API/ELearning.API.csproj
 dotnet user-secrets set "Ocelot:Enabled" "false" --project ELearning.API/ELearning.API.csproj
 ```
 
-2. Run API:
+Run the API:
 
 ```powershell
 dotnet run --project ELearning.API/ELearning.API.csproj
 ```
 
-3. Open endpoints:
+Useful endpoints:
 
 - Swagger UI: `/`
-- REST: `/api/v1/*` (also `/api/*` compatibility routes)
+- REST: `/api/v1/*` and compatibility routes under `/api/*`
 - GraphQL: `/graphql`
 
-Ocelot gateway mode:
+Database notes:
 
-- Default is monolith mode (`Ocelot:Enabled=false`)
-- Set `Ocelot:Enabled=true` to run Ocelot middleware pipeline
+- sqlite in-memory is the default local experience
+- SQL Server can be configured through the existing provider settings
 
-## Build and Test
+## Build And Test
 
 ```powershell
 dotnet build ELearning.sln -nologo /p:UseSharedCompilation=false
 dotnet test ELearning.sln -nologo /p:UseSharedCompilation=false
 ```
 
-Current test status from latest local run:
+Current local verification:
 
-- `ELearning.Application.Tests`: 84 passed
-- `ELearning.IntegrationTests`: 22 passed
+- `ELearning.Application.Tests`: `106` passing
+- `ELearning.IntegrationTests`: `22` passing
 
-## Quality Gates (CI)
+## Why This Is A Strong Backend Sample
 
-- GitHub Actions pipeline: build, test, coverage collection, lint (`dotnet format`), dependency vulnerability scan (SCA).
-- CI artifact publishing includes test results, coverage reports, and dependency scan output.
-- Layer guardrails are enforced with architecture tests (API/Application/Domain/Infrastructure boundaries).
+This project is strongest where reviewers usually look for senior-level judgment:
 
-## AI Review Posture
+- explicit workflow modeling instead of generic status mutation
+- deliberate layer boundaries with architecture tests
+- domain rules placed in aggregates and application use cases instead of controllers
+- pragmatic read/write separation without unnecessary distributed complexity
+- credible auth, moderation, progression, assessment, review, certificate, and notification flows
 
-- AI-assisted review is used as an additional signal, not an auto-merge mechanism.
-- Every AI suggestion is manually reviewed before acceptance.
-- Static analysis, architecture tests, and integration tests remain required quality gates.
-- Security-sensitive changes (auth, tokens, authorization) require explicit human review.
+It is intentionally not a “perfect enterprise platform.” It is a realistic sample that balances architecture quality with repo readability.
 
-## API Notes
+## Future Improvements
 
-- REST is the primary interface for this sample.
-- GraphQL is intentionally secondary and reuses the same Application use cases.
-- Responses use a consistent envelope (`succeeded`, `data`, `error`) for REST.
-- Global exception middleware produces consistent `application/problem+json` responses.
+Good next steps if the project were extended further:
 
-## Why This Is A Strong Portfolio Monolith
-
-- Business logic is centered in Application + Domain, not controllers.
-- Request validation and transaction handling are centralized via MediatR behaviors.
-- Controller orchestration is simplified via an Application Facade.
-- Domain events are persisted to an outbox and dispatched by a background worker.
-- The codebase shows clear seams for scaling later (read services, facades, abstractions).
-- Test projects are separated by responsibility (application-level vs integration-level).
-- Integration tests now cover real auth/JWT and protected endpoint authorization behavior.
-
-## Roadmap (High-Impact Next Additions)
-
-- Add migration assets and deployment guidance for SQL Server environments.
-- Expand end-to-end API workflow coverage for enrollment/submission/grading under SQL Server-backed integration environments.
-- Introduce centralized observability (OpenTelemetry traces/metrics/log correlation).
+- richer authoring flows for modules, lessons, and assessments
+- review moderation and review editing policies
+- certificate rendering/export if the product needs it
+- stronger notification persistence/history beyond email delivery
+- deployment guidance and production environment configuration examples
 
 ## License
 
-MIT (`LICENSE.txt`)
+MIT. See [LICENSE.txt](LICENSE.txt).

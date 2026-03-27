@@ -18,14 +18,10 @@ using Microsoft.EntityFrameworkCore;
 
 public class ApplicationDbContext : DbContext
 {
-    // private readonly ICurrentUserService _currentUserService;
-    // private readonly IDateTime _dateTime;
     public ApplicationDbContext(
-        DbContextOptions<ApplicationDbContext> options) // , ICurrentUserService currentUserService, IDateTime dateTime
+        DbContextOptions<ApplicationDbContext> options)
         : base(options)
     {
-        // _currentUserService = currentUserService;
-        // _dateTime = dateTime;
     }
 
     public DbSet<Course> Courses { get; set; } = null!;
@@ -63,11 +59,9 @@ public class ApplicationDbContext : DbContext
             switch (entry.State)
             {
                 case EntityState.Added:
-                    // entry.Entity.CreatedAt = _dateTime.UtcNow;
                     break;
 
                 case EntityState.Modified:
-                    // entry.Entity.UpdatedAt = _dateTime.UtcNow;
                     break;
             }
         }

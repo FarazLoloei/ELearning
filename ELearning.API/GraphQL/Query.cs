@@ -28,7 +28,6 @@ public class Query
     /// <summary>
     /// Get a paginated list of courses with optional filtering.
     /// </summary>
-    /// <returns><placeholder>A <see cref="Task"/> representing the asynchronous operation.</placeholder></returns>
     [UsePaging]
     [UseFiltering]
     [UseSorting]
@@ -59,7 +58,6 @@ public class Query
     /// <summary>
     /// Get course details by ID.
     /// </summary>
-    /// <returns><placeholder>A <see cref="Task"/> representing the asynchronous operation.</placeholder></returns>
     [GraphQLDescription("Get course details by ID")]
     public async Task<CourseDto?> GetCourse(
         [Service] IMediator mediator,
@@ -82,13 +80,11 @@ public class Query
     /// <summary>
     /// Get featured courses.
     /// </summary>
-    /// <returns><placeholder>A <see cref="Task"/> representing the asynchronous operation.</placeholder></returns>
     [GraphQLDescription("Get featured courses")]
     public async Task<List<CourseListDto>> GetFeaturedCourses(
         [Service] IMediator mediator,
         int count = 5)
     {
-        // You would have a specific query for featured courses
         var query = new GetCoursesListQuery
         {
             IsFeatured = true,
@@ -102,7 +98,6 @@ public class Query
     /// <summary>
     /// Get courses by category.
     /// </summary>
-    /// <returns><placeholder>A <see cref="Task"/> representing the asynchronous operation.</placeholder></returns>
     [GraphQLDescription("Get courses by category ID")]
     public async Task<List<CourseListDto>> GetCoursesByCategory(
         [Service] IMediator mediator,
@@ -120,7 +115,6 @@ public class Query
     /// <summary>
     /// Get student profile by ID.
     /// </summary>
-    /// <returns><placeholder>A <see cref="Task"/> representing the asynchronous operation.</placeholder></returns>
     [GraphQLDescription("Get student profile by ID")]
     public async Task<StudentDto?> GetStudent(
         [Service] IMediator mediator,
@@ -134,7 +128,6 @@ public class Query
     /// <summary>
     /// Get student progress by ID.
     /// </summary>
-    /// <returns><placeholder>A <see cref="Task"/> representing the asynchronous operation.</placeholder></returns>
     [GraphQLDescription("Get student progress by student ID")]
     [Authorize]
     public async Task<StudentProgressDto?> GetStudentProgress(
@@ -149,7 +142,6 @@ public class Query
     /// <summary>
     /// Get instructor profile by ID.
     /// </summary>
-    /// <returns><placeholder>A <see cref="Task"/> representing the asynchronous operation.</placeholder></returns>
     [GraphQLDescription("Get instructor profile by ID")]
     public async Task<InstructorDto?> GetInstructor(
         [Service] IMediator mediator,
@@ -163,7 +155,6 @@ public class Query
     /// <summary>
     /// Get instructor profile with courses by ID.
     /// </summary>
-    /// <returns><placeholder>A <see cref="Task"/> representing the asynchronous operation.</placeholder></returns>
     [GraphQLDescription("Get instructor with courses by ID")]
     public async Task<InstructorCoursesDto?> GetInstructorWithCourses(
         [Service] IMediator mediator,
@@ -177,7 +168,6 @@ public class Query
     /// <summary>
     /// Get pending submissions for instructor.
     /// </summary>
-    /// <returns><placeholder>A <see cref="Task"/> representing the asynchronous operation.</placeholder></returns>
     [UsePaging]
     [UseFiltering]
     [UseSorting]
@@ -203,7 +193,6 @@ public class Query
     /// <summary>
     /// Get enrollment details by ID.
     /// </summary>
-    /// <returns><placeholder>A <see cref="Task"/> representing the asynchronous operation.</placeholder></returns>
     [GraphQLDescription("Get enrollment details by ID")]
     [Authorize]
     public async Task<EnrollmentDetailDto?> GetEnrollment(
@@ -237,7 +226,6 @@ public class Query
     /// <summary>
     /// Get submission details by ID.
     /// </summary>
-    /// <returns><placeholder>A <see cref="Task"/> representing the asynchronous operation.</placeholder></returns>
     [GraphQLDescription("Get submission details by ID")]
     [Authorize]
     public async Task<SubmissionDetailDto?> GetSubmission(
@@ -252,7 +240,6 @@ public class Query
     /// <summary>
     /// Get a student's enrollments.
     /// </summary>
-    /// <returns><placeholder>A <see cref="Task"/> representing the asynchronous operation.</placeholder></returns>
     [UsePaging]
     [UseFiltering]
     [UseSorting]

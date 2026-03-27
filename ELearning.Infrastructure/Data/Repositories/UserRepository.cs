@@ -26,7 +26,6 @@ public class UserRepository(ApplicationDbContext context) : IUserRepository
     /// </summary>
     /// <param name="entity">The user entity to add.</param>
     /// <param name="cancellationToken">A token to observe while waiting for the task to complete.</param>
-    /// <returns><placeholder>A <see cref="Task"/> representing the asynchronous operation.</placeholder></returns>
     public async Task AddAsync(User entity, CancellationToken cancellationToken)
     {
         await context.Users.AddAsync(entity, cancellationToken);
@@ -37,7 +36,6 @@ public class UserRepository(ApplicationDbContext context) : IUserRepository
     /// </summary>
     /// <param name="entity">The user entity to update.</param>
     /// <param name="cancellationToken">A token to observe while waiting for the task to complete.</param>
-    /// <returns><placeholder>A <see cref="Task"/> representing the asynchronous operation.</placeholder></returns>
     public Task UpdateAsync(User entity, CancellationToken cancellationToken)
     {
         context.Entry(entity).State = EntityState.Modified;
@@ -49,7 +47,6 @@ public class UserRepository(ApplicationDbContext context) : IUserRepository
     /// </summary>
     /// <param name="entity">The user entity to delete.</param>
     /// <param name="cancellationToken">A token to observe while waiting for the task to complete.</param>
-    /// <returns><placeholder>A <see cref="Task"/> representing the asynchronous operation.</placeholder></returns>
     public Task DeleteAsync(User entity, CancellationToken cancellationToken)
     {
         context.Users.Remove(entity);
