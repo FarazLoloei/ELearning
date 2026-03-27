@@ -79,11 +79,21 @@ public class Submission : BaseEntity
         this.SubmittedDate = DateTime.UtcNow;
     }
 
-    public void Grade(int score, string feedback, Guid gradedById)
+    public void Grade(int score, int maxPoints, string feedback, Guid gradedById)
     {
         if (this.IsGraded)
         {
             throw new InvalidOperationException("Submission is already graded");
+        }
+
+        if (score < 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(score), "Score cannot be negative.");
+        }
+
+        if (score > maxPoints)
+        {
+            throw new ArgumentOutOfRangeException(nameof(score), $"Score cannot exceed maximum points ({maxPoints}).");
         }
 
         this.Score = score;

@@ -17,6 +17,7 @@ using MediatR;
 public class GradeSubmissionCommandHandler(
         IEnrollmentRepository enrollmentRepository,
         IAssignmentReadRepository assignmentRepository,
+        ICourseRepository courseRepository,
         ICurrentUserService currentUserService)
     : IRequestHandler<GradeSubmissionCommand, Result>
 {
@@ -42,15 +43,32 @@ public class GradeSubmissionCommandHandler(
         var assignment = await assignmentRepository.GetByIdAsync(submission.AssignmentId, cancellationToken)
             ?? throw new NotFoundException(nameof(Assignment), submission.AssignmentId);
 
-        if (request.Score > assignment.MaxPoints)
+        var module = await assignmentRepository.GetModuleForAssignmentAsync(submission.AssignmentId, cancellationToken)
+            ?? throw new NotFoundException("Module for assignment", submission.AssignmentId);
+
+        var course = await courseRepository.GetByIdForUpdateAsync(module.CourseId, cancellationToken)
+            ?? throw new NotFoundException(nameof(Course), module.CourseId);
+
+        if (!currentUserService.IsInRole("Admin") && !course.IsOwnedBy(instructorId))
         {
-            return Result.Failure($"Score cannot exceed maximum points ({assignment.MaxPoints}).");
+            throw new ForbiddenAccessException();
         }
 
-        // Grade the submission
-        enrollment.GradeSubmission(request.SubmissionId, request.Score, request.Feedback, instructorId);
+        try
+        {
+            assignment.EnsureValidScore(request.Score);
+            enrollment.GradeSubmission(
+                request.SubmissionId,
+                request.Score,
+                assignment.MaxPoints,
+                request.Feedback,
+                instructorId);
+        }
+        catch (Exception ex) when (ex is InvalidOperationException or ArgumentOutOfRangeException)
+        {
+            return Result.Failure(ex.Message);
+        }
 
-        // Save to repository
         await enrollmentRepository.UpdateAsync(enrollment, cancellationToken);
 
         return Result.Success();

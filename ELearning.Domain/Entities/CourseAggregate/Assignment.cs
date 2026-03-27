@@ -89,4 +89,25 @@ public class Assignment : BaseEntity
         this.DueDate = dueDate;
         this.UpdatedAt(DateTime.UtcNow);
     }
+
+    public void EnsureCanAcceptSubmissionAt(DateTime submissionDate)
+    {
+        if (this.DueDate.HasValue && submissionDate > this.DueDate.Value)
+        {
+            throw new InvalidOperationException("The submission deadline for this assessment has passed.");
+        }
+    }
+
+    public void EnsureValidScore(int score)
+    {
+        if (score < 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(score), "Score cannot be negative.");
+        }
+
+        if (score > this.MaxPoints)
+        {
+            throw new ArgumentOutOfRangeException(nameof(score), $"Score cannot exceed maximum points ({this.MaxPoints}).");
+        }
+    }
 }

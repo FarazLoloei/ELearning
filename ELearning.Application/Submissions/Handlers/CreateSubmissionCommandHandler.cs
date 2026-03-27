@@ -10,7 +10,6 @@ using ELearning.Application.Common.Model;
 using ELearning.Application.Submissions.Commands;
 using ELearning.Domain.Entities.CourseAggregate;
 using ELearning.Domain.Entities.CourseAggregate.Abstractions.Repositories;
-using ELearning.Domain.Entities.CourseAggregate.Abstractions.Services;
 using ELearning.Domain.Entities.EnrollmentAggregate.Abstractions.Repositories;
 using ELearning.Domain.Entities.UserAggregate.Exceptions;
 using MediatR;
@@ -18,8 +17,8 @@ using MediatR;
 public class CreateSubmissionCommandHandler(
         IAssignmentReadRepository assignmentRepository,
         IEnrollmentRepository enrollmentRepository,
-        ICurrentUserService currentUserService,
-        IAssignmentService assignmentService) : IRequestHandler<CreateSubmissionCommand, Result>
+        ICourseRepository courseRepository,
+        ICurrentUserService currentUserService) : IRequestHandler<CreateSubmissionCommand, Result>
 {
     public async Task<Result> Handle(CreateSubmissionCommand request, CancellationToken cancellationToken)
     {
@@ -34,33 +33,32 @@ public class CreateSubmissionCommandHandler(
         var assignment = await assignmentRepository.GetByIdAsync(request.AssignmentId, cancellationToken)
             ?? throw new NotFoundException(nameof(Assignment), request.AssignmentId);
 
-        // Verify submission eligibility
-        if (!await assignmentService.CanSubmitAssignmentAsync(studentId, request.AssignmentId, cancellationToken))
-        {
-            return Result.Failure("You are not enrolled in the course or the assignment is not available.");
-        }
-
-        // Get module and enrollment
         var module = await assignmentRepository.GetModuleForAssignmentAsync(request.AssignmentId, cancellationToken)
             ?? throw new NotFoundException("Module for assignment", request.AssignmentId);
+
+        var course = await courseRepository.GetByIdForUpdateAsync(module.CourseId, cancellationToken)
+            ?? throw new NotFoundException(nameof(Course), module.CourseId);
+
+        if (!course.ContainsAssignment(request.AssignmentId))
+        {
+            return Result.Failure("The assessment does not belong to the enrolled course.");
+        }
 
         var enrollment = await enrollmentRepository.GetByStudentAndCourseIdAsync(studentId, module.CourseId, cancellationToken)
             ?? throw new StudentNotEnrolledException(studentId, module.CourseId);
 
-        // (Optional) Handle late submissions
-        var isOverdue = await assignmentService.IsAssignmentOverdueAsync(request.AssignmentId, DateTime.UtcNow, cancellationToken);
-        if (isOverdue)
-        {
-            // This could either return a failure or allow late submissions with a flag
-            // For now, we'll allow the submission but could add a "IsLate" flag to the Submission entity
-            // return Result.Failure<Guid>("The deadline for this assignment has passed.");
-        }
-
         try
         {
-            enrollment.SubmitAssignment(request.AssignmentId, request.Content, request.FileUrl);
+            course.EnsureAvailableForLearning();
+            assignment.EnsureCanAcceptSubmissionAt(DateTime.UtcNow);
+            enrollment.SubmitAssignment(
+                request.AssignmentId,
+                request.Content,
+                request.FileUrl,
+                course.GetTotalLessonCount(),
+                course.GetRequiredAssessmentIds());
         }
-        catch (InvalidOperationException ex)
+        catch (Exception ex) when (ex is InvalidOperationException or ArgumentOutOfRangeException)
         {
             return Result.Failure(ex.Message);
         }

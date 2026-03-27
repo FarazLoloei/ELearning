@@ -29,7 +29,7 @@ public sealed class EnrollmentProgressionTests
         var enrollment = CreateEnrollment();
         var lessonId = Guid.NewGuid();
 
-        enrollment.CompleteLesson(lessonId, totalLessonsInCourse: 2);
+        enrollment.CompleteLesson(lessonId, totalLessonsInCourse: 2, requiredAssignmentIds: Array.Empty<Guid>());
 
         enrollment.ProgressRecords.Should().ContainSingle(progress => progress.LessonId == lessonId);
         enrollment.ProgressRecords.Single().Status.Should().Be(ProgressStatus.Completed);
@@ -43,8 +43,8 @@ public sealed class EnrollmentProgressionTests
         var firstLessonId = Guid.NewGuid();
         var secondLessonId = Guid.NewGuid();
 
-        enrollment.CompleteLesson(firstLessonId, totalLessonsInCourse: 2);
-        enrollment.CompleteLesson(secondLessonId, totalLessonsInCourse: 2);
+        enrollment.CompleteLesson(firstLessonId, totalLessonsInCourse: 2, requiredAssignmentIds: Array.Empty<Guid>());
+        enrollment.CompleteLesson(secondLessonId, totalLessonsInCourse: 2, requiredAssignmentIds: Array.Empty<Guid>());
 
         enrollment.Status.Should().Be(EnrollmentStatus.Completed);
         enrollment.CompletedDateUTC.Should().NotBeNull();
@@ -68,8 +68,8 @@ public sealed class EnrollmentProgressionTests
         var enrollment = CreateEnrollment();
         var lessonId = Guid.NewGuid();
 
-        enrollment.CompleteLesson(lessonId, totalLessonsInCourse: 2);
-        enrollment.CompleteLesson(lessonId, totalLessonsInCourse: 2);
+        enrollment.CompleteLesson(lessonId, totalLessonsInCourse: 2, requiredAssignmentIds: Array.Empty<Guid>());
+        enrollment.CompleteLesson(lessonId, totalLessonsInCourse: 2, requiredAssignmentIds: Array.Empty<Guid>());
 
         enrollment.ProgressRecords.Should().ContainSingle(progress => progress.LessonId == lessonId);
         enrollment.Status.Should().Be(EnrollmentStatus.Active);

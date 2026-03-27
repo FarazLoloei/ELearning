@@ -273,7 +273,16 @@ public class Course : BaseEntity, IAggregateRoot<Course>
     public bool ContainsLesson(Guid lessonId) =>
         this.modules.SelectMany(module => module.Lessons).Any(lesson => lesson.Id == lessonId);
 
+    public bool ContainsAssignment(Guid assignmentId) =>
+        this.modules.SelectMany(module => module.Assignments).Any(assignment => assignment.Id == assignmentId);
+
     public int GetTotalLessonCount() => this.modules.Sum(module => module.Lessons.Count);
+
+    public IReadOnlyCollection<Guid> GetRequiredAssessmentIds() =>
+        this.modules
+            .SelectMany(module => module.Assignments)
+            .Select(assignment => assignment.Id)
+            .ToArray();
 
     public void EnsureCanAcceptNewEnrollments()
     {

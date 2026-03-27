@@ -46,7 +46,10 @@ public sealed class CompleteLessonCommandHandler(
         try
         {
             course.EnsureAvailableForLearning();
-            enrollment.CompleteLesson(request.LessonId, course.GetTotalLessonCount());
+            enrollment.CompleteLesson(
+                request.LessonId,
+                course.GetTotalLessonCount(),
+                course.GetRequiredAssessmentIds());
         }
         catch (InvalidOperationException ex)
         {

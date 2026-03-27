@@ -57,13 +57,16 @@ public class Enrollment : BaseEntity, IAggregateRoot<Enrollment>
         this.UpdatedAt(DateTime.UtcNow);
     }
 
-    public void CompleteLesson(Guid lessonId, int totalLessonsInCourse)
+    public void CompleteLesson(
+        Guid lessonId,
+        int totalLessonsInCourse,
+        IReadOnlyCollection<Guid> requiredAssignmentIds)
     {
         this.EnsureCanProgress();
 
         var progress = this.GetOrCreateProgress(lessonId);
         progress.MarkAsCompleted();
-        this.MarkCourseCompletedIfEligible(totalLessonsInCourse);
+        this.MarkCourseCompletedIfEligible(totalLessonsInCourse, requiredAssignmentIds);
         this.UpdatedAt(DateTime.UtcNow);
     }
 
@@ -128,8 +131,15 @@ public class Enrollment : BaseEntity, IAggregateRoot<Enrollment>
         this.UpdatedAt(DateTime.UtcNow);
     }
 
-    public Submission SubmitAssignment(Guid assignmentId, string? content = null, string? fileUrl = null)
+    public Submission SubmitAssignment(
+        Guid assignmentId,
+        string? content = null,
+        string? fileUrl = null,
+        int totalLessonsInCourse = 0,
+        IReadOnlyCollection<Guid>? requiredAssignmentIds = null)
     {
+        this.EnsureCanSubmitAssessments();
+
         if (this.submissions.Any(s => s.AssignmentId == assignmentId))
         {
             throw new InvalidOperationException("Assignment has already been submitted for this enrollment.");
@@ -137,17 +147,18 @@ public class Enrollment : BaseEntity, IAggregateRoot<Enrollment>
 
         var submission = new Submission(this.Id, assignmentId, content, fileUrl);
         this.submissions.Add(submission);
+        this.MarkCourseCompletedIfEligible(totalLessonsInCourse, requiredAssignmentIds ?? Array.Empty<Guid>());
         this.UpdatedAt(DateTime.UtcNow);
 
         return submission;
     }
 
-    public void GradeSubmission(Guid submissionId, int score, string feedback, Guid gradedById)
+    public void GradeSubmission(Guid submissionId, int score, int maxPoints, string feedback, Guid gradedById)
     {
         var submission = this.submissions.FirstOrDefault(s => s.Id == submissionId)
             ?? throw new InvalidOperationException("Submission does not belong to this enrollment.");
 
-        submission.Grade(score, feedback, gradedById);
+        submission.Grade(score, maxPoints, feedback, gradedById);
         this.UpdatedAt(DateTime.UtcNow);
     }
 
@@ -189,7 +200,15 @@ public class Enrollment : BaseEntity, IAggregateRoot<Enrollment>
         }
     }
 
-    private void MarkCourseCompletedIfEligible(int totalLessonsInCourse)
+    private void EnsureCanSubmitAssessments()
+    {
+        if (this.Status != EnrollmentStatus.Active)
+        {
+            throw new InvalidOperationException("Only active enrollments can submit assessments.");
+        }
+    }
+
+    private void MarkCourseCompletedIfEligible(int totalLessonsInCourse, IReadOnlyCollection<Guid> requiredAssignmentIds)
     {
         if (this.Status == EnrollmentStatus.Completed || totalLessonsInCourse <= 0)
         {
@@ -203,6 +222,19 @@ public class Enrollment : BaseEntity, IAggregateRoot<Enrollment>
             .Count();
 
         if (completedLessons < totalLessonsInCourse)
+        {
+            return;
+        }
+
+        var submittedAssignmentIds = this.submissions
+            .Select(submission => submission.AssignmentId)
+            .Distinct()
+            .ToHashSet();
+
+        var hasSatisfiedRequiredAssessments = requiredAssignmentIds.Count == 0 ||
+            requiredAssignmentIds.All(submittedAssignmentIds.Contains);
+
+        if (!hasSatisfiedRequiredAssessments)
         {
             return;
         }

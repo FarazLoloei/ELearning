@@ -80,7 +80,7 @@ public class Mutation(ILogger<Mutation> logger)
     }
 
     [GraphQLDescription("Grade a submission")]
-    [Authorize(Roles = "Instructor")]
+    [Authorize(Roles = "Instructor,Admin")]
     public async Task<GradeSubmissionPayload> GradeSubmission(
         [Service] IMediator mediator,
         GradeSubmissionInput input)

@@ -39,8 +39,11 @@ public class EnrollmentReadRepository(ApplicationDbContext context) : IEnrollmen
                                   e.createdAtUTC AS EnrollmentDate,
                                   e.CompletedDateUTC AS CompletedDate,
                                   CASE
-                                      WHEN COALESCE(tl.TotalLessons, 0) = 0 THEN 0.0
-                                      ELSE (CAST(COALESCE(cl.CompletedLessons, 0) AS FLOAT) / CAST(tl.TotalLessons AS FLOAT)) * 100.0
+                                      WHEN COALESCE(tl.TotalLessons, 0) + COALESCE(ta.TotalAssignments, 0) = 0 THEN 0.0
+                                      ELSE (
+                                          CAST(COALESCE(cl.CompletedLessons, 0) + COALESCE(sa.SubmittedAssignments, 0) AS FLOAT) /
+                                          CAST(COALESCE(tl.TotalLessons, 0) + COALESCE(ta.TotalAssignments, 0) AS FLOAT)
+                                      ) * 100.0
                                   END AS CompletionPercentage,
                                   e.CourseRatingValue AS CourseRating,
                                   e.Review
@@ -61,6 +64,19 @@ public class EnrollmentReadRepository(ApplicationDbContext context) : IEnrollmen
                                WHERE Status = 3
                                GROUP BY EnrollmentId
                            ) cl ON cl.EnrollmentId = e.Id
+                           LEFT JOIN (
+                               SELECT m.CourseId,
+                                      COUNT(a.Id) AS TotalAssignments
+                               FROM Modules m
+                               LEFT JOIN Assignments a ON a.ModuleId = m.Id
+                               GROUP BY m.CourseId
+                           ) ta ON ta.CourseId = e.CourseId
+                           LEFT JOIN (
+                               SELECT EnrollmentId,
+                                      COUNT(DISTINCT AssignmentId) AS SubmittedAssignments
+                               FROM Submissions
+                               GROUP BY EnrollmentId
+                           ) sa ON sa.EnrollmentId = e.Id
                            WHERE e.Id = @Id
                            """;
 
@@ -114,8 +130,11 @@ public class EnrollmentReadRepository(ApplicationDbContext context) : IEnrollmen
                                   e.createdAtUTC AS EnrollmentDate,
                                   e.CompletedDateUTC AS CompletedDate,
                                   CASE
-                                      WHEN COALESCE(tl.TotalLessons, 0) = 0 THEN 0.0
-                                      ELSE (CAST(COALESCE(cl.CompletedLessons, 0) AS FLOAT) / CAST(tl.TotalLessons AS FLOAT)) * 100.0
+                                      WHEN COALESCE(tl.TotalLessons, 0) + COALESCE(ta.TotalAssignments, 0) = 0 THEN 0.0
+                                      ELSE (
+                                          CAST(COALESCE(cl.CompletedLessons, 0) + COALESCE(sa.SubmittedAssignments, 0) AS FLOAT) /
+                                          CAST(COALESCE(tl.TotalLessons, 0) + COALESCE(ta.TotalAssignments, 0) AS FLOAT)
+                                      ) * 100.0
                                   END AS CompletionPercentage
                            FROM Enrollments e
                            INNER JOIN Users u ON u.Id = e.StudentId
@@ -134,6 +153,19 @@ public class EnrollmentReadRepository(ApplicationDbContext context) : IEnrollmen
                                WHERE Status = 3
                                GROUP BY EnrollmentId
                            ) cl ON cl.EnrollmentId = e.Id
+                           LEFT JOIN (
+                               SELECT m.CourseId,
+                                      COUNT(a.Id) AS TotalAssignments
+                               FROM Modules m
+                               LEFT JOIN Assignments a ON a.ModuleId = m.Id
+                               GROUP BY m.CourseId
+                           ) ta ON ta.CourseId = e.CourseId
+                           LEFT JOIN (
+                               SELECT EnrollmentId,
+                                      COUNT(DISTINCT AssignmentId) AS SubmittedAssignments
+                               FROM Submissions
+                               GROUP BY EnrollmentId
+                           ) sa ON sa.EnrollmentId = e.Id
                            WHERE e.StudentId = @StudentId
                            ORDER BY e.createdAtUTC DESC, e.Id
                            LIMIT @PageSize OFFSET @Offset
@@ -188,8 +220,11 @@ public class EnrollmentReadRepository(ApplicationDbContext context) : IEnrollmen
                                   e.createdAtUTC AS EnrollmentDate,
                                   e.CompletedDateUTC AS CompletedDate,
                                   CASE
-                                      WHEN COALESCE(tl.TotalLessons, 0) = 0 THEN 0.0
-                                      ELSE (CAST(COALESCE(cl.CompletedLessons, 0) AS FLOAT) / CAST(tl.TotalLessons AS FLOAT)) * 100.0
+                                      WHEN COALESCE(tl.TotalLessons, 0) + COALESCE(ta.TotalAssignments, 0) = 0 THEN 0.0
+                                      ELSE (
+                                          CAST(COALESCE(cl.CompletedLessons, 0) + COALESCE(sa.SubmittedAssignments, 0) AS FLOAT) /
+                                          CAST(COALESCE(tl.TotalLessons, 0) + COALESCE(ta.TotalAssignments, 0) AS FLOAT)
+                                      ) * 100.0
                                   END AS CompletionPercentage,
                                   e.CourseRatingValue AS CourseRating,
                                   e.Review
@@ -210,6 +245,19 @@ public class EnrollmentReadRepository(ApplicationDbContext context) : IEnrollmen
                                WHERE Status = 3
                                GROUP BY EnrollmentId
                            ) cl ON cl.EnrollmentId = e.Id
+                           LEFT JOIN (
+                               SELECT m.CourseId,
+                                      COUNT(a.Id) AS TotalAssignments
+                               FROM Modules m
+                               LEFT JOIN Assignments a ON a.ModuleId = m.Id
+                               GROUP BY m.CourseId
+                           ) ta ON ta.CourseId = e.CourseId
+                           LEFT JOIN (
+                               SELECT EnrollmentId,
+                                      COUNT(DISTINCT AssignmentId) AS SubmittedAssignments
+                               FROM Submissions
+                               GROUP BY EnrollmentId
+                           ) sa ON sa.EnrollmentId = e.Id
                            ORDER BY e.createdAtUTC DESC, e.Id
                            LIMIT @PageSize OFFSET @Offset
                            """;

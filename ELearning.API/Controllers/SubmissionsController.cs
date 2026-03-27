@@ -47,7 +47,7 @@ public class SubmissionsController(IApiFacade apiFacade) : ApiControllerBase
     }
 
     [HttpPost("{id:guid}/grade")]
-    [Authorize(Roles = "Instructor")]
+    [Authorize(Roles = "Instructor,Admin")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]

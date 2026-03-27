@@ -106,8 +106,11 @@ public class ProgressReadRepository(ApplicationDbContext context) : IProgressRea
         const string sql = """
                            SELECT
                                CASE
-                                   WHEN stats.TotalLessons = 0 THEN 0.0
-                                   ELSE (CAST(stats.CompletedLessons AS FLOAT) / CAST(stats.TotalLessons AS FLOAT)) * 100.0
+                                   WHEN stats.TotalLessons + stats.TotalAssignments = 0 THEN 0.0
+                                   ELSE (
+                                       CAST(stats.CompletedLessons + stats.SubmittedAssignments AS FLOAT) /
+                                       CAST(stats.TotalLessons + stats.TotalAssignments AS FLOAT)
+                                   ) * 100.0
                                END
                            FROM (
                                SELECT
@@ -115,14 +118,26 @@ public class ProgressReadRepository(ApplicationDbContext context) : IProgressRea
                                        SELECT COUNT(1)
                                        FROM Lessons l
                                        INNER JOIN Modules m ON m.Id = l.ModuleId
+                                        INNER JOIN Enrollments e ON e.CourseId = m.CourseId
+                                        WHERE e.Id = @EnrollmentId
+                                    ) AS TotalLessons,
+                                   (
+                                       SELECT COUNT(1)
+                                       FROM Assignments a
+                                       INNER JOIN Modules m ON m.Id = a.ModuleId
                                        INNER JOIN Enrollments e ON e.CourseId = m.CourseId
                                        WHERE e.Id = @EnrollmentId
-                                   ) AS TotalLessons,
+                                   ) AS TotalAssignments,
                                    (
                                        SELECT COUNT(1)
                                        FROM Progresses
                                        WHERE EnrollmentId = @EnrollmentId AND Status = 3
-                                   ) AS CompletedLessons
+                                   ) AS CompletedLessons,
+                                   (
+                                       SELECT COUNT(DISTINCT AssignmentId)
+                                       FROM Submissions
+                                       WHERE EnrollmentId = @EnrollmentId
+                                   ) AS SubmittedAssignments
                            ) stats
                            """;
 
