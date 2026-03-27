@@ -5,6 +5,7 @@
 namespace ELearning.Application.Tests.Architecture;
 
 using FluentAssertions;
+using MediatR;
 using NetArchTest.Rules;
 
 public sealed class LayerDependencyTests
@@ -56,5 +57,31 @@ public sealed class LayerDependencyTests
             .GetResult();
 
         result.IsSuccessful.Should().BeTrue();
+    }
+
+    [Fact]
+    public void Infrastructure_ShouldNotContainMediatorRequestHandlers()
+    {
+        var infrastructureAssembly = typeof(ELearning.Infrastructure.DependencyInjection).Assembly;
+
+        var violatingTypes = infrastructureAssembly
+            .GetTypes()
+            .Where(type => type is { IsAbstract: false, IsInterface: false })
+            .Where(type => type.GetInterfaces().Any(IsMediatorRequestHandler))
+            .Select(type => type.FullName)
+            .ToArray();
+
+        violatingTypes.Should().BeEmpty();
+    }
+
+    private static bool IsMediatorRequestHandler(Type implementedInterface)
+    {
+        if (!implementedInterface.IsGenericType)
+        {
+            return false;
+        }
+
+        var genericDefinition = implementedInterface.GetGenericTypeDefinition();
+        return genericDefinition == typeof(IRequestHandler<,>) || genericDefinition == typeof(IRequestHandler<>);
     }
 }

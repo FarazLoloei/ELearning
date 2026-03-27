@@ -6,7 +6,7 @@ namespace ELearning.API.GraphQL;
 
 using ELearning.API.GraphQL.InputTypes;
 using ELearning.API.GraphQL.Payloads;
-using ELearning.Application.Common.Interfaces;
+using ELearning.Application.Auth.Commands;
 using ELearning.Application.Common.Model;
 using ELearning.Application.Courses.Commands;
 using ELearning.Application.Enrollments.Commands;
@@ -226,40 +226,42 @@ public class Mutation(ILogger<Mutation> logger)
 
     [GraphQLDescription("Authenticate a user and return token details")]
     public async Task<AuthResult> Login(
-        [Service] IAuthService authService,
+        [Service] IMediator mediator,
         LoginInput input,
         CancellationToken cancellationToken)
     {
-        return await authService.AuthenticateAsync(input.Email, input.Password, cancellationToken);
+        return await mediator.Send(new AuthenticateUserCommand(input.Email, input.Password), cancellationToken);
     }
 
     [GraphQLDescription("Register a student account")]
     public async Task<AuthResult> RegisterStudent(
-        [Service] IAuthService authService,
+        [Service] IMediator mediator,
         RegisterStudentInput input,
         CancellationToken cancellationToken)
     {
-        return await authService.RegisterStudentAsync(
-            input.FirstName,
-            input.LastName,
-            input.Email,
-            input.Password,
+        return await mediator.Send(
+            new RegisterStudentCommand(
+                input.FirstName,
+                input.LastName,
+                input.Email,
+                input.Password),
             cancellationToken);
     }
 
     [GraphQLDescription("Register an instructor account")]
     public async Task<AuthResult> RegisterInstructor(
-        [Service] IAuthService authService,
+        [Service] IMediator mediator,
         RegisterInstructorInput input,
         CancellationToken cancellationToken)
     {
-        return await authService.RegisterInstructorAsync(
-            input.FirstName,
-            input.LastName,
-            input.Email,
-            input.Password,
-            input.Bio,
-            input.Expertise,
+        return await mediator.Send(
+            new RegisterInstructorCommand(
+                input.FirstName,
+                input.LastName,
+                input.Email,
+                input.Password,
+                input.Bio,
+                input.Expertise),
             cancellationToken);
     }
 }

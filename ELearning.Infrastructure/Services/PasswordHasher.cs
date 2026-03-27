@@ -1,29 +1,17 @@
-// <copyright file="UserService.cs" company="FarazLoloei">
+// <copyright file="PasswordHasher.cs" company="FarazLoloei">
 // Copyright (c) FarazLoloei. All rights reserved.
 // </copyright>
 
 namespace ELearning.Infrastructure.Services;
 
 using System.Security.Cryptography;
-using ELearning.Domain.Entities.UserAggregate.Abstractions.Repositories;
-using ELearning.Domain.Entities.UserAggregate.Abstractions.Services;
+using ELearning.Application.Auth.Abstractions;
 
-public class UserService(IUserRepository userRepository) : IUserService
+public sealed class PasswordHasher : IPasswordHasher
 {
     private const int SaltSize = 16;
     private const int KeySize = 32;
     private const int Iterations = 100_000;
-
-    public async Task<bool> IsEmailUniqueAsync(string email, Guid? excludeUserId = null, CancellationToken cancellationToken = default)
-    {
-        var existingUser = await userRepository.GetByEmailAsync(email, cancellationToken);
-        if (existingUser is null)
-        {
-            return true;
-        }
-
-        return excludeUserId.HasValue && existingUser.Id == excludeUserId.Value;
-    }
 
     public string HashPassword(string password)
     {
@@ -42,11 +30,10 @@ public class UserService(IUserRepository userRepository) : IUserService
             HashAlgorithmName.SHA256,
             KeySize);
 
-        var payload = $"{Iterations}.{Convert.ToBase64String(salt)}.{Convert.ToBase64String(key)}";
-        return payload;
+        return $"{Iterations}.{Convert.ToBase64String(salt)}.{Convert.ToBase64String(key)}";
     }
 
-    public async Task<bool> VerifyPasswordAsync(string hashedPassword, string providedPassword)
+    public bool VerifyPassword(string hashedPassword, string providedPassword)
     {
         if (string.IsNullOrWhiteSpace(hashedPassword) || string.IsNullOrWhiteSpace(providedPassword))
         {
@@ -79,7 +66,6 @@ public class UserService(IUserRepository userRepository) : IUserService
             HashAlgorithmName.SHA256,
             expectedKey.Length);
 
-        var verified = CryptographicOperations.FixedTimeEquals(actualKey, expectedKey);
-        return verified;
+        return CryptographicOperations.FixedTimeEquals(actualKey, expectedKey);
     }
 }

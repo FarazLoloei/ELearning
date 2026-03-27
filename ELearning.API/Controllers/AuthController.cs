@@ -8,6 +8,7 @@ using Asp.Versioning;
 using ELearning.API.Contracts;
 using ELearning.API.Facades;
 using ELearning.API.Models;
+using ELearning.Application.Auth.Commands;
 using ELearning.Application.Common.Model;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -25,7 +26,9 @@ public class AuthController(IApiFacade apiFacade) : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<ActionResult<ApiResponse<AuthResult>>> Login(LoginRequest request, CancellationToken cancellationToken)
     {
-        var result = await apiFacade.AuthenticateAsync(request, cancellationToken);
+        var result = await apiFacade.SendAsync(
+            new AuthenticateUserCommand(request.Email, request.Password),
+            cancellationToken);
 
         if (result.Success)
         {
@@ -40,7 +43,13 @@ public class AuthController(IApiFacade apiFacade) : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<ApiResponse<AuthResult>>> RegisterStudent(RegisterStudentRequest request, CancellationToken cancellationToken)
     {
-        var result = await apiFacade.RegisterStudentAsync(request, cancellationToken);
+        var result = await apiFacade.SendAsync(
+            new RegisterStudentCommand(
+                request.FirstName,
+                request.LastName,
+                request.Email,
+                request.Password),
+            cancellationToken);
 
         return result.Success
             ? this.Ok(ApiResponse<AuthResult>.Success(result))
@@ -52,7 +61,15 @@ public class AuthController(IApiFacade apiFacade) : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<ApiResponse<AuthResult>>> RegisterInstructor(RegisterInstructorRequest request, CancellationToken cancellationToken)
     {
-        var result = await apiFacade.RegisterInstructorAsync(request, cancellationToken);
+        var result = await apiFacade.SendAsync(
+            new RegisterInstructorCommand(
+                request.FirstName,
+                request.LastName,
+                request.Email,
+                request.Password,
+                request.Bio,
+                request.Expertise),
+            cancellationToken);
 
         return result.Success
             ? this.Ok(ApiResponse<AuthResult>.Success(result))
@@ -64,7 +81,9 @@ public class AuthController(IApiFacade apiFacade) : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<ActionResult<ApiResponse<AuthResult>>> RefreshToken(RefreshTokenRequest request, CancellationToken cancellationToken)
     {
-        var result = await apiFacade.RefreshTokenAsync(request, cancellationToken);
+        var result = await apiFacade.SendAsync(
+            new RefreshAuthTokenCommand(request.RefreshToken),
+            cancellationToken);
 
         return result.Success
             ? this.Ok(ApiResponse<AuthResult>.Success(result))
@@ -78,7 +97,10 @@ public class AuthController(IApiFacade apiFacade) : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<ApiResponse<object?>>> RevokeToken(RevokeTokenRequest request, CancellationToken cancellationToken)
     {
-        var result = await apiFacade.RevokeTokenAsync(request, cancellationToken);
+        var result = await apiFacade.SendAsync(
+            new RevokeRefreshTokenCommand(request.RefreshToken),
+            cancellationToken);
+
         return result.IsSuccess ? this.Ok(ApiResponse<object?>.Success(null)) : this.BadRequestResponse<object?>(result.Error);
     }
 }

@@ -4,44 +4,10 @@
 
 namespace ELearning.API.Facades;
 
-using ELearning.API.Models;
-using ELearning.Application.Common.Interfaces;
-using ELearning.Application.Common.Model;
 using MediatR;
-using ApplicationModel = ELearning.Application.Common.Model;
 
-public sealed class ApiFacade(IMediator mediator, IAuthService authService) : IApiFacade
+public sealed class ApiFacade(IMediator mediator) : IApiFacade
 {
-    public Task<ApplicationModel.Result<T>> SendAsync<T>(IRequest<ApplicationModel.Result<T>> request, CancellationToken cancellationToken) =>
+    public Task<TResponse> SendAsync<TResponse>(IRequest<TResponse> request, CancellationToken cancellationToken) =>
         mediator.Send(request, cancellationToken);
-
-    public Task<Result> SendAsync(IRequest<Result> request, CancellationToken cancellationToken) =>
-        mediator.Send(request, cancellationToken);
-
-    public Task<AuthResult> AuthenticateAsync(LoginRequest request, CancellationToken cancellationToken) =>
-        authService.AuthenticateAsync(request.Email, request.Password, cancellationToken);
-
-    public Task<AuthResult> RegisterStudentAsync(RegisterStudentRequest request, CancellationToken cancellationToken) =>
-        authService.RegisterStudentAsync(
-            request.FirstName,
-            request.LastName,
-            request.Email,
-            request.Password,
-            cancellationToken);
-
-    public Task<AuthResult> RegisterInstructorAsync(RegisterInstructorRequest request, CancellationToken cancellationToken) =>
-        authService.RegisterInstructorAsync(
-            request.FirstName,
-            request.LastName,
-            request.Email,
-            request.Password,
-            request.Bio,
-            request.Expertise,
-            cancellationToken);
-
-    public Task<AuthResult> RefreshTokenAsync(RefreshTokenRequest request, CancellationToken cancellationToken) =>
-        authService.RefreshTokenAsync(request.RefreshToken, cancellationToken);
-
-    public Task<Result> RevokeTokenAsync(RevokeTokenRequest request, CancellationToken cancellationToken) =>
-        authService.RevokeRefreshTokenAsync(request.RefreshToken, cancellationToken);
 }

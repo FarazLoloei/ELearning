@@ -11,6 +11,7 @@ using System.Net.Http.Json;
 using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
+using ELearning.Application.Auth.Abstractions;
 using ELearning.Domain.Entities.UserAggregate;
 using ELearning.Domain.ValueObjects;
 using ELearning.Infrastructure.Data;
@@ -35,7 +36,7 @@ public sealed class AuthAndAuthorizationIntegrationTests : IClassFixture<RealAut
     }
 
     [Fact]
-    public async Task Login_WithRealAuthService_ReturnsJwtToken()
+    public async Task Login_WithApplicationOrchestratedAuthWorkflow_ReturnsJwtToken()
     {
         var cancellationToken = TestContext.Current.CancellationToken;
         var email = $"auth.login.{Guid.NewGuid():N}@tests.io";
@@ -200,13 +201,13 @@ public sealed class AuthAndAuthorizationIntegrationTests : IClassFixture<RealAut
     {
         using var scope = this.factory.Services.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-        var userService = scope.ServiceProvider.GetRequiredService<ELearning.Domain.Entities.UserAggregate.Abstractions.Services.IUserService>();
+        var passwordHasher = scope.ServiceProvider.GetRequiredService<IPasswordHasher>();
 
         var student = new Student(
             firstName: "Integration",
             lastName: "Student",
             email: Email.Create(email),
-            passwordHash: userService.HashPassword(password));
+            passwordHash: passwordHasher.HashPassword(password));
 
         dbContext.Students.Add(student);
         await dbContext.SaveChangesAsync(cancellationToken);
