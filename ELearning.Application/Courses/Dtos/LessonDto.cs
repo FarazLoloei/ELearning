@@ -1,6 +1,10 @@
-using ELearning.SharedKernel.Abstractions;
+// <copyright file="LessonDto.cs" company="FarazLoloei">
+// Copyright (c) FarazLoloei. All rights reserved.
+// </copyright>
 
 namespace ELearning.Application.Courses.Dtos;
+
+using ELearning.SharedKernel.Abstractions;
 
 public sealed record LessonDto(
     Guid Id,
@@ -9,5 +13,4 @@ public sealed record LessonDto(
     string Type,
     string VideoUrl,
     string Duration,
-    int Order
-) : IDto;
+    int Order) : IDto;

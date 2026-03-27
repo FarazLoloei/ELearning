@@ -1,9 +1,13 @@
+// <copyright file="LessonConfiguration.cs" company="FarazLoloei">
+// Copyright (c) FarazLoloei. All rights reserved.
+// </copyright>
+
+namespace ELearning.Infrastructure.Data.Configurations;
+
 using ELearning.Domain.Entities.CourseAggregate;
 using ELearning.Domain.Entities.CourseAggregate.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-
-namespace ELearning.Infrastructure.Data.Configurations;
 
 public sealed class LessonConfiguration : IEntityTypeConfiguration<Lesson>
 {

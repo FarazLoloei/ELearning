@@ -1,6 +1,10 @@
-﻿using ELearning.Application.Enrollments.Dtos;
+// <copyright file="EnrollmentType.cs" company="FarazLoloei">
+// Copyright (c) FarazLoloei. All rights reserved.
+// </copyright>
 
 namespace ELearning.API.GraphQL.ObjectTypes;
+
+using ELearning.Application.Enrollments.Dtos;
 
 public class EnrollmentType : ObjectType<EnrollmentDetailDto>
 {

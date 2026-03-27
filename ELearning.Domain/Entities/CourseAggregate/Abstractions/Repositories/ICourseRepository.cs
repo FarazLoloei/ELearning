@@ -1,8 +1,12 @@
-﻿using ELearning.Domain.Entities.CourseAggregate.Enums;
-using ELearning.SharedKernel.Abstractions;
-using ELearning.SharedKernel.Models;
+// <copyright file="ICourseRepository.cs" company="FarazLoloei">
+// Copyright (c) FarazLoloei. All rights reserved.
+// </copyright>
 
 namespace ELearning.Domain.Entities.CourseAggregate.Abstractions.Repositories;
+
+using ELearning.Domain.Entities.CourseAggregate.Enums;
+using ELearning.SharedKernel.Abstractions;
+using ELearning.SharedKernel.Models;
 
 public interface ICourseRepository : IEntityFrameworkRepository<Course>
 {

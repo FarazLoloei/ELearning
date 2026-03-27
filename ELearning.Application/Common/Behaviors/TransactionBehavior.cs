@@ -1,7 +1,11 @@
-using ELearning.Application.Common.Interfaces;
-using MediatR;
+// <copyright file="TransactionBehavior.cs" company="FarazLoloei">
+// Copyright (c) FarazLoloei. All rights reserved.
+// </copyright>
 
 namespace ELearning.Application.Common.Behaviors;
+
+using ELearning.Application.Common.Interfaces;
+using MediatR;
 
 public class TransactionBehavior<TRequest, TResponse>(IUnitOfWork unitOfWork)
     : IPipelineBehavior<TRequest, TResponse>

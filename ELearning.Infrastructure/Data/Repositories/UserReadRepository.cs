@@ -1,23 +1,39 @@
+// <copyright file="UserReadRepository.cs" company="FarazLoloei">
+// Copyright (c) FarazLoloei. All rights reserved.
+// </copyright>
+
+namespace ELearning.Infrastructure.Data.Repositories;
+
+using System;
+using System.Collections.Generic;
+using System.Text;
 using ELearning.Domain.Entities.UserAggregate;
+using ELearning.Domain.Entities.UserAggregate.Abstractions.Repositories;
 using ELearning.Domain.Entities.UserAggregate.Enums;
 using ELearning.SharedKernel.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace ELearning.Infrastructure.Data.Repositories;
-
-public class UserReadRepository(ApplicationDbContext context)
+public class UserReadRepository(ApplicationDbContext context) : IUserReadRepository
 {
-    public async Task<IReadOnlyList<User>> ListAllAsync(CancellationToken cancellationToken) =>
-        await context.Users
-            .AsNoTracking()
-            .ToListAsync(cancellationToken);
-
+    /// <summary>
+    /// Retrieves a read-only list of users by their role.
+    /// </summary>
+    /// <param name="role">The role of the users to retrieve.</param>
+    /// <param name="cancellationToken">A token to observe while waiting for the task to complete.</param>
+    /// <returns>A read-only list of users matching the specified role.</returns>
     public async Task<IReadOnlyList<User>> GetByRoleAsync(UserRole role, CancellationToken cancellationToken) =>
         await context.Users
             .AsNoTracking()
             .Where(u => u.Role == role)
             .ToListAsync(cancellationToken);
 
+    /// <summary>
+    /// Searches for users based on a search term with pagination.
+    /// </summary>
+    /// <param name="searchTerm">The term to search for in first name, last name, or email.</param>
+    /// <param name="pagination">Pagination parameters (SkipCount, PageSize).</param>
+    /// <param name="cancellationToken">A token to observe while waiting for the task to complete.</param>
+    /// <returns>A read-only list of users matching the search criteria and pagination.</returns>
     public async Task<IReadOnlyList<User>> SearchUsersAsync(string searchTerm, PaginationParameters pagination, CancellationToken cancellationToken)
     {
         var query = context.Users
@@ -40,9 +56,4 @@ public class UserReadRepository(ApplicationDbContext context)
             .Take(pagination.PageSize)
             .ToListAsync(cancellationToken);
     }
-
-    public async Task<int> GetUsersCountAsync(CancellationToken cancellationToken) =>
-        await context.Users
-            .AsNoTracking()
-            .CountAsync(cancellationToken);
 }

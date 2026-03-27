@@ -1,25 +1,20 @@
-using ELearning.Application.Common.Exceptions;
-using ELearning.Application.Common.Interfaces;
-using ELearning.Application.Common.Model;
-using ELearning.Application.Common.Resilience;
-using ELearning.Application.Common.Security;
-using ELearning.Application.Enrollments.Abstractions.ReadModels;
-using ELearning.Application.Enrollments.Dtos;
-using ELearning.Application.Students.Abstractions.ReadModels;
-using ELearning.Application.Students.Queries;
-using ELearning.Domain.Entities.CourseAggregate.Abstractions.Repositories;
-using ELearning.Domain.Entities.EnrollmentAggregate.Abstractions.Repositories;
-using ELearning.SharedKernel;
-using MediatR;
+// <copyright file="GetStudentEnrollmentsQueryHandler.cs" company="FarazLoloei">
+// Copyright (c) FarazLoloei. All rights reserved.
+// </copyright>
 
 namespace ELearning.Application.Students.Handlers;
 
+using ELearning.Application.Common.Interfaces;
+using ELearning.Application.Common.Model;
+using ELearning.Application.Common.Security;
+using ELearning.Application.Enrollments.Abstractions;
+using ELearning.Application.Enrollments.Dtos;
+using ELearning.Application.Students.Queries;
+using ELearning.SharedKernel;
+using MediatR;
+
 public class GetStudentEnrollmentsQueryHandler(
-        IEnrollmentReadService enrollmentReadService,
         IEnrollmentReadRepository enrollmentReadRepository,
-        ICourseRepository courseRepository,
-        IStudentReadService studentReadService,
-        IProgressRepository progressRepository,
         ICurrentUserService currentUserService)
     : IRequestHandler<GetStudentEnrollmentsQuery, Result<PaginatedList<EnrollmentDto>>>
 {
@@ -27,56 +22,28 @@ public class GetStudentEnrollmentsQueryHandler(
     {
         CurrentUserAuthorizationGuard.EnsureStudentSelfOrAdmin(currentUserService, request.StudentId);
 
-        try
-        {
-            // Try Dapr read service first
-            var paginatedList = await enrollmentReadService.GetStudentEnrollmentsAsync(
-                request.StudentId,
-                new SharedKernel.Models.PaginationParameters(request.PageNumber, request.PageSize),
-                cancellationToken);
+        var paginatedList = await enrollmentReadRepository.GetStudentEnrollmentsAsync(
+            request.StudentId,
+            new SharedKernel.Models.PaginationParameters(request.PageNumber, request.PageSize),
+            cancellationToken);
 
-            return Result.Success(paginatedList);
-        }
-        catch (Exception ex) when (ReadModelFallbackPolicy.ShouldFallback(ex, cancellationToken))
-        {
-            // Fall back to local read repository
-            var pagedEnrollments = await enrollmentReadRepository.GetStudentEnrollmentsAsync(
-                request.StudentId,
-                new SharedKernel.Models.PaginationParameters(request.PageNumber, request.PageSize),
-                cancellationToken);
+        var dtoItems = paginatedList.Items
+            .Select(e => new EnrollmentDto(
+                e.Id,
+                e.StudentId,
+                e.StudentName,
+                e.CourseId,
+                e.CourseTitle,
+                e.Status,
+                e.EnrollmentDate,
+                e.CompletedDate,
+                e.CompletionPercentage))
+            .ToList();
 
-            var enrollmentDtos = new List<EnrollmentDto>();
-            foreach (var enrollment in pagedEnrollments.Items)
-            {
-                var course = await courseRepository.GetByIdAsync(enrollment.CourseId, cancellationToken)
-                    ?? throw new NotFoundException("Course", enrollment.CourseId);
-                var student = await studentReadService.GetByIdAsync(enrollment.StudentId, cancellationToken);
-                var completionPercentage = await progressRepository.GetCourseProgressPercentageAsync(enrollment.Id, cancellationToken);
-
-                var enrollmentDto = new EnrollmentDto(
-                    enrollment.Id,
-                    enrollment.StudentId,
-                    student.FullName,
-                    enrollment.CourseId,
-                    course.Title,
-                    enrollment.Status.Name,
-                    enrollment.CreatedAt(),
-                    enrollment.CompletedDateUTC,
-                    completionPercentage);
-
-                enrollmentDtos.Add(enrollmentDto);
-            }
-
-            var paginatedList = new PaginatedList<EnrollmentDto>(
-                enrollmentDtos,
-                pagedEnrollments.TotalCount,
-                request.PageNumber,
-                request.PageSize);
-
-            return Result.Success(paginatedList);
-        }
+        return Result.Success(new PaginatedList<EnrollmentDto>(
+            dtoItems,
+            paginatedList.TotalCount,
+            request.PageNumber,
+            request.PageSize));
     }
 }
-
-
-

@@ -1,3 +1,9 @@
+// <copyright file="CoursesController.cs" company="FarazLoloei">
+// Copyright (c) FarazLoloei. All rights reserved.
+// </copyright>
+
+namespace ELearning.API.Controllers;
+
 using Asp.Versioning;
 using ELearning.API.Contracts;
 using ELearning.API.Facades;
@@ -7,8 +13,6 @@ using ELearning.Application.Courses.Queries;
 using ELearning.SharedKernel;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-
-namespace ELearning.API.Controllers;
 
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/[controller]")]
@@ -33,11 +37,11 @@ public class CoursesController(IApiFacade apiFacade) : ApiControllerBase
             LevelId = levelId,
             IsFeatured = isFeatured,
             PageNumber = pageNumber,
-            PageSize = pageSize
+            PageSize = pageSize,
         };
 
         var result = await apiFacade.SendAsync(query, cancellationToken);
-        return FromResult(result);
+        return this.FromResult(result);
     }
 
     [HttpGet("{id:guid}")]
@@ -47,7 +51,16 @@ public class CoursesController(IApiFacade apiFacade) : ApiControllerBase
     {
         var query = new GetCourseDetailQuery { CourseId = id };
         var result = await apiFacade.SendAsync(query, cancellationToken);
-        return FromResult(result, error => error.StartsWith("Course not found", StringComparison.OrdinalIgnoreCase));
+        return this.FromResult(result, error => error.StartsWith("Course not found", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [HttpGet("{id:guid}/reviews")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<ApiResponse<IReadOnlyList<ReviewDto>>>> GetCourseReviews(Guid id, CancellationToken cancellationToken)
+    {
+        var result = await apiFacade.SendAsync(new GetCourseReviewsQuery(id), cancellationToken);
+        return this.FromResult(result, error => error.StartsWith("Course not found", StringComparison.OrdinalIgnoreCase));
     }
 
     [HttpGet("featured")]
@@ -59,16 +72,16 @@ public class CoursesController(IApiFacade apiFacade) : ApiControllerBase
         var query = new GetCoursesListQuery
         {
             IsFeatured = true,
-            PageSize = count
+            PageSize = count,
         };
 
         var result = await apiFacade.SendAsync(query, cancellationToken);
         if (!result.IsSuccess)
         {
-            return BadRequestResponse<List<CourseListDto>>(result.Error);
+            return this.BadRequestResponse<List<CourseListDto>>(result.Error);
         }
 
-        return Ok(ApiResponse<List<CourseListDto>>.Success(result.Value.Items.ToList()));
+        return this.Ok(ApiResponse<List<CourseListDto>>.Success(result.Value.Items.ToList()));
     }
 
     [HttpGet("category/{categoryId:int}")]
@@ -79,16 +92,16 @@ public class CoursesController(IApiFacade apiFacade) : ApiControllerBase
     {
         var query = new GetCoursesListQuery
         {
-            CategoryId = categoryId
+            CategoryId = categoryId,
         };
 
         var result = await apiFacade.SendAsync(query, cancellationToken);
         if (!result.IsSuccess)
         {
-            return BadRequestResponse<List<CourseListDto>>(result.Error);
+            return this.BadRequestResponse<List<CourseListDto>>(result.Error);
         }
 
-        return Ok(ApiResponse<List<CourseListDto>>.Success(result.Value.Items.ToList()));
+        return this.Ok(ApiResponse<List<CourseListDto>>.Success(result.Value.Items.ToList()));
     }
 
     [HttpPost]
@@ -102,10 +115,10 @@ public class CoursesController(IApiFacade apiFacade) : ApiControllerBase
         var result = await apiFacade.SendAsync(command, cancellationToken);
         if (!result.IsSuccess)
         {
-            return BadRequestResponse<object?>(result.Error);
+            return this.BadRequestResponse<object?>(result.Error);
         }
 
-        return CreatedResponse();
+        return this.CreatedResponse();
     }
 
     [HttpPut("{id:guid}")]
@@ -120,11 +133,11 @@ public class CoursesController(IApiFacade apiFacade) : ApiControllerBase
     {
         if (id != command.CourseId)
         {
-            return BadRequestResponse<object?>("Route id does not match payload CourseId.");
+            return this.BadRequestResponse<object?>("Route id does not match payload CourseId.");
         }
 
         var result = await apiFacade.SendAsync(command, cancellationToken);
-        return FromResult(result, error => error.StartsWith("Course not found", StringComparison.OrdinalIgnoreCase));
+        return this.FromResult(result, error => error.StartsWith("Course not found", StringComparison.OrdinalIgnoreCase));
     }
 
     [HttpDelete("{id:guid}")]
@@ -134,6 +147,58 @@ public class CoursesController(IApiFacade apiFacade) : ApiControllerBase
     public async Task<ActionResult<ApiResponse<object?>>> DeleteCourse(Guid id, CancellationToken cancellationToken)
     {
         var result = await apiFacade.SendAsync(new DeleteCourseCommand(id), cancellationToken);
-        return FromResult(result, error => error.StartsWith("Course not found", StringComparison.OrdinalIgnoreCase));
+        return this.FromResult(result, error => error.StartsWith("Course not found", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [HttpPost("{id:guid}/submit-for-review")]
+    [Authorize(Roles = "Instructor")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<ApiResponse<object?>>> SubmitForReview(Guid id, CancellationToken cancellationToken)
+    {
+        var result = await apiFacade.SendAsync(new SubmitCourseForReviewCommand(id), cancellationToken);
+        return this.FromResult(result, error => error.StartsWith("Course not found", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [HttpPost("{id:guid}/approve-publication")]
+    [Authorize(Roles = "Admin")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<ApiResponse<object?>>> ApprovePublication(Guid id, CancellationToken cancellationToken)
+    {
+        var result = await apiFacade.SendAsync(new ApproveCoursePublicationCommand(id), cancellationToken);
+        return this.FromResult(result, error => error.StartsWith("Course not found", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [HttpPost("{id:guid}/reject-publication")]
+    [Authorize(Roles = "Admin")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<ApiResponse<object?>>> RejectPublication(
+        Guid id,
+        RejectCoursePublicationCommand command,
+        CancellationToken cancellationToken)
+    {
+        if (id != command.CourseId)
+        {
+            return this.BadRequestResponse<object?>("Route id does not match payload CourseId.");
+        }
+
+        var result = await apiFacade.SendAsync(command, cancellationToken);
+        return this.FromResult(result, error => error.StartsWith("Course not found", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [HttpPost("{id:guid}/archive")]
+    [Authorize(Roles = "Admin")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<ApiResponse<object?>>> Archive(Guid id, CancellationToken cancellationToken)
+    {
+        var result = await apiFacade.SendAsync(new ArchiveCourseCommand(id), cancellationToken);
+        return this.FromResult(result, error => error.StartsWith("Course not found", StringComparison.OrdinalIgnoreCase));
     }
 }

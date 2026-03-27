@@ -1,3 +1,9 @@
+// <copyright file="DomainEventsDispatchTests.cs" company="FarazLoloei">
+// Copyright (c) FarazLoloei. All rights reserved.
+// </copyright>
+
+namespace ELearning.IntegrationTests;
+
 using ELearning.Domain.Entities.CourseAggregate;
 using ELearning.Domain.Entities.CourseAggregate.Enums;
 using ELearning.Domain.Entities.UserAggregate;
@@ -6,8 +12,6 @@ using ELearning.Infrastructure.Data;
 using FluentAssertions;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
-
-namespace ELearning.IntegrationTests;
 
 public sealed class DomainEventsDispatchTests
 {

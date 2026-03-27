@@ -1,15 +1,19 @@
-using ELearning.Application.Courses.Dtos;
-using FluentValidation;
+// <copyright file="ReviewDtoValidator.cs" company="FarazLoloei">
+// Copyright (c) FarazLoloei. All rights reserved.
+// </copyright>
 
 namespace ELearning.Application.Common.Validators.Dtos;
+
+using ELearning.Application.Courses.Dtos;
+using FluentValidation;
 
 public sealed class ReviewDtoValidator : AbstractValidator<ReviewDto>
 {
     public ReviewDtoValidator()
     {
-        RuleFor(x => x.Id).NotEmpty();
-        RuleFor(x => x.StudentName).NotEmpty();
-        RuleFor(x => x.Rating).InclusiveBetween(0, 5);
-        RuleFor(x => x.Comment).NotEmpty();
+        this.RuleFor(x => x.Id).NotEmpty();
+        this.RuleFor(x => x.StudentName).NotEmpty();
+        this.RuleFor(x => x.Rating).InclusiveBetween(1, 5);
+        this.RuleFor(x => x.Comment).MaximumLength(1000);
     }
 }

@@ -11,4 +11,8 @@
     <ProjectReference Include="..\ELearning.SharedKernel\ELearning.SharedKernel.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Update="Microsoft.CodeAnalysis.NetAnalyzers" Version="10.0.201" />
+  </ItemGroup>
+
 </Project>

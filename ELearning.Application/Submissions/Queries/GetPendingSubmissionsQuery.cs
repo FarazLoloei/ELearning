@@ -1,12 +1,16 @@
-﻿using ELearning.Application.Common.Model;
+// <copyright file="GetPendingSubmissionsQuery.cs" company="FarazLoloei">
+// Copyright (c) FarazLoloei. All rights reserved.
+// </copyright>
+
+namespace ELearning.Application.Submissions.Queries;
+
+using ELearning.Application.Common.Model;
 using ELearning.Application.Submissions.Dtos;
 using ELearning.SharedKernel;
 using MediatR;
 
-namespace ELearning.Application.Submissions.Queries;
-
 /// <summary>
-/// Query to get pending submissions for an instructor
+/// Query to get pending submissions for an instructor.
 /// </summary>
 public record GetPendingSubmissionsQuery : IRequest<Result<PaginatedList<SubmissionDto>>>
 {

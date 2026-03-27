@@ -1,14 +1,24 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
-	  <PackageReference Include="Dapr.AspNetCore" Version="1.15.2" />
-	  <PackageReference Include="Dapr.Client" Version="1.15.2" />
-	  <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.2" />
-	  <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.2" />
+    <Compile Remove="Data\Repositories\LessonReadRepository.cs" />
+    <Compile Remove="Data\Repositories\ModuleReadRepository.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+	  <PackageReference Include="Dapper" Version="2.1.72" />
+	  <PackageReference Include="Dapr.AspNetCore" Version="1.17.4" />
+	  <PackageReference Include="Dapr.Client" Version="1.17.4" />
+	  <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.5" />
+	  <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.5" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\ELearning.Application\ELearning.Application.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Update="Microsoft.CodeAnalysis.NetAnalyzers" Version="10.0.201" />
   </ItemGroup>
 
   <PropertyGroup>

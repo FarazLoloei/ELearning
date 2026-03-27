@@ -1,10 +1,20 @@
+// <copyright file="DependencyInjection.cs" company="FarazLoloei">
+// Copyright (c) FarazLoloei. All rights reserved.
+// </copyright>
+
+namespace ELearning.Infrastructure;
+
+using ELearning.Application.Auth.Abstractions;
+using ELearning.Application.Certificates.Abstractions;
 using ELearning.Application.Common.Interfaces;
-using ELearning.Application.Enrollments.Abstractions.ReadModels;
+using ELearning.Application.Courses.Abstractions;
+using ELearning.Application.Enrollments.Abstractions;
+using ELearning.Application.Students.Abstractions;
+using ELearning.Application.Submissions.Abstractions;
+using ELearning.Domain.Entities.CertificateAggregate.Abstractions.Repositories;
 using ELearning.Domain.Entities.CourseAggregate.Abstractions.Repositories;
-using ELearning.Domain.Entities.CourseAggregate.Abstractions.Services;
 using ELearning.Domain.Entities.EnrollmentAggregate.Abstractions.Repositories;
 using ELearning.Domain.Entities.UserAggregate.Abstractions.Repositories;
-using ELearning.Domain.Entities.UserAggregate.Abstractions.Services;
 using ELearning.Infrastructure.Data;
 using ELearning.Infrastructure.Data.Repositories;
 using ELearning.Infrastructure.Outbox;
@@ -13,8 +23,6 @@ using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-
-namespace ELearning.Infrastructure;
 
 public static class DependencyInjection
 {
@@ -58,24 +66,27 @@ public static class DependencyInjection
         }
 
         services.AddScoped<ICourseRepository, CourseRepository>();
+        services.AddScoped<ICertificateRepository, CertificateRepository>();
         services.AddScoped<IUserRepository, UserRepository>();
-        services.AddScoped<IStudentRepository, StudentRepository>();
-        services.AddScoped<IInstructorRepository, InstructorRepository>();
+        services.AddScoped<IUserReadRepository, UserReadRepository>();
+        services.AddScoped<IStudentReadRepository, StudentReadRepository>();
+        services.AddScoped<IInstructorReadRepository, InstructorReadRepository>();
         services.AddScoped<IEnrollmentRepository, EnrollmentRepository>();
         services.AddScoped<IEnrollmentReadRepository, EnrollmentReadRepository>();
-        services.AddScoped<IModuleRepository, ModuleRepository>();
-        services.AddScoped<ILessonRepository, LessonRepository>();
-        services.AddScoped<IAssignmentRepository, AssignmentRepository>();
-        services.AddScoped<ISubmissionRepository, SubmissionRepository>();
-        services.AddScoped<IProgressRepository, ProgressRepository>();
+        services.AddScoped<ICertificateReadRepository, CertificateReadRepository>();
+        services.AddScoped<ICourseReadRepository, CourseReadRepository>();
+        services.AddScoped<IAssignmentReadRepository, AssignmentReadRepository>();
+        services.AddScoped<ISubmissionReadRepository, SubmissionReadRepository>();
+        services.AddScoped<IProgressReadRepository, ProgressReadRepository>();
         services.AddScoped<IUnitOfWork, UnitOfWork>();
 
         services.AddTransient<IDateTime, DateTimeService>();
         services.AddTransient<IEmailService, EmailService>();
         services.AddTransient<IFileStorageService, FileStorageService>();
-        services.AddScoped<IAuthService, AuthService>();
-        services.AddScoped<IUserService, UserService>();
-        services.AddScoped<IAssignmentService, AssignmentService>();
+        services.AddScoped<IAccessTokenIssuer, AccessTokenIssuer>();
+        services.AddScoped<IRefreshTokenStore, RefreshTokenStore>();
+        services.AddScoped<ISecurityAuditWriter, SecurityAuditWriter>();
+        services.AddScoped<IPasswordHasher, PasswordHasher>();
 
         services.AddHttpContextAccessor();
         services.AddScoped<ICurrentUserService, CurrentUserService>();

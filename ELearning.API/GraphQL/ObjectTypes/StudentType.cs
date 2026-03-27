@@ -1,6 +1,10 @@
-﻿using ELearning.Application.Students.Dtos;
+// <copyright file="StudentType.cs" company="FarazLoloei">
+// Copyright (c) FarazLoloei. All rights reserved.
+// </copyright>
 
 namespace ELearning.API.GraphQL.ObjectTypes;
+
+using ELearning.Application.Students.Dtos;
 
 public class StudentType : ObjectType<StudentDto>
 {

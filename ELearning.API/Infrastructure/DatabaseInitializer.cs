@@ -1,7 +1,11 @@
-using ELearning.Infrastructure.Data;
-using Microsoft.EntityFrameworkCore;
+// <copyright file="DatabaseInitializer.cs" company="FarazLoloei">
+// Copyright (c) FarazLoloei. All rights reserved.
+// </copyright>
 
 namespace ELearning.API.Infrastructure;
+
+using ELearning.Infrastructure.Data;
+using Microsoft.EntityFrameworkCore;
 
 public static class DatabaseInitializer
 {

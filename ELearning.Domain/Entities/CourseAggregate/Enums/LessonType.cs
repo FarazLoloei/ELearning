@@ -1,6 +1,10 @@
-﻿using ELearning.SharedKernel;
+// <copyright file="LessonType.cs" company="FarazLoloei">
+// Copyright (c) FarazLoloei. All rights reserved.
+// </copyright>
 
 namespace ELearning.Domain.Entities.CourseAggregate.Enums;
+
+using ELearning.SharedKernel;
 
 public sealed class LessonType : Enumeration
 {
@@ -12,7 +16,8 @@ public sealed class LessonType : Enumeration
 
     public static LessonType Interactive = new LessonType(4, nameof(Interactive));
 
-    private LessonType(int id, string name) : base(id, name)
+    private LessonType(int id, string name)
+        : base(id, name)
     {
     }
 }

@@ -1,5 +1,10 @@
-﻿namespace ELearning.SharedKernel.Abstractions;
+// <copyright file="IAggregateRoot.cs" company="FarazLoloei">
+// Copyright (c) FarazLoloei. All rights reserved.
+// </copyright>
 
-public interface IAggregateRoot<T> where T : BaseEntity
+namespace ELearning.SharedKernel.Abstractions;
+
+public interface IAggregateRoot<T>
+    where T : BaseEntity
 {
 }

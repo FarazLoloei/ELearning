@@ -1,7 +1,11 @@
-using ELearning.Application.Instructors.Dtos;
-using ELearning.SharedKernel.Abstractions;
+// <copyright file="CourseDto.cs" company="FarazLoloei">
+// Copyright (c) FarazLoloei. All rights reserved.
+// </copyright>
 
 namespace ELearning.Application.Courses.Dtos;
+
+using ELearning.Application.Instructors.Dtos;
+using ELearning.SharedKernel.Abstractions;
 
 public sealed record CourseDto(
     Guid Id,
@@ -17,5 +21,4 @@ public sealed record CourseDto(
     decimal AverageRating,
     int NumberOfRatings,
     IReadOnlyList<ModuleDto> Modules,
-    IReadOnlyList<ReviewDto> Reviews
-) : IDto;
+    IReadOnlyList<ReviewDto> Reviews) : IDto;

@@ -1,21 +1,22 @@
-﻿using ELearning.Domain.Entities.EnrollmentAggregate;
-using ELearning.Domain.Entities.EnrollmentAggregate.Abstractions.Repositories;
-using Microsoft.EntityFrameworkCore;
+// <copyright file="EnrollmentRepository.cs" company="FarazLoloei">
+// Copyright (c) FarazLoloei. All rights reserved.
+// </copyright>
 
 namespace ELearning.Infrastructure.Data.Repositories;
 
+using ELearning.Domain.Entities.EnrollmentAggregate;
+using ELearning.Domain.Entities.EnrollmentAggregate.Abstractions.Repositories;
+using Microsoft.EntityFrameworkCore;
+
 public class EnrollmentRepository(ApplicationDbContext context) : IEnrollmentRepository
 {
-    public async Task<Enrollment?> GetByIdAsync(Guid id, CancellationToken cancellationToken)
+    public async Task<Enrollment?> GetByIdForUpdateAsync(Guid id, CancellationToken cancellationToken)
     {
         return await context.Enrollments
             .Include(e => e.ProgressRecords)
             .Include(e => e.Submissions)
             .FirstOrDefaultAsync(e => e.Id == id, cancellationToken);
     }
-
-    public async Task<IReadOnlyList<Enrollment>> ListAllAsync(CancellationToken cancellationToken) =>
-        await context.Enrollments.ToListAsync(cancellationToken);
 
     public async Task AddAsync(Enrollment entity, CancellationToken cancellationToken)
     {
@@ -24,7 +25,12 @@ public class EnrollmentRepository(ApplicationDbContext context) : IEnrollmentRep
 
     public Task UpdateAsync(Enrollment entity, CancellationToken cancellationToken)
     {
-        context.Entry(entity).State = EntityState.Modified;
+        var entry = context.Entry(entity);
+        if (entry.State == EntityState.Detached)
+        {
+            context.Enrollments.Attach(entity);
+        }
+
         return Task.CompletedTask;
     }
 
@@ -41,6 +47,15 @@ public class EnrollmentRepository(ApplicationDbContext context) : IEnrollmentRep
             .Include(e => e.ProgressRecords)
             .Where(e => e.StudentId == studentId && e.CourseId == courseId)
             .FirstOrDefaultAsync(cancellationToken);
+    }
+
+    public async Task<IReadOnlyList<Enrollment>> GetByStudentIdAsync(Guid studentId, CancellationToken cancellationToken)
+    {
+        return await context.Enrollments
+            .Include(e => e.Submissions)
+            .Include(e => e.ProgressRecords)
+            .Where(e => e.StudentId == studentId)
+            .ToListAsync(cancellationToken);
     }
 
     public async Task<Enrollment?> GetBySubmissionIdAsync(Guid submissionId, CancellationToken cancellationToken)

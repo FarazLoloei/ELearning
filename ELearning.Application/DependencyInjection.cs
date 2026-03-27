@@ -1,10 +1,15 @@
+// <copyright file="DependencyInjection.cs" company="FarazLoloei">
+// Copyright (c) FarazLoloei. All rights reserved.
+// </copyright>
+
+namespace ELearning.Application;
+
+using System.Reflection;
+using ELearning.Application.Certificates.Services;
 using ELearning.Application.Common.Behaviors;
 using FluentValidation;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
-using System.Reflection;
-
-namespace ELearning.Application;
 
 public static class DependencyInjection
 {
@@ -26,9 +31,8 @@ public static class DependencyInjection
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>));
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(TransactionBehavior<,>));
+        services.AddScoped<CertificateIssuanceCoordinator>();
 
         return services;
     }
 }
-
-

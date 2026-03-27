@@ -1,12 +1,16 @@
-﻿namespace ELearning.API.GraphQL.Payloads;
+// <copyright file="SubmissionPayload.cs" company="FarazLoloei">
+// Copyright (c) FarazLoloei. All rights reserved.
+// </copyright>
+
+namespace ELearning.API.GraphQL.Payloads;
 
 public class SubmissionPayload : PayloadBase
 {
     public Guid? SubmissionId { get; }
 
-    public SubmissionPayload()//(Guid submissionId)
+    public SubmissionPayload() // (Guid submissionId)
     {
-        //SubmissionId = submissionId;
+        // SubmissionId = submissionId;
     }
 
     public SubmissionPayload(string error)

@@ -1,102 +1,125 @@
-﻿using ELearning.Domain.Entities.EnrollmentAggregate.Events;
-using ELearning.SharedKernel;
+// <copyright file="Submission.cs" company="FarazLoloei">
+// Copyright (c) FarazLoloei. All rights reserved.
+// </copyright>
 
 namespace ELearning.Domain.Entities.EnrollmentAggregate;
+
+using ELearning.Domain.Entities.EnrollmentAggregate.Events;
+using ELearning.SharedKernel;
 
 public class Submission : BaseEntity
 {
     /// <summary>
-    /// Reference to parent enrollment
+    /// Gets reference to parent enrollment.
     /// </summary>
     public Guid EnrollmentId { get; private set; }
 
     /// <summary>
-    /// Reference to the specific assignment
+    /// Gets reference to the specific assignment.
     /// </summary>
     public Guid AssignmentId { get; private set; }
 
     /// <summary>
-    /// Text content of submission (if text-based)
+    /// Gets text content of submission (if text-based).
     /// </summary>
     public string Content { get; private set; } = string.Empty;
 
     /// <summary>
-    /// Link to uploaded file (if file-based)
+    /// Gets link to uploaded file (if file-based).
     /// </summary>
     public string FileUrl { get; private set; } = string.Empty;
 
     /// <summary>
-    /// Whether submission has been evaluated
+    /// Gets a value indicating whether whether submission has been evaluated.
     /// </summary>
     public bool IsGraded { get; private set; }
 
     /// <summary>
-    /// Points earned (after grading)
+    /// Gets points earned (after grading).
     /// </summary>
     public int? Score { get; private set; }
 
     /// <summary>
-    /// Instructor comments on submission
+    /// Gets instructor comments on submission.
     /// </summary>
     public string Feedback { get; private set; } = string.Empty;
 
     /// <summary>
-    /// When student submitted the assignment
+    /// Gets when student submitted the assignment.
     /// </summary>
     public DateTime SubmittedDate { get; private set; }
 
     /// <summary>
-    /// Reference to instructor who evaluated work
+    /// Gets reference to instructor who evaluated work.
     /// </summary>
     public Guid? GradedById { get; private set; }
 
     /// <summary>
-    /// When submission was graded
+    /// Gets when submission was graded.
     /// </summary>
     public DateTime? GradedDate { get; private set; }
 
     private Submission()
-    { }
+    {
+    }
 
     public Submission(Guid enrollmentId, Guid assignmentId, string? content = null, string? fileUrl = null, string? feedback = null)
     {
         if (string.IsNullOrWhiteSpace(content) && string.IsNullOrWhiteSpace(fileUrl))
+        {
             throw new ArgumentException("Submission must have either content or file");
+        }
 
-        EnrollmentId = enrollmentId;
-        AssignmentId = assignmentId;
-        Content = content ?? string.Empty;
-        FileUrl = fileUrl ?? string.Empty;
-        IsGraded = false;
-        Feedback = feedback ?? string.Empty;
-        SubmittedDate = DateTime.UtcNow;
+        this.EnrollmentId = enrollmentId;
+        this.AssignmentId = assignmentId;
+        this.Content = content ?? string.Empty;
+        this.FileUrl = fileUrl ?? string.Empty;
+        this.IsGraded = false;
+        this.Feedback = feedback ?? string.Empty;
+        this.SubmittedDate = DateTime.UtcNow;
     }
 
-    public void Grade(int score, string feedback, Guid gradedById)
+    public void Grade(int score, int maxPoints, string feedback, Guid gradedById)
     {
-        if (IsGraded)
+        if (this.IsGraded)
+        {
             throw new InvalidOperationException("Submission is already graded");
+        }
 
-        Score = score;
-        Feedback = feedback;
-        GradedById = gradedById;
-        GradedDate = DateTime.UtcNow;
-        IsGraded = true;
-        UpdatedAt(DateTime.UtcNow);
+        if (score < 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(score), "Score cannot be negative.");
+        }
 
-        AddDomainEvent(new SubmissionGradedEvent(this));
+        if (score > maxPoints)
+        {
+            throw new ArgumentOutOfRangeException(nameof(score), $"Score cannot exceed maximum points ({maxPoints}).");
+        }
+
+        this.Score = score;
+        this.Feedback = feedback;
+        this.GradedById = gradedById;
+        this.GradedDate = DateTime.UtcNow;
+        this.IsGraded = true;
+        this.UpdatedAt(DateTime.UtcNow);
+
+        this.AddDomainEvent(new SubmissionGradedEvent(this));
     }
 
     public void UpdateSubmission(string content, string fileUrl)
     {
-        if (IsGraded)
+        if (this.IsGraded)
+        {
             throw new InvalidOperationException("Cannot update a graded submission");
+        }
 
         if (string.IsNullOrWhiteSpace(content) && string.IsNullOrWhiteSpace(fileUrl))
+        {
             throw new ArgumentException("Submission must have either content or file");
+        }
 
-        Content = content;
-        FileUrl = fileUrl;
-        UpdatedAt(DateTime.UtcNow);
+        this.Content = content;
+        this.FileUrl = fileUrl;
+        this.UpdatedAt(DateTime.UtcNow);
     }
 }

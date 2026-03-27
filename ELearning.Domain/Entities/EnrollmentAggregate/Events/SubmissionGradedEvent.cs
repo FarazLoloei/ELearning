@@ -1,6 +1,10 @@
-﻿using ELearning.SharedKernel.Abstractions;
+// <copyright file="SubmissionGradedEvent.cs" company="FarazLoloei">
+// Copyright (c) FarazLoloei. All rights reserved.
+// </copyright>
 
 namespace ELearning.Domain.Entities.EnrollmentAggregate.Events;
+
+using ELearning.SharedKernel.Abstractions;
 
 public sealed class SubmissionGradedEvent : IDomainEvent
 {
@@ -10,7 +14,7 @@ public sealed class SubmissionGradedEvent : IDomainEvent
 
     public SubmissionGradedEvent(Submission submission)
     {
-        Submission = submission ?? throw new ArgumentNullException(nameof(submission)); ;
-        OccurredOnUTC = DateTime.UtcNow;
+        this.Submission = submission ?? throw new ArgumentNullException(nameof(submission));
+        this.OccurredOnUTC = DateTime.UtcNow;
     }
 }

@@ -1,23 +1,27 @@
-using ELearning.Application.Courses.Dtos;
-using FluentValidation;
+// <copyright file="CourseDtoValidator.cs" company="FarazLoloei">
+// Copyright (c) FarazLoloei. All rights reserved.
+// </copyright>
 
 namespace ELearning.Application.Common.Validators.Dtos;
+
+using ELearning.Application.Courses.Dtos;
+using FluentValidation;
 
 public sealed class CourseDtoValidator : AbstractValidator<CourseDto>
 {
     public CourseDtoValidator()
     {
-        RuleFor(x => x.Id).NotEmpty();
-        RuleFor(x => x.Title).NotEmpty();
-        RuleFor(x => x.Description).NotEmpty();
-        RuleFor(x => x.Instructor).NotNull();
-        RuleFor(x => x.Status).NotEmpty();
-        RuleFor(x => x.Category).NotEmpty();
-        RuleFor(x => x.Level).NotEmpty();
-        RuleFor(x => x.Price).GreaterThanOrEqualTo(0);
-        RuleFor(x => x.AverageRating).InclusiveBetween(0, 5);
-        RuleFor(x => x.NumberOfRatings).GreaterThanOrEqualTo(0);
-        RuleFor(x => x.Modules).NotNull();
-        RuleFor(x => x.Reviews).NotNull();
+        this.RuleFor(x => x.Id).NotEmpty();
+        this.RuleFor(x => x.Title).NotEmpty();
+        this.RuleFor(x => x.Description).NotEmpty();
+        this.RuleFor(x => x.Instructor).NotNull();
+        this.RuleFor(x => x.Status).NotEmpty();
+        this.RuleFor(x => x.Category).NotEmpty();
+        this.RuleFor(x => x.Level).NotEmpty();
+        this.RuleFor(x => x.Price).GreaterThanOrEqualTo(0);
+        this.RuleFor(x => x.AverageRating).InclusiveBetween(0, 5);
+        this.RuleFor(x => x.NumberOfRatings).GreaterThanOrEqualTo(0);
+        this.RuleFor(x => x.Modules).NotNull();
+        this.RuleFor(x => x.Reviews).NotNull();
     }
 }

@@ -1,7 +1,11 @@
-﻿using ELearning.SharedKernel;
-using System.Text.RegularExpressions;
+// <copyright file="Email.cs" company="FarazLoloei">
+// Copyright (c) FarazLoloei. All rights reserved.
+// </copyright>
 
 namespace ELearning.Domain.ValueObjects;
+
+using System.Text.RegularExpressions;
+using ELearning.SharedKernel;
 
 public class Email : ValueObject
 {
@@ -10,25 +14,32 @@ public class Email : ValueObject
     public string Value { get; init; } = string.Empty;
 
     private Email()
-    { }
+    {
+    }
 
     private Email(string value)
     {
-        Value = value;
+        this.Value = value;
     }
 
     public static Email Create(string email)
     {
         if (string.IsNullOrWhiteSpace(email))
+        {
             throw new ArgumentException("Email cannot be empty", nameof(email));
+        }
 
         email = email.Trim();
 
         if (email.Length > 254)
+        {
             throw new ArgumentException("Email is too long", nameof(email));
+        }
 
         if (!IsValidEmail(email))
+        {
             throw new ArgumentException("Email is invalid", nameof(email));
+        }
 
         return new Email(email);
     }
@@ -38,11 +49,11 @@ public class Email : ValueObject
         return EmailAddressRegex.IsMatch(email);
     }
 
-    public override string ToString() => Value;
+    public override string ToString() => this.Value;
 
     protected override IEnumerable<object> GetEqualityComponents()
     {
         // Ensuring case-insensitivity using string.Equals
-        yield return Value.ToLowerInvariant();
+        yield return this.Value.ToLowerInvariant();
     }
 }

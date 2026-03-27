@@ -1,6 +1,10 @@
-using System.ComponentModel.DataAnnotations;
+// <copyright file="RefreshTokenRequest.cs" company="FarazLoloei">
+// Copyright (c) FarazLoloei. All rights reserved.
+// </copyright>
 
 namespace ELearning.API.Models;
+
+using System.ComponentModel.DataAnnotations;
 
 public sealed class RefreshTokenRequest
 {

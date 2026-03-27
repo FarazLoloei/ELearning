@@ -1,27 +1,27 @@
+// <copyright file="GetStudentProgressQueryHandler.cs" company="FarazLoloei">
+// Copyright (c) FarazLoloei. All rights reserved.
+// </copyright>
+
+namespace ELearning.Application.Students.Handlers;
+
 using ELearning.Application.Common.Exceptions;
 using ELearning.Application.Common.Interfaces;
 using ELearning.Application.Common.Model;
-using ELearning.Application.Common.Resilience;
 using ELearning.Application.Common.Security;
-using ELearning.Application.Enrollments.Abstractions.ReadModels;
-using ELearning.Application.Students.Abstractions.ReadModels;
+using ELearning.Application.Enrollments.Abstractions;
+using ELearning.Application.Students.Abstractions;
 using ELearning.Application.Students.Dtos;
 using ELearning.Application.Students.Queries;
 using ELearning.Domain.Entities.CourseAggregate.Abstractions.Repositories;
 using ELearning.Domain.Entities.EnrollmentAggregate.Abstractions.Repositories;
 using ELearning.Domain.Entities.EnrollmentAggregate.Enums;
-using ELearning.Domain.Entities.UserAggregate;
-using ELearning.Domain.Entities.UserAggregate.Abstractions.Repositories;
 using MediatR;
 
-namespace ELearning.Application.Students.Handlers;
-
 public class GetStudentProgressQueryHandler(
-        IStudentReadService studentReadService,
-        IStudentRepository studentRepository,
-        IEnrollmentReadRepository enrollmentReadRepository,
-        IProgressRepository progressRepository,
+        IStudentReadRepository studentReadRepository,
+        IEnrollmentRepository enrollmentRepository,
         ICourseRepository courseRepository,
+        IProgressReadRepository progressReadRepository,
         ICurrentUserService currentUserService)
     : IRequestHandler<GetStudentProgressQuery, Result<StudentProgressDto>>
 {
@@ -29,68 +29,47 @@ public class GetStudentProgressQueryHandler(
     {
         CurrentUserAuthorizationGuard.EnsureStudentSelfOrAdmin(currentUserService, request.StudentId);
 
-        try
+        var student = await studentReadRepository.GetByIdAsync(request.StudentId, cancellationToken)
+            ?? throw new NotFoundException("Student", request.StudentId);
+
+        var enrollments = await enrollmentRepository.GetByStudentIdAsync(request.StudentId, cancellationToken);
+
+        var enrollmentProgressDtos = new List<EnrollmentProgressDto>();
+        foreach (var enrollment in enrollments)
         {
-            // Try to get from Dapr read service first
-            var progressDto = await studentReadService.GetStudentProgressAsync(request.StudentId, cancellationToken);
-            return Result.Success(progressDto);
+            var course = await courseRepository.GetByIdForUpdateAsync(enrollment.CourseId, cancellationToken)
+                ?? throw new NotFoundException("Course", enrollment.CourseId);
+
+            var totalLessons = course.Modules.Sum(m => m.Lessons.Count);
+            var completedLessons = enrollment.ProgressRecords.Count(p => p.Status == ProgressStatus.Completed);
+            var totalAssignments = course.Modules.Sum(m => m.Assignments.Count);
+            var completedAssignments = enrollment.Submissions.Count;
+            var completionPercentage = await progressReadRepository.GetCourseProgressPercentageAsync(enrollment.Id, cancellationToken);
+
+            enrollmentProgressDtos.Add(new EnrollmentProgressDto(
+                enrollment.Id,
+                enrollment.CourseId,
+                course.Title,
+                enrollment.Status.Name,
+                enrollment.CreatedAt(),
+                enrollment.CompletedDateUTC,
+                completionPercentage,
+                completedLessons,
+                totalLessons,
+                completedAssignments,
+                totalAssignments));
         }
-        catch (Exception ex) when (ReadModelFallbackPolicy.ShouldFallback(ex, cancellationToken))
-        {
-            // Fall back to repositories if Dapr service fails
-            var student = await studentRepository.GetByIdAsync(request.StudentId, cancellationToken);
 
-            if (student == null)
-            {
-                throw new NotFoundException(nameof(Student), request.StudentId);
-            }
+        var completedCourses = enrollments.Count(e => e.Status == EnrollmentStatus.Completed);
+        var inProgressCourses = enrollments.Count(e => e.Status == EnrollmentStatus.Active || e.Status == EnrollmentStatus.Paused);
 
-            var enrollments = await enrollmentReadRepository.GetByStudentIdAsync(request.StudentId, cancellationToken);
-            var completedEnrollments = enrollments.Where(e => e.Status == EnrollmentStatus.Completed).ToList();
-            var inProgressEnrollments = enrollments.Where(e => e.Status == EnrollmentStatus.Active).ToList();
+        var progressDto = new StudentProgressDto(
+            student.Id,
+            student.FullName,
+            completedCourses,
+            inProgressCourses,
+            enrollmentProgressDtos);
 
-            var enrollmentProgressDtos = new List<EnrollmentProgressDto>();
-
-            foreach (var enrollment in enrollments)
-            {
-                var course = await courseRepository.GetByIdAsync(enrollment.CourseId, cancellationToken)
-                    ?? throw new NotFoundException("Course", enrollment.CourseId);
-                var completionPercentage = await progressRepository.GetCourseProgressPercentageAsync(enrollment.Id, cancellationToken);
-
-                var lessonProgress = await progressRepository.GetByEnrollmentIdAsync(enrollment.Id, cancellationToken);
-                var totalLessons = course.Modules.Sum(m => m.Lessons.Count);
-                var completedLessons = lessonProgress.Count(p => p.Status == ProgressStatus.Completed);
-
-                var assignmentCount = course.Modules.Sum(m => m.Assignments.Count);
-                var submissionCount = enrollment.Submissions.Count;
-
-                var enrollmentProgressDto = new EnrollmentProgressDto(
-                    enrollment.Id,
-                    course.Id,
-                    course.Title,
-                    enrollment.Status.Name,
-                    enrollment.CreatedAt(),
-                    enrollment.CompletedDateUTC,
-                    completionPercentage,
-                    completedLessons,
-                    totalLessons,
-                    submissionCount,
-                    assignmentCount);
-
-                enrollmentProgressDtos.Add(enrollmentProgressDto);
-            }
-
-            var progressDto = new StudentProgressDto(
-                student.Id,
-                student.FullName,
-                completedEnrollments.Count,
-                inProgressEnrollments.Count,
-                enrollmentProgressDtos);
-
-            return Result.Success(progressDto);
-        }
+        return Result.Success(progressDto);
     }
 }
-
-
-

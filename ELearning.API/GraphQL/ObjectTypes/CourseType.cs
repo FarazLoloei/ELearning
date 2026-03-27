@@ -1,6 +1,10 @@
-﻿using ELearning.Application.Courses.Dtos;
+// <copyright file="CourseType.cs" company="FarazLoloei">
+// Copyright (c) FarazLoloei. All rights reserved.
+// </copyright>
 
 namespace ELearning.API.GraphQL.ObjectTypes;
+
+using ELearning.Application.Courses.Dtos;
 
 public class CourseType : ObjectType<CourseDto>
 {

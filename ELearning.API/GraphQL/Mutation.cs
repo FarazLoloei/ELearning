@@ -1,14 +1,19 @@
+// <copyright file="Mutation.cs" company="FarazLoloei">
+// Copyright (c) FarazLoloei. All rights reserved.
+// </copyright>
+
+namespace ELearning.API.GraphQL;
+
 using ELearning.API.GraphQL.InputTypes;
 using ELearning.API.GraphQL.Payloads;
-using ELearning.Application.Common.Interfaces;
+using ELearning.Application.Auth.Commands;
+using ELearning.Application.Certificates.Commands;
 using ELearning.Application.Common.Model;
 using ELearning.Application.Courses.Commands;
 using ELearning.Application.Enrollments.Commands;
 using ELearning.Application.Submissions.Commands;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
-
-namespace ELearning.API.GraphQL;
 
 /// <summary>
 /// GraphQL mutation root type.
@@ -31,8 +36,7 @@ public class Mutation(ILogger<Mutation> logger)
                 LevelId: input.LevelId,
                 Price: input.Price,
                 DurationHours: input.DurationHours,
-                DurationMinutes: input.DurationMinutes
-            );
+                DurationMinutes: input.DurationMinutes);
 
             var result = await mediator.Send(command);
             return result.IsSuccess ? new CoursePayload() : new CoursePayload(result.Error);
@@ -52,7 +56,7 @@ public class Mutation(ILogger<Mutation> logger)
     {
         var command = new CreateEnrollmentCommand
         {
-            CourseId = input.CourseId
+            CourseId = input.CourseId,
         };
 
         var result = await mediator.Send(command);
@@ -69,7 +73,7 @@ public class Mutation(ILogger<Mutation> logger)
         {
             AssignmentId = input.AssignmentId,
             Content = input.Content,
-            FileUrl = input.FileUrl
+            FileUrl = input.FileUrl,
         };
 
         var result = await mediator.Send(command);
@@ -77,7 +81,7 @@ public class Mutation(ILogger<Mutation> logger)
     }
 
     [GraphQLDescription("Grade a submission")]
-    [Authorize(Roles = "Instructor")]
+    [Authorize(Roles = "Instructor,Admin")]
     public async Task<GradeSubmissionPayload> GradeSubmission(
         [Service] IMediator mediator,
         GradeSubmissionInput input)
@@ -86,7 +90,7 @@ public class Mutation(ILogger<Mutation> logger)
         {
             SubmissionId = input.SubmissionId,
             Score = input.Score,
-            Feedback = input.Feedback
+            Feedback = input.Feedback,
         };
 
         var result = await mediator.Send(command);
@@ -128,8 +132,109 @@ public class Mutation(ILogger<Mutation> logger)
             : new OperationPayload(new Error("COURSE_DELETE_ERROR", result.Error));
     }
 
-    [GraphQLDescription("Update enrollment status")]
-    [Authorize]
+    [GraphQLDescription("Submit a course for admin review")]
+    [Authorize(Roles = "Instructor")]
+    public async Task<OperationPayload> SubmitCourseForReview(
+        [Service] IMediator mediator,
+        Guid courseId)
+    {
+        var result = await mediator.Send(new SubmitCourseForReviewCommand(courseId));
+        return result.IsSuccess
+            ? new OperationPayload()
+            : new OperationPayload(new Error("COURSE_REVIEW_SUBMISSION_ERROR", result.Error));
+    }
+
+    [GraphQLDescription("Approve a course for publication")]
+    [Authorize(Roles = "Admin")]
+    public async Task<OperationPayload> ApproveCoursePublication(
+        [Service] IMediator mediator,
+        Guid courseId)
+    {
+        var result = await mediator.Send(new ApproveCoursePublicationCommand(courseId));
+        return result.IsSuccess
+            ? new OperationPayload()
+            : new OperationPayload(new Error("COURSE_APPROVAL_ERROR", result.Error));
+    }
+
+    [GraphQLDescription("Reject a course review submission")]
+    [Authorize(Roles = "Admin")]
+    public async Task<OperationPayload> RejectCoursePublication(
+        [Service] IMediator mediator,
+        Guid courseId,
+        string reason)
+    {
+        var result = await mediator.Send(new RejectCoursePublicationCommand(courseId, reason));
+        return result.IsSuccess
+            ? new OperationPayload()
+            : new OperationPayload(new Error("COURSE_REJECTION_ERROR", result.Error));
+    }
+
+    [GraphQLDescription("Archive a course")]
+    [Authorize(Roles = "Admin")]
+    public async Task<OperationPayload> ArchiveCourse(
+        [Service] IMediator mediator,
+        Guid courseId)
+    {
+        var result = await mediator.Send(new ArchiveCourseCommand(courseId));
+        return result.IsSuccess
+            ? new OperationPayload()
+            : new OperationPayload(new Error("COURSE_ARCHIVE_ERROR", result.Error));
+    }
+
+    [GraphQLDescription("Mark a lesson as started for an enrolled student")]
+    [Authorize(Roles = "Student")]
+    public async Task<OperationPayload> StartLesson(
+        [Service] IMediator mediator,
+        Guid enrollmentId,
+        Guid lessonId)
+    {
+        var result = await mediator.Send(new StartLessonCommand(enrollmentId, lessonId));
+        return result.IsSuccess
+            ? new OperationPayload()
+            : new OperationPayload(new Error("LESSON_START_ERROR", result.Error));
+    }
+
+    [GraphQLDescription("Mark a lesson as completed for an enrolled student")]
+    [Authorize(Roles = "Student")]
+    public async Task<OperationPayload> CompleteLesson(
+        [Service] IMediator mediator,
+        Guid enrollmentId,
+        Guid lessonId)
+    {
+        var result = await mediator.Send(new CompleteLessonCommand(enrollmentId, lessonId));
+        return result.IsSuccess
+            ? new OperationPayload()
+            : new OperationPayload(new Error("LESSON_COMPLETION_ERROR", result.Error));
+    }
+
+    [GraphQLDescription("Submit a review for a completed enrollment")]
+    [Authorize(Roles = "Student")]
+    public async Task<OperationPayload> ReviewCourse(
+        [Service] IMediator mediator,
+        Guid enrollmentId,
+        decimal rating,
+        string? review)
+    {
+        var result = await mediator.Send(new ReviewCourseCommand(enrollmentId, rating, review));
+        return result.IsSuccess
+            ? new OperationPayload()
+            : new OperationPayload(new Error("COURSE_REVIEW_ERROR", result.Error));
+    }
+
+    [GraphQLDescription("Issue or retrieve the certificate for a completed enrollment")]
+    [Authorize(Roles = "Student,Admin")]
+    public async Task<CertificatePayload> IssueEnrollmentCertificate(
+        [Service] IMediator mediator,
+        Guid enrollmentId)
+    {
+        var result = await mediator.Send(new IssueCertificateForCompletedEnrollmentCommand(enrollmentId));
+        return result.IsSuccess
+            ? new CertificatePayload(result.Value)
+            : new CertificatePayload(new Error("CERTIFICATE_ISSUANCE_ERROR", result.Error));
+    }
+
+    [GraphQLDescription("Pause, resume, or abandon an enrollment without affecting completion rules")]
+    [Authorize(Roles = "Student,Admin")]
     public async Task<OperationPayload> UpdateEnrollmentStatus(
         [Service] IMediator mediator,
         UpdateEnrollmentStatusInput input)
@@ -137,7 +242,7 @@ public class Mutation(ILogger<Mutation> logger)
         var command = new UpdateEnrollmentStatusCommand
         {
             EnrollmentId = input.EnrollmentId,
-            Status = input.Status
+            Status = input.Status,
         };
 
         var result = await mediator.Send(command);
@@ -148,40 +253,42 @@ public class Mutation(ILogger<Mutation> logger)
 
     [GraphQLDescription("Authenticate a user and return token details")]
     public async Task<AuthResult> Login(
-        [Service] IAuthService authService,
+        [Service] IMediator mediator,
         LoginInput input,
         CancellationToken cancellationToken)
     {
-        return await authService.AuthenticateAsync(input.Email, input.Password, cancellationToken);
+        return await mediator.Send(new AuthenticateUserCommand(input.Email, input.Password), cancellationToken);
     }
 
     [GraphQLDescription("Register a student account")]
     public async Task<AuthResult> RegisterStudent(
-        [Service] IAuthService authService,
+        [Service] IMediator mediator,
         RegisterStudentInput input,
         CancellationToken cancellationToken)
     {
-        return await authService.RegisterStudentAsync(
-            input.FirstName,
-            input.LastName,
-            input.Email,
-            input.Password,
+        return await mediator.Send(
+            new RegisterStudentCommand(
+                input.FirstName,
+                input.LastName,
+                input.Email,
+                input.Password),
             cancellationToken);
     }
 
     [GraphQLDescription("Register an instructor account")]
     public async Task<AuthResult> RegisterInstructor(
-        [Service] IAuthService authService,
+        [Service] IMediator mediator,
         RegisterInstructorInput input,
         CancellationToken cancellationToken)
     {
-        return await authService.RegisterInstructorAsync(
-            input.FirstName,
-            input.LastName,
-            input.Email,
-            input.Password,
-            input.Bio,
-            input.Expertise,
+        return await mediator.Send(
+            new RegisterInstructorCommand(
+                input.FirstName,
+                input.LastName,
+                input.Email,
+                input.Password,
+                input.Bio,
+                input.Expertise),
             cancellationToken);
     }
 }

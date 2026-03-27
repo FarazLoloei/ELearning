@@ -1,10 +1,14 @@
-﻿using ELearning.Domain.Entities.CourseAggregate;
+// <copyright file="CourseConfiguration.cs" company="FarazLoloei">
+// Copyright (c) FarazLoloei. All rights reserved.
+// </copyright>
+
+namespace ELearning.Infrastructure.Data.Configurations;
+
+using ELearning.Domain.Entities.CourseAggregate;
 using ELearning.Domain.Entities.CourseAggregate.Enums;
 using ELearning.Domain.Entities.UserAggregate;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-
-namespace ELearning.Infrastructure.Data.Configurations;
 
 public class CourseConfiguration : IEntityTypeConfiguration<Course>
 {
@@ -18,6 +22,9 @@ public class CourseConfiguration : IEntityTypeConfiguration<Course>
 
         builder.Property(c => c.Description)
             .IsRequired();
+
+        builder.Property(c => c.RejectionReason)
+            .HasMaxLength(1000);
 
         builder.Property(c => c.RowVersion)
             .IsRowVersion();

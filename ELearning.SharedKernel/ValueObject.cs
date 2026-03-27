@@ -1,4 +1,8 @@
-﻿namespace ELearning.SharedKernel;
+// <copyright file="ValueObject.cs" company="FarazLoloei">
+// Copyright (c) FarazLoloei. All rights reserved.
+// </copyright>
+
+namespace ELearning.SharedKernel;
 
 public abstract class ValueObject
 {
@@ -11,10 +15,10 @@ public abstract class ValueObject
     protected abstract IEnumerable<object> GetEqualityComponents();
 
     public override sealed bool Equals(object? obj) =>
-        obj is ValueObject other && GetType() == other.GetType() &&
-        GetEqualityComponents().SequenceEqual(other.GetEqualityComponents());
+        obj is ValueObject other && this.GetType() == other.GetType() &&
+        this.GetEqualityComponents().SequenceEqual(other.GetEqualityComponents());
 
     public override sealed int GetHashCode() =>
-        GetEqualityComponents().Aggregate(0, (hash, obj) =>
+        this.GetEqualityComponents().Aggregate(0, (hash, obj) =>
             HashCode.Combine(hash, obj?.GetHashCode() ?? 0));
 }

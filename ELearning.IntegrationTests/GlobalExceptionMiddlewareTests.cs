@@ -1,11 +1,15 @@
+// <copyright file="GlobalExceptionMiddlewareTests.cs" company="FarazLoloei">
+// Copyright (c) FarazLoloei. All rights reserved.
+// </copyright>
+
+namespace ELearning.IntegrationTests;
+
 using System.Text.Json;
 using ELearning.API.Middleware;
 using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
-
-namespace ELearning.IntegrationTests;
 
 public sealed class GlobalExceptionMiddlewareTests
 {

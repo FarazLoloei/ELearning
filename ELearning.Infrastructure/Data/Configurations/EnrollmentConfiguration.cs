@@ -1,10 +1,14 @@
-﻿using ELearning.Domain.Entities.EnrollmentAggregate;
+// <copyright file="EnrollmentConfiguration.cs" company="FarazLoloei">
+// Copyright (c) FarazLoloei. All rights reserved.
+// </copyright>
+
+namespace ELearning.Infrastructure.Data.Configurations;
+
+using ELearning.Domain.Entities.EnrollmentAggregate;
 using ELearning.Domain.Entities.EnrollmentAggregate.Enums;
 using ELearning.Domain.Entities.UserAggregate;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-
-namespace ELearning.Infrastructure.Data.Configurations;
 
 public class EnrollmentConfiguration : IEntityTypeConfiguration<Enrollment>
 {

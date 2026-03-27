@@ -1,4 +1,8 @@
-﻿namespace ELearning.API.Models;
+// <copyright file="RegisterInstructorRequest.cs" company="FarazLoloei">
+// Copyright (c) FarazLoloei. All rights reserved.
+// </copyright>
+
+namespace ELearning.API.Models;
 
 public class RegisterInstructorRequest : RegisterStudentRequest
 {

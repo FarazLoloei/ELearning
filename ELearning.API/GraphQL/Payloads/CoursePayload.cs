@@ -1,6 +1,10 @@
-using ELearning.Application.Courses.Dtos;
+// <copyright file="CoursePayload.cs" company="FarazLoloei">
+// Copyright (c) FarazLoloei. All rights reserved.
+// </copyright>
 
 namespace ELearning.API.GraphQL.Payloads;
+
+using ELearning.Application.Courses.Dtos;
 
 [GraphQLDescription("Payload for course operations")]
 public class CoursePayload : PayloadBase
@@ -12,17 +16,20 @@ public class CoursePayload : PayloadBase
     {
     }
 
-    public CoursePayload(CourseDto course) => Course = course;
+    public CoursePayload(CourseDto course) => this.Course = course;
 
-    public CoursePayload(string error) : base(new Error("COURSE_ERROR", error))
+    public CoursePayload(string error)
+        : base(new Error("COURSE_ERROR", error))
     {
     }
 
-    public CoursePayload(Error error) : base(error)
+    public CoursePayload(Error error)
+        : base(error)
     {
     }
 
-    public CoursePayload(IEnumerable<Error> errors) : base(errors)
+    public CoursePayload(IEnumerable<Error> errors)
+        : base(errors)
     {
     }
 }

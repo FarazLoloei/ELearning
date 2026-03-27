@@ -1,3 +1,9 @@
+// <copyright file="OutboxDispatcherIntegrationTests.cs" company="FarazLoloei">
+// Copyright (c) FarazLoloei. All rights reserved.
+// </copyright>
+
+namespace ELearning.IntegrationTests;
+
 using ELearning.Application;
 using ELearning.Infrastructure;
 using ELearning.Infrastructure.Data;
@@ -6,8 +12,6 @@ using ELearning.Infrastructure.Outbox;
 using FluentAssertions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-
-namespace ELearning.IntegrationTests;
 
 public sealed class OutboxDispatcherIntegrationTests
 {
@@ -23,7 +27,7 @@ public sealed class OutboxDispatcherIntegrationTests
                 ["JwtSettings:Issuer"] = "integration-tests",
                 ["JwtSettings:Audience"] = "integration-tests",
                 ["JwtSettings:Secret"] = "integration-tests-secret-key-with-32chars",
-                ["JwtSettings:ExpiryInDays"] = "7"
+                ["JwtSettings:ExpiryInDays"] = "7",
             })
             .Build();
 
@@ -41,7 +45,7 @@ public sealed class OutboxDispatcherIntegrationTests
             {
                 Type = "test.event",
                 Payload = "{\"value\":1}",
-                OccurredOnUtc = DateTime.UtcNow
+                OccurredOnUtc = DateTime.UtcNow,
             });
             await dbContext.SaveChangesAsync(cancellationToken);
         }

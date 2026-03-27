@@ -1,6 +1,10 @@
-﻿using ELearning.Application.Common.Interfaces;
+// <copyright file="DateTimeService.cs" company="FarazLoloei">
+// Copyright (c) FarazLoloei. All rights reserved.
+// </copyright>
 
 namespace ELearning.Infrastructure.Services;
+
+using ELearning.Application.Common.Interfaces;
 
 public class DateTimeService : IDateTime
 {

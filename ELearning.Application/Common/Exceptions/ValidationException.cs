@@ -1,4 +1,8 @@
-﻿namespace ELearning.Application.Common.Exceptions;
+// <copyright file="ValidationException.cs" company="FarazLoloei">
+// Copyright (c) FarazLoloei. All rights reserved.
+// </copyright>
+
+namespace ELearning.Application.Common.Exceptions;
 
 // Exception for validation errors
 public class ValidationException : DomainApplicationException
@@ -8,7 +12,7 @@ public class ValidationException : DomainApplicationException
     public ValidationException()
         : base("One or more validation failures have occurred.")
     {
-        Errors = new Dictionary<string, string[]>();
+        this.Errors = new Dictionary<string, string[]>();
     }
 
     public ValidationException(IEnumerable<(string PropertyName, string ErrorMessage)> failures)
@@ -18,6 +22,6 @@ public class ValidationException : DomainApplicationException
             .GroupBy(e => e.PropertyName, e => e.ErrorMessage)
             .ToDictionary(g => g.Key, g => g.ToArray());
 
-        Errors = failureGroups;
+        this.Errors = failureGroups;
     }
 }

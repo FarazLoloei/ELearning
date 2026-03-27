@@ -1,4 +1,8 @@
-﻿namespace ELearning.Infrastructure.ReadModels;
+// <copyright file="PaginatedResponse.cs" company="FarazLoloei">
+// Copyright (c) FarazLoloei. All rights reserved.
+// </copyright>
+
+namespace ELearning.Infrastructure.ReadModels;
 
 public class PaginatedResponse<T>
 {

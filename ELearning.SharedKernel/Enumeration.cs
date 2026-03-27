@@ -1,6 +1,10 @@
-﻿using System.Reflection;
+// <copyright file="Enumeration.cs" company="FarazLoloei">
+// Copyright (c) FarazLoloei. All rights reserved.
+// </copyright>
 
 namespace ELearning.SharedKernel;
+
+using System.Reflection;
 
 public abstract class Enumeration : IComparable
 {
@@ -10,13 +14,14 @@ public abstract class Enumeration : IComparable
 
     protected Enumeration(int id, string name)
     {
-        Id = id;
-        Name = name;
+        this.Id = id;
+        this.Name = name;
     }
 
-    public override string ToString() => Name;
+    public override string ToString() => this.Name;
 
-    public static IEnumerable<T> GetAll<T>() where T : Enumeration
+    public static IEnumerable<T> GetAll<T>()
+        where T : Enumeration
     {
         var fields = typeof(T).GetFields(BindingFlags.Public | BindingFlags.Static | BindingFlags.DeclaredOnly);
         return fields.Select(f => f.GetValue(null)).Cast<T>();
@@ -29,13 +34,13 @@ public abstract class Enumeration : IComparable
             return false;
         }
 
-        var typeMatches = GetType().Equals(obj.GetType());
-        var valueMatches = Id.Equals(otherValue.Id);
+        var typeMatches = this.GetType().Equals(obj.GetType());
+        var valueMatches = this.Id.Equals(otherValue.Id);
 
         return typeMatches && valueMatches;
     }
 
-    public override int GetHashCode() => Id.GetHashCode();
+    public override int GetHashCode() => this.Id.GetHashCode();
 
     public int CompareTo(object? obj)
     {
@@ -46,9 +51,9 @@ public abstract class Enumeration : IComparable
 
         if (obj is not Enumeration other)
         {
-            throw new ArgumentException($"Object must be of type {GetType().Name}", nameof(obj));
+            throw new ArgumentException($"Object must be of type {this.GetType().Name}", nameof(obj));
         }
 
-        return Id.CompareTo(other.Id);
+        return this.Id.CompareTo(other.Id);
     }
 }

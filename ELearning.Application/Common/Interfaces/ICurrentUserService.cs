@@ -1,4 +1,8 @@
-﻿namespace ELearning.Application.Common.Interfaces;
+// <copyright file="ICurrentUserService.cs" company="FarazLoloei">
+// Copyright (c) FarazLoloei. All rights reserved.
+// </copyright>
+
+namespace ELearning.Application.Common.Interfaces;
 
 public interface ICurrentUserService
 {

@@ -1,4 +1,8 @@
-﻿namespace ELearning.API.GraphQL.InputTypes;
+// <copyright file="CreateCourseInput.cs" company="FarazLoloei">
+// Copyright (c) FarazLoloei. All rights reserved.
+// </copyright>
+
+namespace ELearning.API.GraphQL.InputTypes;
 
 public record CreateCourseInput(
     string Title,

@@ -1,9 +1,13 @@
+// <copyright file="OutboxDispatcher.cs" company="FarazLoloei">
+// Copyright (c) FarazLoloei. All rights reserved.
+// </copyright>
+
+namespace ELearning.Infrastructure.Outbox;
+
 using ELearning.Infrastructure.Data;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-
-namespace ELearning.Infrastructure.Outbox;
 
 public sealed class OutboxDispatcher(
     ApplicationDbContext dbContext,

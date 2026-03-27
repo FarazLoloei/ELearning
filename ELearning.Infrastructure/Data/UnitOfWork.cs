@@ -1,20 +1,24 @@
-using ELearning.Application.Common.Interfaces;
-using Microsoft.EntityFrameworkCore.Storage;
+// <copyright file="UnitOfWork.cs" company="FarazLoloei">
+// Copyright (c) FarazLoloei. All rights reserved.
+// </copyright>
 
 namespace ELearning.Infrastructure.Data;
 
+using ELearning.Application.Common.Interfaces;
+using Microsoft.EntityFrameworkCore.Storage;
+
 public sealed class UnitOfWork(ApplicationDbContext dbContext) : IUnitOfWork
 {
-    private IDbContextTransaction? _transaction;
+    private IDbContextTransaction? transaction;
 
     public async Task BeginTransactionAsync(CancellationToken cancellationToken = default)
     {
-        if (_transaction is not null)
+        if (this.transaction is not null)
         {
             return;
         }
 
-        _transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken);
+        this.transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken);
     }
 
     public Task<int> SaveChangesAsync(CancellationToken cancellationToken = default) =>
@@ -22,25 +26,25 @@ public sealed class UnitOfWork(ApplicationDbContext dbContext) : IUnitOfWork
 
     public async Task CommitTransactionAsync(CancellationToken cancellationToken = default)
     {
-        if (_transaction is null)
+        if (this.transaction is null)
         {
             return;
         }
 
-        await _transaction.CommitAsync(cancellationToken);
-        await _transaction.DisposeAsync();
-        _transaction = null;
+        await this.transaction.CommitAsync(cancellationToken);
+        await this.transaction.DisposeAsync();
+        this.transaction = null;
     }
 
     public async Task RollbackTransactionAsync(CancellationToken cancellationToken = default)
     {
-        if (_transaction is null)
+        if (this.transaction is null)
         {
             return;
         }
 
-        await _transaction.RollbackAsync(cancellationToken);
-        await _transaction.DisposeAsync();
-        _transaction = null;
+        await this.transaction.RollbackAsync(cancellationToken);
+        await this.transaction.DisposeAsync();
+        this.transaction = null;
     }
 }

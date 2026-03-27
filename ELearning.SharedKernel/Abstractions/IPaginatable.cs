@@ -1,4 +1,8 @@
-﻿namespace ELearning.SharedKernel.Abstractions;
+// <copyright file="IPaginatable.cs" company="FarazLoloei">
+// Copyright (c) FarazLoloei. All rights reserved.
+// </copyright>
+
+namespace ELearning.SharedKernel.Abstractions;
 
 public interface IPaginatable
 {

@@ -1,3 +1,9 @@
+// <copyright file="CurrentUserAuthorizationGuardTests.cs" company="FarazLoloei">
+// Copyright (c) FarazLoloei. All rights reserved.
+// </copyright>
+
+namespace ELearning.Application.Tests.Security;
+
 using ELearning.Application.Common.Exceptions;
 using ELearning.Application.Common.Interfaces;
 using ELearning.Application.Common.Security;
@@ -7,8 +13,6 @@ using ELearning.Domain.Entities.CourseAggregate.Enums;
 using ELearning.Domain.ValueObjects;
 using ELearning.SharedKernel.Models;
 using FluentAssertions;
-
-namespace ELearning.Application.Tests.Security;
 
 public sealed class CurrentUserAuthorizationGuardTests
 {
@@ -152,7 +156,7 @@ public sealed class CurrentUserAuthorizationGuardTests
     private sealed class FakeCurrentUserService(Guid? userId, bool isAuthenticated, IEnumerable<string>? roles = null)
         : ICurrentUserService
     {
-        private readonly HashSet<string> _roles = new(roles ?? [], StringComparer.OrdinalIgnoreCase);
+        private readonly HashSet<string> roles = new(roles ?? [], StringComparer.OrdinalIgnoreCase);
 
         public Guid? UserId { get; } = userId;
 
@@ -160,21 +164,20 @@ public sealed class CurrentUserAuthorizationGuardTests
 
         public bool IsAuthenticated { get; } = isAuthenticated;
 
-        public bool IsInRole(string role) => _roles.Contains(role);
+        public bool IsInRole(string role) => this.roles.Contains(role);
     }
 
     private sealed class FakeCourseRepository(Course? course) : ICourseRepository
     {
-        public Task<Course?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+        public Task<Course?> GetByIdForUpdateAsync(Guid id, CancellationToken cancellationToken = default)
         {
             if (course is null || course.Id != id)
+            {
                 return Task.FromResult<Course?>(null);
+            }
 
             return Task.FromResult<Course?>(course);
         }
-
-        public Task<IReadOnlyList<Course>> ListAllAsync(CancellationToken cancellationToken = default) =>
-            throw new NotImplementedException();
 
         public Task AddAsync(Course entity, CancellationToken cancellationToken = default) =>
             throw new NotImplementedException();

@@ -1,3 +1,7 @@
+// <copyright file="AuthPayload.cs" company="FarazLoloei">
+// Copyright (c) FarazLoloei. All rights reserved.
+// </copyright>
+
 namespace ELearning.Application.Common.Model;
 
 public sealed record AuthPayload(

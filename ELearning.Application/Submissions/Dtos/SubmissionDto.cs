@@ -1,6 +1,10 @@
-using ELearning.SharedKernel.Abstractions;
+// <copyright file="SubmissionDto.cs" company="FarazLoloei">
+// Copyright (c) FarazLoloei. All rights reserved.
+// </copyright>
 
 namespace ELearning.Application.Submissions.Dtos;
+
+using ELearning.SharedKernel.Abstractions;
 
 public sealed record SubmissionDto(
     Guid Id,
@@ -9,5 +13,4 @@ public sealed record SubmissionDto(
     DateTime SubmittedDate,
     bool IsGraded,
     int? Score,
-    int MaxPoints
-) : IDto;
+    int MaxPoints) : IDto;

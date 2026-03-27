@@ -1,6 +1,10 @@
-﻿using ELearning.SharedKernel;
+// <copyright file="ProgressStatus.cs" company="FarazLoloei">
+// Copyright (c) FarazLoloei. All rights reserved.
+// </copyright>
 
 namespace ELearning.Domain.Entities.EnrollmentAggregate.Enums;
+
+using ELearning.SharedKernel;
 
 public sealed class ProgressStatus : Enumeration
 {
@@ -8,7 +12,8 @@ public sealed class ProgressStatus : Enumeration
     public static ProgressStatus InProgress = new ProgressStatus(2, nameof(InProgress));
     public static ProgressStatus Completed = new ProgressStatus(3, nameof(Completed));
 
-    private ProgressStatus(int id, string name) : base(id, name)
+    private ProgressStatus(int id, string name)
+        : base(id, name)
     {
     }
 }

@@ -1,6 +1,10 @@
-﻿using ELearning.SharedKernel.Abstractions;
+// <copyright file="BaseEntity.cs" company="FarazLoloei">
+// Copyright (c) FarazLoloei. All rights reserved.
+// </copyright>
 
 namespace ELearning.SharedKernel;
+
+using ELearning.SharedKernel.Abstractions;
 
 public abstract class BaseEntity
 {
@@ -10,48 +14,48 @@ public abstract class BaseEntity
 
     public DateTime CreatedAt()
     {
-        return createdAtUTC.ToLocalTime();
+        return this.createdAtUTC.ToLocalTime();
     }
 
     protected void CreatedAt(DateTime value)
     {
-        createdAtUTC = value.ToUniversalTime();
+        this.createdAtUTC = value.ToUniversalTime();
     }
 
     private DateTime? updatedAtUTC;
 
     public DateTime? UpdatedAt()
     {
-        return updatedAtUTC?.ToLocalTime();
+        return this.updatedAtUTC?.ToLocalTime();
     }
 
     protected void UpdatedAt(DateTime? value)
     {
-        updatedAtUTC = value?.ToUniversalTime();
+        this.updatedAtUTC = value?.ToUniversalTime();
     }
 
-    private List<IDomainEvent> _domainEvents = new List<IDomainEvent>();
+    private List<IDomainEvent> domainEvents = new List<IDomainEvent>();
 
-    public IReadOnlyCollection<IDomainEvent> DomainEvents => _domainEvents.AsReadOnly();
+    public IReadOnlyCollection<IDomainEvent> DomainEvents => this.domainEvents.AsReadOnly();
 
     public void AddDomainEvent(IDomainEvent domainEvent)
     {
-        _domainEvents.Add(domainEvent);
+        this.domainEvents.Add(domainEvent);
     }
 
     public void RemoveDomainEvent(IDomainEvent domainEvent)
     {
-        _domainEvents.Remove(domainEvent);
+        this.domainEvents.Remove(domainEvent);
     }
 
     public void ClearDomainEvents()
     {
-        _domainEvents.Clear();
+        this.domainEvents.Clear();
     }
 
     protected BaseEntity()
     {
-        Id = Guid.NewGuid();
-        CreatedAt(DateTime.UtcNow);
+        this.Id = Guid.NewGuid();
+        this.CreatedAt(DateTime.UtcNow);
     }
 }

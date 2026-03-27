@@ -1,6 +1,10 @@
-﻿using ELearning.SharedKernel;
+// <copyright file="EnrollmentStatus.cs" company="FarazLoloei">
+// Copyright (c) FarazLoloei. All rights reserved.
+// </copyright>
 
 namespace ELearning.Domain.Entities.EnrollmentAggregate.Enums;
+
+using ELearning.SharedKernel;
 
 public sealed class EnrollmentStatus : Enumeration
 {
@@ -9,7 +13,8 @@ public sealed class EnrollmentStatus : Enumeration
     public static EnrollmentStatus Completed = new EnrollmentStatus(3, nameof(Completed));
     public static EnrollmentStatus Abandoned = new EnrollmentStatus(4, nameof(Abandoned));
 
-    private EnrollmentStatus(int id, string name) : base(id, name)
+    private EnrollmentStatus(int id, string name)
+        : base(id, name)
     {
     }
 }

@@ -1,43 +1,51 @@
-﻿using ELearning.Application.Common.Exceptions;
+// <copyright file="DeleteCourseCommandHandler.cs" company="FarazLoloei">
+// Copyright (c) FarazLoloei. All rights reserved.
+// </copyright>
+
+namespace ELearning.Application.Courses.Handlers;
+
+using ELearning.Application.Common.Exceptions;
 using ELearning.Application.Common.Interfaces;
 using ELearning.Application.Common.Model;
 using ELearning.Application.Courses.Commands;
 using ELearning.Domain.Entities.CourseAggregate;
 using ELearning.Domain.Entities.CourseAggregate.Abstractions.Repositories;
-using ELearning.Domain.Entities.EnrollmentAggregate.Abstractions.Repositories;
 using MediatR;
 
-namespace ELearning.Application.Courses.Handlers;
-
 /// <summary>
-/// Handler for DeleteCourseCommand
+/// Handler for DeleteCourseCommand.
 /// </summary>
 public class DeleteCourseCommandHandler(
         ICourseRepository courseRepository,
-        IEnrollmentRepository enrollmentRepository,
         ICurrentUserService currentUserService)
     : IRequestHandler<DeleteCourseCommand, Result>
 {
     public async Task<Result> Handle(DeleteCourseCommand request, CancellationToken cancellationToken)
     {
         if (!currentUserService.IsAuthenticated || currentUserService.UserId is null)
+        {
             throw new ForbiddenAccessException();
+        }
 
-        var course = await courseRepository.GetByIdAsync(request.CourseId, cancellationToken) ??
+        var course = await courseRepository.GetByIdForUpdateAsync(request.CourseId, cancellationToken) ??
             throw new NotFoundException(nameof(Course), request.CourseId);
 
-        // Check if the current user is the instructor of this course or an admin
-        var isInstructor = course.InstructorId == currentUserService.UserId;
+        var isInstructorOwner = course.IsOwnedBy(currentUserService.UserId.Value);
 
-        if (!isInstructor && !currentUserService.IsInRole("Admin"))
+        if (!isInstructorOwner && !currentUserService.IsInRole("Admin"))
+        {
             throw new ForbiddenAccessException();
+        }
 
-        // Check if there are any enrollments for this course
-        var hasEnrollments = await enrollmentRepository.HasAnyForCourseAsync(request.CourseId, cancellationToken);
-        if (hasEnrollments)
-            return Result.Failure("Cannot delete a course with active enrollments. Archive it instead.");
+        try
+        {
+            course.EnsureCanBeDeleted();
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Result.Failure(ex.Message);
+        }
 
-        // Delete the course
         await courseRepository.DeleteAsync(course, cancellationToken);
 
         return Result.Success();

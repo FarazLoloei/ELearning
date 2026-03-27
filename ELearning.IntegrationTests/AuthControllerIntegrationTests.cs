@@ -1,18 +1,22 @@
+// <copyright file="AuthControllerIntegrationTests.cs" company="FarazLoloei">
+// Copyright (c) FarazLoloei. All rights reserved.
+// </copyright>
+
+namespace ELearning.IntegrationTests;
+
 using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
 using ELearning.IntegrationTests.Infrastructure;
 using FluentAssertions;
 
-namespace ELearning.IntegrationTests;
-
 public sealed class AuthControllerIntegrationTests : IClassFixture<TestWebApplicationFactory>
 {
-    private readonly HttpClient _client;
+    private readonly HttpClient client;
 
     public AuthControllerIntegrationTests(TestWebApplicationFactory factory)
     {
-        _client = factory.CreateClient();
+        this.client = factory.CreateClient();
     }
 
     [Fact]
@@ -23,10 +27,10 @@ public sealed class AuthControllerIntegrationTests : IClassFixture<TestWebApplic
         var request = new
         {
             Email = "sample.user@elearning.test",
-            Password = "P@ssword123!"
+            Password = "P@ssword123!",
         };
 
-        var response = await _client.PostAsJsonAsync("/api/auth/login", request, cancellationToken);
+        var response = await this.client.PostAsJsonAsync("/api/auth/login", request, cancellationToken);
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
@@ -45,7 +49,7 @@ public sealed class AuthControllerIntegrationTests : IClassFixture<TestWebApplic
     {
         var cancellationToken = TestContext.Current.CancellationToken;
 
-        var response = await _client.PostAsJsonAsync("/api/auth/login", new { }, cancellationToken);
+        var response = await this.client.PostAsJsonAsync("/api/auth/login", new { }, cancellationToken);
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }

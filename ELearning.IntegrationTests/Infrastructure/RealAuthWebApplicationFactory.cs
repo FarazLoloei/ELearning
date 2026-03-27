@@ -1,8 +1,12 @@
+// <copyright file="RealAuthWebApplicationFactory.cs" company="FarazLoloei">
+// Copyright (c) FarazLoloei. All rights reserved.
+// </copyright>
+
+namespace ELearning.IntegrationTests.Infrastructure;
+
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.Configuration;
-
-namespace ELearning.IntegrationTests.Infrastructure;
 
 public sealed class RealAuthWebApplicationFactory : WebApplicationFactory<Program>
 {
@@ -20,7 +24,7 @@ public sealed class RealAuthWebApplicationFactory : WebApplicationFactory<Progra
                 ["JwtSettings:Audience"] = "integration-tests",
                 ["JwtSettings:Secret"] = "integration-tests-secret-key-with-32chars",
                 ["JwtSettings:ExpiryInDays"] = "7",
-                ["Ocelot:Enabled"] = "false"
+                ["Ocelot:Enabled"] = "false",
             };
 
             configBuilder.AddInMemoryCollection(testSettings);

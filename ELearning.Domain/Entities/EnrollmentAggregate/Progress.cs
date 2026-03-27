@@ -1,68 +1,81 @@
-﻿using ELearning.Domain.Entities.EnrollmentAggregate.Enums;
-using ELearning.SharedKernel;
+// <copyright file="Progress.cs" company="FarazLoloei">
+// Copyright (c) FarazLoloei. All rights reserved.
+// </copyright>
 
 namespace ELearning.Domain.Entities.EnrollmentAggregate;
+
+using ELearning.Domain.Entities.EnrollmentAggregate.Enums;
+using ELearning.SharedKernel;
 
 public class Progress : BaseEntity
 {
     /// <summary>
-    /// Reference to parent enrollment
+    /// Gets reference to parent enrollment.
     /// </summary>
     public Guid EnrollmentId { get; private set; }
 
     /// <summary>
-    /// Reference to specific lesson
+    /// Gets reference to specific lesson.
     /// </summary>
     public Guid LessonId { get; private set; }
 
     /// <summary>
-    /// Completion state (NotStarted, InProgress, Completed)
+    /// Gets completion state (NotStarted, InProgress, Completed).
     /// </summary>
     public ProgressStatus Status { get; private set; } = ProgressStatus.NotStarted;
 
     /// <summary>
-    /// When student finished the lesson
+    /// Gets when student finished the lesson.
     /// </summary>
     public DateTime? CompletedDate { get; private set; }
 
     /// <summary>
-    /// Total time student spent on this lesson (in seconds)
+    /// Gets total time student spent on this lesson (in seconds).
     /// </summary>
     public int TimeSpentSeconds { get; private set; }
 
     private Progress()
-    { }
+    {
+    }
 
     public Progress(Guid enrollmentId, Guid lessonId, int? timeSpendInSeconds)
     {
-        EnrollmentId = enrollmentId;
-        LessonId = lessonId;
-        Status = ProgressStatus.NotStarted;
-        TimeSpentSeconds = timeSpendInSeconds ?? 0;
+        this.EnrollmentId = enrollmentId;
+        this.LessonId = lessonId;
+        this.Status = ProgressStatus.NotStarted;
+        this.TimeSpentSeconds = timeSpendInSeconds ?? 0;
     }
 
     public void MarkAsStarted()
     {
-        if (Status == ProgressStatus.NotStarted)
+        if (this.Status == ProgressStatus.NotStarted)
         {
-            Status = ProgressStatus.InProgress;
-            UpdatedAt(DateTime.UtcNow);
+            this.Status = ProgressStatus.InProgress;
+            this.UpdatedAt(DateTime.UtcNow);
         }
     }
 
     public void MarkAsCompleted()
     {
-        Status = ProgressStatus.Completed;
-        CompletedDate = DateTime.UtcNow;
-        UpdatedAt(DateTime.UtcNow);
+        if (this.Status == ProgressStatus.Completed)
+        {
+            return;
+        }
+
+        this.Status = ProgressStatus.Completed;
+        this.CompletedDate = DateTime.UtcNow;
+        this.UpdatedAt(DateTime.UtcNow);
     }
 
     public void AddTimeSpent(int seconds)
     {
         if (seconds <= 0)
+        {
             throw new ArgumentException("Time spent must be positive", nameof(seconds));
+        }
 
-        TimeSpentSeconds += seconds;
-        UpdatedAt(DateTime.UtcNow);
+        this.MarkAsStarted();
+        this.TimeSpentSeconds += seconds;
+        this.UpdatedAt(DateTime.UtcNow);
     }
 }

@@ -1,7 +1,11 @@
-using ELearning.Application.Tests.Helpers;
-using ELearning.Application.Common.Validators.Dtos;
+// <copyright file="InstructorAndSubmissionDtoValidationTests.cs" company="FarazLoloei">
+// Copyright (c) FarazLoloei. All rights reserved.
+// </copyright>
 
 namespace ELearning.Application.Tests.Dtos;
+
+using ELearning.Application.Common.Validators.Dtos;
+using ELearning.Application.Tests.Helpers;
 
 public class InstructorAndSubmissionDtoValidationTests
 {
@@ -123,4 +127,3 @@ public class InstructorAndSubmissionDtoValidationTests
         DtoValidationTestHelper.AssertInvalidFor(SubmissionDetailValidator, dto, x => x.GradedByName);
     }
 }
-

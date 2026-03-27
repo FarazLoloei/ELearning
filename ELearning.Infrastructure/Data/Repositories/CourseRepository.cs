@@ -1,23 +1,27 @@
-﻿using ELearning.Domain.Entities.CourseAggregate;
+// <copyright file="CourseRepository.cs" company="FarazLoloei">
+// Copyright (c) FarazLoloei. All rights reserved.
+// </copyright>
+
+namespace ELearning.Infrastructure.Data.Repositories;
+
+using ELearning.Domain.Entities.CourseAggregate;
 using ELearning.Domain.Entities.CourseAggregate.Abstractions.Repositories;
 using ELearning.Domain.Entities.CourseAggregate.Enums;
 using ELearning.SharedKernel.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace ELearning.Infrastructure.Data.Repositories;
-
 public class CourseRepository : ICourseRepository
 {
-    private readonly ApplicationDbContext _context;
+    private readonly ApplicationDbContext context;
 
     public CourseRepository(ApplicationDbContext context)
     {
-        _context = context;
+        this.context = context;
     }
 
-    public async Task<Course?> GetByIdAsync(Guid id, CancellationToken cancellationToken)
+    public async Task<Course?> GetByIdForUpdateAsync(Guid id, CancellationToken cancellationToken)
     {
-        return await _context.Courses
+        return await this.context.Courses
             .Include(c => c.Modules)
             .ThenInclude(m => m.Lessons)
             .Include(c => c.Modules)
@@ -26,41 +30,37 @@ public class CourseRepository : ICourseRepository
             .FirstOrDefaultAsync(c => c.Id == id, cancellationToken);
     }
 
-    public async Task<IReadOnlyList<Course>> ListAllAsync(CancellationToken cancellationToken) => await _context.Courses
-        .AsNoTracking()
-        .ToListAsync(cancellationToken);
-
     public async Task AddAsync(Course entity, CancellationToken cancellationToken)
     {
-        await _context.Courses.AddAsync(entity, cancellationToken);
+        await this.context.Courses.AddAsync(entity, cancellationToken);
     }
 
     public Task UpdateAsync(Course entity, CancellationToken cancellationToken)
     {
-        _context.Entry(entity).State = EntityState.Modified;
+        this.context.Entry(entity).State = EntityState.Modified;
         return Task.CompletedTask;
     }
 
     public Task DeleteAsync(Course entity, CancellationToken cancellationToken)
     {
-        _context.Courses.Remove(entity);
+        this.context.Courses.Remove(entity);
         return Task.CompletedTask;
     }
 
     public async Task<IReadOnlyList<Course>> GetByInstructorIdAsync(Guid instructorId, CancellationToken cancellationToken) =>
-        await _context.Courses
+        await this.context.Courses
             .AsNoTracking()
             .Where(c => c.InstructorId == instructorId)
             .ToListAsync(cancellationToken);
 
     public async Task<IReadOnlyList<Course>> GetByCategoryAsync(CourseCategory category, CancellationToken cancellationToken) =>
-        await _context.Courses
+        await this.context.Courses
             .AsNoTracking()
             .Where(c => c.Category == category)
             .ToListAsync(cancellationToken);
 
     public async Task<IReadOnlyList<Course>> GetFeaturedCoursesAsync(int count, CancellationToken cancellationToken) =>
-        await _context.Courses
+        await this.context.Courses
             .AsNoTracking()
             .Where(c => c.IsFeatured && c.Status == CourseStatus.Published)
             .OrderByDescending(c => c.AverageRating.Value)
@@ -69,8 +69,9 @@ public class CourseRepository : ICourseRepository
 
     public async Task<IReadOnlyList<Course>> SearchCoursesAsync(string? searchTerm, PaginationParameters pagination, CancellationToken cancellationToken)
     {
-        var query = _context.Courses
+        var query = this.context.Courses
             .AsNoTracking()
+            .Where(c => c.Status == CourseStatus.Published)
             .AsQueryable();
 
         if (!string.IsNullOrWhiteSpace(searchTerm))
@@ -89,7 +90,7 @@ public class CourseRepository : ICourseRepository
     }
 
     public async Task<IReadOnlyList<Course>> GetRecentCoursesAsync(int count, CancellationToken cancellationToken) =>
-        await _context.Courses
+        await this.context.Courses
             .AsNoTracking()
             .Where(c => c.Status == CourseStatus.Published)
             .OrderByDescending(c => c.PublishedDate)
@@ -97,13 +98,13 @@ public class CourseRepository : ICourseRepository
             .ToListAsync(cancellationToken);
 
     public async Task<IReadOnlyList<Course>> GetByLevelAsync(CourseLevel level, CancellationToken cancellationToken) =>
-        await _context.Courses
+        await this.context.Courses
             .AsNoTracking()
             .Where(c => c.Level == level)
             .ToListAsync(cancellationToken);
 
     public async Task<int> GetCoursesCountAsync(CancellationToken cancellationToken) =>
-        await _context.Courses
+        await this.context.Courses
             .AsNoTracking()
             .CountAsync(cancellationToken);
 }

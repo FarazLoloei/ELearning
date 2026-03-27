@@ -1,17 +1,28 @@
+// <copyright file="AuthResult.cs" company="FarazLoloei">
+// Copyright (c) FarazLoloei. All rights reserved.
+// </copyright>
+
 namespace ELearning.Application.Common.Model;
 
 public sealed record AuthResult
 {
     public bool Success { get; }
+
     public AuthPayload? Data { get; }
+
     public string? ErrorMessage { get; }
 
-    public string? Token => Data?.Token;
-    public string? RefreshToken => Data?.RefreshToken;
-    public Guid? UserId => Data?.UserId;
-    public string? Email => Data?.Email;
-    public string? FullName => Data?.FullName;
-    public string? Role => Data?.Role;
+    public string? Token => this.Data?.Token;
+
+    public string? RefreshToken => this.Data?.RefreshToken;
+
+    public Guid? UserId => this.Data?.UserId;
+
+    public string? Email => this.Data?.Email;
+
+    public string? FullName => this.Data?.FullName;
+
+    public string? Role => this.Data?.Role;
 
     private AuthResult(bool success, AuthPayload? data, string? errorMessage)
     {
@@ -23,9 +34,9 @@ public sealed record AuthResult
             throw new InvalidOperationException("AuthResult must be either a success with data or a failure with error.");
         }
 
-        Success = success;
-        Data = data;
-        ErrorMessage = errorMessage;
+        this.Success = success;
+        this.Data = data;
+        this.ErrorMessage = errorMessage;
     }
 
     public static AuthResult Succeeded(AuthPayload payload)

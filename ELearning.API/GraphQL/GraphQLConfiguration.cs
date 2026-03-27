@@ -1,6 +1,10 @@
-using ELearning.API.GraphQL.ObjectTypes;
+// <copyright file="GraphQLConfiguration.cs" company="FarazLoloei">
+// Copyright (c) FarazLoloei. All rights reserved.
+// </copyright>
 
 namespace ELearning.API.GraphQL;
+
+using ELearning.API.GraphQL.ObjectTypes;
 
 public static class GraphQLConfiguration
 {
@@ -11,6 +15,7 @@ public static class GraphQLConfiguration
             .AddQueryType<Query>()
             .AddMutationType<Mutation>()
             .AddType<CourseType>()
+            .AddType<CertificateType>()
             .AddType<StudentType>()
             .AddType<InstructorType>()
             .AddType<EnrollmentType>()
@@ -20,13 +25,5 @@ public static class GraphQLConfiguration
             .AddProjections();
 
         return services;
-    }
-
-    public static void UseGraphQLEndpoint(this IApplicationBuilder app)
-    {
-        app.UseEndpoints(endpoints =>
-        {
-            endpoints.MapGraphQL();
-        });
     }
 }

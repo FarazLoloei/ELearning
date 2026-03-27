@@ -1,3 +1,9 @@
+// <copyright file="InstructorsController.cs" company="FarazLoloei">
+// Copyright (c) FarazLoloei. All rights reserved.
+// </copyright>
+
+namespace ELearning.API.Controllers;
+
 using Asp.Versioning;
 using ELearning.API.Contracts;
 using ELearning.API.Facades;
@@ -9,8 +15,6 @@ using ELearning.Application.Submissions.Queries;
 using ELearning.SharedKernel;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-
-namespace ELearning.API.Controllers;
 
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/[controller]")]
@@ -24,7 +28,7 @@ public class InstructorsController(IApiFacade apiFacade) : ApiControllerBase
     {
         var query = new GetInstructorProfileQuery { InstructorId = id };
         var result = await apiFacade.SendAsync(query, cancellationToken);
-        return FromResult(result, error => error.StartsWith("Instructor not found", StringComparison.OrdinalIgnoreCase));
+        return this.FromResult(result, error => error.StartsWith("Instructor not found", StringComparison.OrdinalIgnoreCase));
     }
 
     [HttpGet("{id:guid}/with-courses")]
@@ -34,7 +38,7 @@ public class InstructorsController(IApiFacade apiFacade) : ApiControllerBase
     {
         var query = new GetInstructorCoursesQuery { InstructorId = id };
         var result = await apiFacade.SendAsync(query, cancellationToken);
-        return FromResult(result, error => error.StartsWith("Instructor not found", StringComparison.OrdinalIgnoreCase));
+        return this.FromResult(result, error => error.StartsWith("Instructor not found", StringComparison.OrdinalIgnoreCase));
     }
 
     [HttpGet("{id:guid}/pending-submissions")]
@@ -50,10 +54,10 @@ public class InstructorsController(IApiFacade apiFacade) : ApiControllerBase
         {
             InstructorId = id,
             PageNumber = pageNumber,
-            PageSize = pageSize
+            PageSize = pageSize,
         };
 
         var result = await apiFacade.SendAsync(query, cancellationToken);
-        return FromResult(result);
+        return this.FromResult(result);
     }
 }

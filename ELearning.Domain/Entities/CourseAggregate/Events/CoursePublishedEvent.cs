@@ -1,6 +1,10 @@
-﻿using ELearning.SharedKernel.Abstractions;
+// <copyright file="CoursePublishedEvent.cs" company="FarazLoloei">
+// Copyright (c) FarazLoloei. All rights reserved.
+// </copyright>
 
 namespace ELearning.Domain.Entities.CourseAggregate.Events;
+
+using ELearning.SharedKernel.Abstractions;
 
 public sealed class CoursePublishedEvent : IDomainEvent
 {
@@ -10,7 +14,7 @@ public sealed class CoursePublishedEvent : IDomainEvent
 
     public CoursePublishedEvent(Course course)
     {
-        Course = course ?? throw new ArgumentNullException(nameof(course));
-        OccurredOnUTC = DateTime.UtcNow;
+        this.Course = course ?? throw new ArgumentNullException(nameof(course));
+        this.OccurredOnUTC = DateTime.UtcNow;
     }
 }

@@ -1,0 +1,53 @@
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+
+jobs:
+  build-test-quality:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Restore
+        run: dotnet restore ELearning.sln
+
+      - name: Build (analyzers enabled)
+        run: dotnet build ELearning.sln --no-restore -nologo
+
+      - name: Lint (analyzers and nullable warnings gate)
+        run: dotnet build ELearning.sln --no-restore -nologo /warnaserror:nullable
+
+      - name: Test with coverage
+        run: dotnet test ELearning.sln --no-build -nologo --collect:"XPlat Code Coverage" --results-directory TestResults/ci
+
+      - name: Dependency vulnerability scan (SCA)
+        shell: bash
+        run: |
+          mkdir -p TestResults/ci
+          dotnet list ELearning.sln package --vulnerable --include-transitive > TestResults/ci/dependency-scan.txt
+          cat TestResults/ci/dependency-scan.txt
+          if grep -qi "has the following vulnerable packages" TestResults/ci/dependency-scan.txt; then
+            echo "Vulnerable dependencies detected."
+            exit 1
+          fi
+
+      - name: Upload quality artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ci-quality-artifacts
+          path: |
+            TestResults/**/*.trx
+            TestResults/**/coverage.cobertura.xml
+            TestResults/ci/dependency-scan.txt
