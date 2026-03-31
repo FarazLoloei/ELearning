@@ -108,29 +108,6 @@ public class ApplicationDbContext : DbContext
         object payload = domainEvent switch
         {
             CourseCreatedEvent e => new { CourseId = e.Course.Id, e.OccurredOnUTC },
-            CoursePublishedEvent e => new { CourseId = e.Course.Id, e.OccurredOnUTC },
-            CourseRatedEvent e => new
-            {
-                StudentId = e.Student.Id,
-                CourseId = e.Course.Id,
-                EnrollmentId = e.Enrollment.Id,
-                RatingValue = e.Rating.Value,
-                e.OccurredOnUTC,
-            },
-            CourseCompletedEvent e => new
-            {
-                StudentId = e.Student.Id,
-                CourseId = e.Course.Id,
-                EnrollmentId = e.Enrollment.Id,
-                e.OccurredOnUTC,
-            },
-            EnrollmentCreatedEvent e => new
-            {
-                StudentId = e.Student.Id,
-                CourseId = e.Course.Id,
-                EnrollmentId = e.Enrollment.Id,
-                e.OccurredOnUTC,
-            },
             SubmissionGradedEvent e => new { SubmissionId = e.Submission.Id, e.OccurredOnUTC },
             _ => new { domainEvent.OccurredOnUTC },
         };

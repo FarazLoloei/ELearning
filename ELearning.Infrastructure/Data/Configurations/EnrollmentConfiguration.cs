@@ -34,7 +34,7 @@ public class EnrollmentConfiguration : IEntityTypeConfiguration<Enrollment>
 
         // Configure relationships
         builder.HasOne<Student>()
-            .WithMany(s => s.Enrollments)
+            .WithMany()
             .HasForeignKey(e => e.StudentId)
             .OnDelete(DeleteBehavior.Cascade);
 

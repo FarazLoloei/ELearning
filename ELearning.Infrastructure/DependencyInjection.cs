@@ -80,9 +80,7 @@ public static class DependencyInjection
         services.AddScoped<IProgressReadRepository, ProgressReadRepository>();
         services.AddScoped<IUnitOfWork, UnitOfWork>();
 
-        services.AddTransient<IDateTime, DateTimeService>();
         services.AddTransient<IEmailService, EmailService>();
-        services.AddTransient<IFileStorageService, FileStorageService>();
         services.AddScoped<IAccessTokenIssuer, AccessTokenIssuer>();
         services.AddScoped<IRefreshTokenStore, RefreshTokenStore>();
         services.AddScoped<ISecurityAuditWriter, SecurityAuditWriter>();

@@ -60,7 +60,7 @@ public class CourseConfiguration : IEntityTypeConfiguration<Course>
 
         // Configure relationships
         builder.HasOne<Instructor>()
-            .WithMany(i => i.Courses)
+            .WithMany()
             .HasForeignKey(c => c.InstructorId)
             .OnDelete(DeleteBehavior.Restrict);
 

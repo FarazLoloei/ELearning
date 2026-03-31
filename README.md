@@ -8,7 +8,7 @@ This repository exists as a senior-level backend portfolio project. The goal is 
 
 Many sample backends stop at CRUD. This project is intentionally shaped around product workflows instead:
 
-- instructors author courses and submit them for review
+- instructors create courses and submit them for review
 - admins govern publication through explicit moderation actions
 - students enroll in published courses
 - learners progress through lessons and assessments
@@ -28,7 +28,7 @@ The platform models three primary actors:
 Core business capabilities currently implemented:
 
 - identity and access with JWT auth and refresh-token rotation
-- course authoring and explicit course lifecycle governance
+- course creation, catalog management, and explicit course lifecycle governance
 - enrollment with lifecycle-aware eligibility
 - lesson progression and rule-driven course completion
 - assessment submission and grading
@@ -185,7 +185,7 @@ This project is strongest where reviewers usually look for senior-level judgment
 - pragmatic read/write separation without unnecessary distributed complexity
 - credible auth, moderation, progression, assessment, review, certificate, and notification flows
 
-It is intentionally not a “perfect enterprise platform.” It is a realistic sample that balances architecture quality with repo readability.
+It is intentionally not a "perfect enterprise platform." It is a realistic sample that balances architecture quality with repo readability.
 
 ## Future Improvements
 

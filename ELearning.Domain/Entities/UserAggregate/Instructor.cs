@@ -4,14 +4,11 @@
 
 namespace ELearning.Domain.Entities.UserAggregate;
 
-using ELearning.Domain.Entities.CourseAggregate;
 using ELearning.Domain.Entities.UserAggregate.Enums;
 using ELearning.Domain.ValueObjects;
 
 public class Instructor : User
 {
-    private readonly HashSet<Course> courses = new();
-
     /// <summary>
     /// Gets professional biography.
     /// </summary>
@@ -21,11 +18,6 @@ public class Instructor : User
     /// Gets areas of specialization.
     /// </summary>
     public string Expertise { get; private set; } = string.Empty;
-
-    /// <summary>
-    /// Gets collection of courses created by this instructor.
-    /// </summary>
-    public IReadOnlyCollection<Course> Courses => this.courses.ToList().AsReadOnly();
 
     private Instructor()
         : base()
@@ -62,8 +54,4 @@ public class Instructor : User
             this.UpdatedAt(DateTime.UtcNow);
         }
     }
-
-    public bool AddCourse(Course course) => this.courses.Add(course); // HashSet prevents duplicates and returns success status
-
-    public bool RemoveCourse(Course course) => this.courses.Remove(course);
 }
