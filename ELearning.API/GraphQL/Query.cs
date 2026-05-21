@@ -28,6 +28,7 @@ public class Query
     /// <summary>
     /// Get a paginated list of courses with optional filtering.
     /// </summary>
+    /// <returns>A paginated collection of public course summaries.</returns>
     [UsePaging]
     [UseFiltering]
     [UseSorting]
@@ -58,6 +59,7 @@ public class Query
     /// <summary>
     /// Get course details by ID.
     /// </summary>
+    /// <returns>The course details when the course exists; otherwise null.</returns>
     [GraphQLDescription("Get course details by ID")]
     public async Task<CourseDto?> GetCourse(
         [Service] IMediator mediator,
@@ -80,6 +82,7 @@ public class Query
     /// <summary>
     /// Get featured courses.
     /// </summary>
+    /// <returns>A list of featured public courses.</returns>
     [GraphQLDescription("Get featured courses")]
     public async Task<List<CourseListDto>> GetFeaturedCourses(
         [Service] IMediator mediator,
@@ -98,6 +101,7 @@ public class Query
     /// <summary>
     /// Get courses by category.
     /// </summary>
+    /// <returns>A list of public courses for the requested category.</returns>
     [GraphQLDescription("Get courses by category ID")]
     public async Task<List<CourseListDto>> GetCoursesByCategory(
         [Service] IMediator mediator,
@@ -115,6 +119,7 @@ public class Query
     /// <summary>
     /// Get student profile by ID.
     /// </summary>
+    /// <returns>The student profile when found; otherwise null.</returns>
     [GraphQLDescription("Get student profile by ID")]
     public async Task<StudentDto?> GetStudent(
         [Service] IMediator mediator,
@@ -128,6 +133,7 @@ public class Query
     /// <summary>
     /// Get student progress by ID.
     /// </summary>
+    /// <returns>The student progress summary when available; otherwise null.</returns>
     [GraphQLDescription("Get student progress by student ID")]
     [Authorize]
     public async Task<StudentProgressDto?> GetStudentProgress(
@@ -142,6 +148,7 @@ public class Query
     /// <summary>
     /// Get instructor profile by ID.
     /// </summary>
+    /// <returns>The instructor profile when found; otherwise null.</returns>
     [GraphQLDescription("Get instructor profile by ID")]
     public async Task<InstructorDto?> GetInstructor(
         [Service] IMediator mediator,
@@ -155,6 +162,7 @@ public class Query
     /// <summary>
     /// Get instructor profile with courses by ID.
     /// </summary>
+    /// <returns>The instructor profile and courses when found; otherwise null.</returns>
     [GraphQLDescription("Get instructor with courses by ID")]
     public async Task<InstructorCoursesDto?> GetInstructorWithCourses(
         [Service] IMediator mediator,
@@ -168,6 +176,7 @@ public class Query
     /// <summary>
     /// Get pending submissions for instructor.
     /// </summary>
+    /// <returns>A collection of pending submissions for the instructor.</returns>
     [UsePaging]
     [UseFiltering]
     [UseSorting]
@@ -193,6 +202,7 @@ public class Query
     /// <summary>
     /// Get enrollment details by ID.
     /// </summary>
+    /// <returns>The enrollment details when found; otherwise null.</returns>
     [GraphQLDescription("Get enrollment details by ID")]
     [Authorize]
     public async Task<EnrollmentDetailDto?> GetEnrollment(
@@ -226,6 +236,7 @@ public class Query
     /// <summary>
     /// Get submission details by ID.
     /// </summary>
+    /// <returns>The submission details when found; otherwise null.</returns>
     [GraphQLDescription("Get submission details by ID")]
     [Authorize]
     public async Task<SubmissionDetailDto?> GetSubmission(
@@ -240,6 +251,7 @@ public class Query
     /// <summary>
     /// Get a student's enrollments.
     /// </summary>
+    /// <returns>A collection of enrollments for the student.</returns>
     [UsePaging]
     [UseFiltering]
     [UseSorting]
