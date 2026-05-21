@@ -132,7 +132,7 @@ public class CourseReadRepository(ApplicationDbContext context) : ICourseReadRep
     public Task<CourseReadModel?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
         var connection = context.Database.GetDbConnection();
-        return GetByIdAsyncCore(connection, id, cancellationToken);
+        return this.GetByIdAsyncCore(connection, id, cancellationToken);
     }
 
     public async Task<IReadOnlyList<CourseReviewReadModel>> GetReviewsByCourseIdAsync(

@@ -9,6 +9,7 @@ using ELearning.Domain.Entities.CourseAggregate.Abstractions.Repositories;
 using ELearning.Domain.Entities.CourseAggregate.Enums;
 using ELearning.SharedKernel.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 
 public class CourseRepository : ICourseRepository
 {
@@ -35,10 +36,59 @@ public class CourseRepository : ICourseRepository
         await this.context.Courses.AddAsync(entity, cancellationToken);
     }
 
-    public Task UpdateAsync(Course entity, CancellationToken cancellationToken)
+    public async Task UpdateAsync(Course entity, CancellationToken cancellationToken)
     {
-        this.context.Entry(entity).State = EntityState.Modified;
-        return Task.CompletedTask;
+        if (this.context.Entry(entity).State == EntityState.Detached)
+        {
+            this.context.Courses.Update(entity);
+        }
+
+        await this.TrackNewCourseContentAsync(entity, cancellationToken);
+    }
+
+    private async Task TrackNewCourseContentAsync(Course course, CancellationToken cancellationToken)
+    {
+        foreach (var module in course.Modules)
+        {
+            var moduleEntry = this.context.Entry(module);
+            await TrackAsAddedWhenMissingAsync(
+                moduleEntry,
+                () => this.context.Modules.AnyAsync(existingModule => existingModule.Id == module.Id, cancellationToken));
+
+            foreach (var lesson in module.Lessons)
+            {
+                var lessonEntry = this.context.Entry(lesson);
+                await TrackAsAddedWhenMissingAsync(
+                    lessonEntry,
+                    () => this.context.Lessons.AnyAsync(existingLesson => existingLesson.Id == lesson.Id, cancellationToken));
+            }
+
+            foreach (var assignment in module.Assignments)
+            {
+                var assignmentEntry = this.context.Entry(assignment);
+                await TrackAsAddedWhenMissingAsync(
+                    assignmentEntry,
+                    () => this.context.Assignments.AnyAsync(existingAssignment => existingAssignment.Id == assignment.Id, cancellationToken));
+            }
+        }
+    }
+
+    private static async Task TrackAsAddedWhenMissingAsync(EntityEntry entry, Func<Task<bool>> existsInDatabase)
+    {
+        if (entry.State == EntityState.Added)
+        {
+            return;
+        }
+
+        if (entry.State is not (EntityState.Detached or EntityState.Modified))
+        {
+            return;
+        }
+
+        if (!await existsInDatabase())
+        {
+            entry.State = EntityState.Added;
+        }
     }
 
     public Task DeleteAsync(Course entity, CancellationToken cancellationToken)

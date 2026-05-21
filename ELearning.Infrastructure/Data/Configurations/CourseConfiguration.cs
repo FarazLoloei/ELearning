@@ -69,10 +69,16 @@ public class CourseConfiguration : IEntityTypeConfiguration<Course>
             .HasForeignKey(m => m.CourseId)
             .OnDelete(DeleteBehavior.Cascade);
 
+        builder.Navigation(c => c.Modules)
+            .UsePropertyAccessMode(PropertyAccessMode.Field);
+
         builder.HasMany(c => c.Enrollments)
             .WithOne()
             .HasForeignKey(e => e.CourseId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Navigation(c => c.Enrollments)
+            .UsePropertyAccessMode(PropertyAccessMode.Field);
 
         // Table name
         builder.ToTable("Courses");

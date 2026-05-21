@@ -4,6 +4,7 @@
 
 namespace ELearning.Infrastructure.Data;
 
+using System.Security.Cryptography;
 using System.Text.Json;
 using ELearning.Domain.Entities.CertificateAggregate;
 using ELearning.Domain.Entities.CourseAggregate;
@@ -15,6 +16,7 @@ using ELearning.Infrastructure.Data.Models;
 using ELearning.SharedKernel;
 using ELearning.SharedKernel.Abstractions;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata;
 
 public class ApplicationDbContext : DbContext
 {
@@ -54,6 +56,8 @@ public class ApplicationDbContext : DbContext
 
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
+        this.UpdateSqliteConcurrencyTokens();
+
         foreach (var entry in this.ChangeTracker.Entries<BaseEntity>())
         {
             switch (entry.State)
@@ -75,7 +79,51 @@ public class ApplicationDbContext : DbContext
     {
         modelBuilder.ApplyConfigurationsFromAssembly(System.Reflection.Assembly.GetExecutingAssembly());
 
+        if (this.Database.IsSqlite())
+        {
+            ConfigureSqliteConcurrencyTokenSaveBehavior(modelBuilder);
+        }
+
         base.OnModelCreating(modelBuilder);
+    }
+
+    private static void ConfigureSqliteConcurrencyTokenSaveBehavior(ModelBuilder modelBuilder)
+    {
+        foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+        {
+            var rowVersionProperty = entityType.FindProperty("RowVersion");
+            if (rowVersionProperty?.ClrType != typeof(byte[]))
+            {
+                continue;
+            }
+
+            rowVersionProperty.ValueGenerated = ValueGenerated.Never;
+            rowVersionProperty.SetDefaultValueSql(null);
+            rowVersionProperty.SetBeforeSaveBehavior(PropertySaveBehavior.Save);
+            rowVersionProperty.SetAfterSaveBehavior(PropertySaveBehavior.Save);
+        }
+    }
+
+    private void UpdateSqliteConcurrencyTokens()
+    {
+        if (!this.Database.IsSqlite())
+        {
+            return;
+        }
+
+        var entries = this.ChangeTracker.Entries()
+            .Where(entry => entry.State is EntityState.Added or EntityState.Modified);
+
+        foreach (var entry in entries)
+        {
+            var rowVersionProperty = entry.Metadata.FindProperty("RowVersion");
+            if (rowVersionProperty?.ClrType != typeof(byte[]))
+            {
+                continue;
+            }
+
+            entry.Property(rowVersionProperty.Name).CurrentValue = RandomNumberGenerator.GetBytes(8);
+        }
     }
 
     private void EnqueueDomainEventsToOutbox()

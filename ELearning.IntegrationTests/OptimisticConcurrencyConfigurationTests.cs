@@ -18,7 +18,7 @@ using Microsoft.Extensions.DependencyInjection;
 public sealed class OptimisticConcurrencyConfigurationTests
 {
     [Fact]
-    public void KeyAggregates_ShouldUseRowVersionConcurrencyToken()
+    public void KeyAggregates_ShouldUseSqliteApplicationManagedConcurrencyToken()
     {
         var configuration = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
@@ -48,6 +48,6 @@ public sealed class OptimisticConcurrencyConfigurationTests
         var rowVersion = entityType!.FindProperty("RowVersion");
         rowVersion.Should().NotBeNull();
         rowVersion!.IsConcurrencyToken.Should().BeTrue();
-        rowVersion.ValueGenerated.Should().Be(ValueGenerated.OnAddOrUpdate);
+        rowVersion.ValueGenerated.Should().Be(ValueGenerated.Never);
     }
 }

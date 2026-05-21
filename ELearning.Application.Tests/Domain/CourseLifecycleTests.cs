@@ -6,6 +6,7 @@ namespace ELearning.Application.Tests.Domain;
 
 using ELearning.Domain.Entities.CourseAggregate;
 using ELearning.Domain.Entities.CourseAggregate.Enums;
+using ELearning.Domain.Entities.CourseAggregate.Exceptions;
 using ELearning.Domain.ValueObjects;
 using FluentAssertions;
 
@@ -69,6 +70,77 @@ public sealed class CourseLifecycleTests
             CourseCategory.Programming,
             CourseLevel.Intermediate,
             Duration.Create(2, 0));
+
+        action.Should().Throw<InvalidOperationException>()
+            .WithMessage("*draft or rejected*");
+    }
+
+    [Fact]
+    public void AddLessonToModule_WhenCourseIsEditable_AddsLessonToModule()
+    {
+        var course = CreateCourse();
+        var module = new Module("Module 1", "Introduction module.", 1, course.Id);
+        course.AddModule(module);
+        var lesson = new Lesson(
+            "Lesson 1",
+            "Read this introduction.",
+            LessonType.Text,
+            1,
+            module.Id);
+
+        course.AddLessonToModule(module.Id, lesson);
+
+        module.Lessons.Should().ContainSingle().Which.Should().Be(lesson);
+    }
+
+    [Fact]
+    public void AddAssignmentToModule_WhenCourseIsEditable_AddsAssignmentToModule()
+    {
+        var course = CreateCourse();
+        var module = new Module("Module 1", "Introduction module.", 1, course.Id);
+        course.AddModule(module);
+        var assignment = new Assignment(
+            "Assignment 1",
+            "Complete the introduction check.",
+            AssignmentType.Quiz,
+            10,
+            module.Id);
+
+        course.AddAssignmentToModule(module.Id, assignment);
+
+        module.Assignments.Should().ContainSingle().Which.Should().Be(assignment);
+    }
+
+    [Fact]
+    public void AddLessonToModule_WhenModuleDoesNotExist_ThrowsModuleNotFoundException()
+    {
+        var course = CreateCourse();
+        var lesson = new Lesson(
+            "Lesson 1",
+            "Read this introduction.",
+            LessonType.Text,
+            1,
+            Guid.NewGuid());
+
+        var action = () => course.AddLessonToModule(Guid.NewGuid(), lesson);
+
+        action.Should().Throw<ModuleNotFoundException>();
+    }
+
+    [Fact]
+    public void AddLessonToModule_WhenCourseIsPublished_ThrowsInvalidOperationException()
+    {
+        var course = CreateReadyForReviewCourse();
+        var module = course.Modules.Single();
+        course.ApprovePublication();
+        var lesson = new Lesson(
+            "Lesson 1",
+            "Read this introduction.",
+            LessonType.Text,
+            1,
+            module.Id);
+
+        var action = () => course.AddLessonToModule(module.Id, lesson);
 
         action.Should().Throw<InvalidOperationException>()
             .WithMessage("*draft or rejected*");
