@@ -6,6 +6,7 @@ namespace ELearning.Domain.Entities.CourseAggregate;
 
 using ELearning.Domain.Entities.CourseAggregate.Enums;
 using ELearning.Domain.Entities.CourseAggregate.Events;
+using ELearning.Domain.Entities.CourseAggregate.Exceptions;
 using ELearning.Domain.Entities.EnrollmentAggregate;
 using ELearning.Domain.ValueObjects;
 using ELearning.SharedKernel;
@@ -145,6 +146,30 @@ public class Course : BaseEntity, IAggregateRoot<Course>
     {
         this.EnsureEditableByInstructor();
         this.modules.Remove(module);
+        this.UpdatedAt(DateTime.UtcNow);
+    }
+
+    public void AddLessonToModule(Guid moduleId, Lesson lesson)
+    {
+        this.EnsureEditableByInstructor();
+        ArgumentNullException.ThrowIfNull(lesson);
+
+        var module = this.modules.FirstOrDefault(module => module.Id == moduleId)
+            ?? throw new ModuleNotFoundException(moduleId);
+
+        module.AddLesson(lesson);
+        this.UpdatedAt(DateTime.UtcNow);
+    }
+
+    public void AddAssignmentToModule(Guid moduleId, Assignment assignment)
+    {
+        this.EnsureEditableByInstructor();
+        ArgumentNullException.ThrowIfNull(assignment);
+
+        var module = this.modules.FirstOrDefault(module => module.Id == moduleId)
+            ?? throw new ModuleNotFoundException(moduleId);
+
+        module.AddAssignment(assignment);
         this.UpdatedAt(DateTime.UtcNow);
     }
 

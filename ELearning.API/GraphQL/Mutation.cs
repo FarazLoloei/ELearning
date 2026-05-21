@@ -120,6 +120,71 @@ public class Mutation(ILogger<Mutation> logger)
             : new OperationPayload(new Error("COURSE_UPDATE_ERROR", result.Error));
     }
 
+    [GraphQLDescription("Add a module to a course")]
+    [Authorize(Roles = "Instructor")]
+    public async Task<OperationPayload> AddCourseModule(
+        [Service] IMediator mediator,
+        AddCourseModuleInput input,
+        CancellationToken cancellationToken)
+    {
+        var command = new AddCourseModuleCommand(
+            input.CourseId,
+            input.Title,
+            input.Description,
+            input.Order);
+
+        var result = await mediator.Send(command, cancellationToken);
+        return result.IsSuccess
+            ? new OperationPayload()
+            : new OperationPayload(new Error("COURSE_MODULE_CREATE_ERROR", result.Error));
+    }
+
+    [GraphQLDescription("Add a lesson to a course module")]
+    [Authorize(Roles = "Instructor")]
+    public async Task<OperationPayload> AddCourseLesson(
+        [Service] IMediator mediator,
+        AddCourseLessonInput input,
+        CancellationToken cancellationToken)
+    {
+        var command = new AddCourseLessonCommand(
+            input.CourseId,
+            input.ModuleId,
+            input.Title,
+            input.Content,
+            input.TypeId,
+            input.Order,
+            input.DurationHours,
+            input.DurationMinutes,
+            input.VideoUrl);
+
+        var result = await mediator.Send(command, cancellationToken);
+        return result.IsSuccess
+            ? new OperationPayload()
+            : new OperationPayload(new Error("COURSE_LESSON_CREATE_ERROR", result.Error));
+    }
+
+    [GraphQLDescription("Add an assignment to a course module")]
+    [Authorize(Roles = "Instructor")]
+    public async Task<OperationPayload> AddCourseAssignment(
+        [Service] IMediator mediator,
+        AddCourseAssignmentInput input,
+        CancellationToken cancellationToken)
+    {
+        var command = new AddCourseAssignmentCommand(
+            input.CourseId,
+            input.ModuleId,
+            input.Title,
+            input.Description,
+            input.TypeId,
+            input.MaxPoints,
+            input.DueDate);
+
+        var result = await mediator.Send(command, cancellationToken);
+        return result.IsSuccess
+            ? new OperationPayload()
+            : new OperationPayload(new Error("COURSE_ASSIGNMENT_CREATE_ERROR", result.Error));
+    }
+
     [GraphQLDescription("Delete a course")]
     [Authorize(Roles = "Instructor,Admin")]
     public async Task<OperationPayload> DeleteCourse(

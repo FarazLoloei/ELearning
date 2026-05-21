@@ -7,6 +7,7 @@ namespace ELearning.API.Controllers;
 using Asp.Versioning;
 using ELearning.API.Contracts;
 using ELearning.API.Facades;
+using ELearning.API.Models;
 using ELearning.Application.Courses.Commands;
 using ELearning.Application.Courses.Dtos;
 using ELearning.Application.Courses.Queries;
@@ -138,6 +139,91 @@ public class CoursesController(IApiFacade apiFacade) : ApiControllerBase
 
         var result = await apiFacade.SendAsync(command, cancellationToken);
         return this.FromResult(result, error => error.StartsWith("Course not found", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [HttpPost("{courseId:guid}/modules")]
+    [Authorize(Roles = "Instructor")]
+    [ProducesResponseType(StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<ApiResponse<Guid>>> AddModule(
+        Guid courseId,
+        AddCourseModuleRequest request,
+        CancellationToken cancellationToken)
+    {
+        var command = new AddCourseModuleCommand(
+            courseId,
+            request.Title,
+            request.Description,
+            request.Order);
+
+        var result = await apiFacade.SendAsync(command, cancellationToken);
+        if (!result.IsSuccess)
+        {
+            return this.BadRequestResponse<Guid>(result.Error);
+        }
+
+        return this.StatusCode(StatusCodes.Status201Created, ApiResponse<Guid>.Success(result.Value));
+    }
+
+    [HttpPost("{courseId:guid}/modules/{moduleId:guid}/lessons")]
+    [Authorize(Roles = "Instructor")]
+    [ProducesResponseType(StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<ApiResponse<Guid>>> AddLesson(
+        Guid courseId,
+        Guid moduleId,
+        AddCourseLessonRequest request,
+        CancellationToken cancellationToken)
+    {
+        var command = new AddCourseLessonCommand(
+            courseId,
+            moduleId,
+            request.Title,
+            request.Content,
+            request.TypeId,
+            request.Order,
+            request.DurationHours,
+            request.DurationMinutes,
+            request.VideoUrl);
+
+        var result = await apiFacade.SendAsync(command, cancellationToken);
+        if (!result.IsSuccess)
+        {
+            return this.BadRequestResponse<Guid>(result.Error);
+        }
+
+        return this.StatusCode(StatusCodes.Status201Created, ApiResponse<Guid>.Success(result.Value));
+    }
+
+    [HttpPost("{courseId:guid}/modules/{moduleId:guid}/assignments")]
+    [Authorize(Roles = "Instructor")]
+    [ProducesResponseType(StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<ApiResponse<Guid>>> AddAssignment(
+        Guid courseId,
+        Guid moduleId,
+        AddCourseAssignmentRequest request,
+        CancellationToken cancellationToken)
+    {
+        var command = new AddCourseAssignmentCommand(
+            courseId,
+            moduleId,
+            request.Title,
+            request.Description,
+            request.TypeId,
+            request.MaxPoints,
+            request.DueDate);
+
+        var result = await apiFacade.SendAsync(command, cancellationToken);
+        if (!result.IsSuccess)
+        {
+            return this.BadRequestResponse<Guid>(result.Error);
+        }
+
+        return this.StatusCode(StatusCodes.Status201Created, ApiResponse<Guid>.Success(result.Value));
     }
 
     [HttpDelete("{id:guid}")]
