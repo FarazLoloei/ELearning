@@ -14,16 +14,18 @@ public sealed class Result<T>
 
     public string Error { get; }
 
+    public ApplicationError? ErrorDetails { get; }
+
     public T Value =>
         this.IsSuccess
             ? this.value!
             : throw new InvalidOperationException("Cannot access Value on a failed result.");
 
-    private Result(bool isSuccess, T? value, string error)
+    private Result(bool isSuccess, T? value, ApplicationError? error)
     {
         if (isSuccess)
         {
-            if (!string.IsNullOrEmpty(error))
+            if (error is not null)
             {
                 throw new ArgumentException("Successful result cannot contain an error.", nameof(error));
             }
@@ -35,21 +37,25 @@ public sealed class Result<T>
         }
         else
         {
-            ArgumentException.ThrowIfNullOrWhiteSpace(error);
+            ArgumentNullException.ThrowIfNull(error);
+            ArgumentException.ThrowIfNullOrWhiteSpace(error.Message);
         }
 
         this.IsSuccess = isSuccess;
         this.value = value;
-        this.Error = error;
+        this.ErrorDetails = error;
+        this.Error = error?.Message ?? string.Empty;
     }
 
     public static Result<T> Success(T value)
     {
         ArgumentNullException.ThrowIfNull(value);
-        return new Result<T>(true, value, string.Empty);
+        return new Result<T>(true, value, null);
     }
 
-    public static Result<T> Failure(string error) => new Result<T>(false, default, error);
+    public static Result<T> Failure(string error) => Failure(ApplicationError.BadRequest(error));
+
+    public static Result<T> Failure(ApplicationError error) => new Result<T>(false, default, error);
 
     public TResult Match<TResult>(Func<T, TResult> onSuccess, Func<string, TResult> onFailure)
     {
@@ -67,31 +73,39 @@ public sealed class Result
 
     public string Error { get; }
 
-    private Result(bool isSuccess, string error)
+    public ApplicationError? ErrorDetails { get; }
+
+    private Result(bool isSuccess, ApplicationError? error)
     {
         if (isSuccess)
         {
-            if (!string.IsNullOrEmpty(error))
+            if (error is not null)
             {
                 throw new ArgumentException("Successful result cannot contain an error.", nameof(error));
             }
         }
         else
         {
-            ArgumentException.ThrowIfNullOrWhiteSpace(error);
+            ArgumentNullException.ThrowIfNull(error);
+            ArgumentException.ThrowIfNullOrWhiteSpace(error.Message);
         }
 
         this.IsSuccess = isSuccess;
-        this.Error = error;
+        this.ErrorDetails = error;
+        this.Error = error?.Message ?? string.Empty;
     }
 
-    public static Result Success() => new Result(true, string.Empty);
+    public static Result Success() => new Result(true, null);
 
-    public static Result Failure(string error) => new Result(false, error);
+    public static Result Failure(string error) => Failure(ApplicationError.BadRequest(error));
+
+    public static Result Failure(ApplicationError error) => new Result(false, error);
 
     public static Result<T> Success<T>(T value) => Result<T>.Success(value);
 
     public static Result<T> Failure<T>(string error) => Result<T>.Failure(error);
+
+    public static Result<T> Failure<T>(ApplicationError error) => Result<T>.Failure(error);
 
     public TResult Match<TResult>(Func<TResult> onSuccess, Func<string, TResult> onFailure)
     {

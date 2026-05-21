@@ -40,7 +40,7 @@ public sealed class AddCourseModuleCommandHandler(
         }
         catch (Exception ex) when (ex is InvalidOperationException or ArgumentException)
         {
-            return Result.Failure<Guid>(ex.Message);
+            return Result.Failure<Guid>(ApplicationError.Conflict(ex.Message));
         }
 
         await courseRepository.UpdateAsync(course, cancellationToken);

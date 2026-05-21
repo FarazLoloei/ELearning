@@ -28,7 +28,7 @@ public sealed class GetEnrollmentCertificateQueryHandler(
         var certificate = await certificateReadRepository.GetByEnrollmentIdAsync(request.EnrollmentId, cancellationToken);
         if (certificate is null)
         {
-            return Result.Failure<CertificateDto>("Certificate not found for enrollment.");
+            return Result.Failure<CertificateDto>(ApplicationError.NotFound("Certificate not found for enrollment."));
         }
 
         var isOwner = certificate.StudentId == currentUserService.UserId.Value;

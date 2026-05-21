@@ -101,6 +101,6 @@ public class AuthController(IApiFacade apiFacade) : ApiControllerBase
             new RevokeRefreshTokenCommand(request.RefreshToken),
             cancellationToken);
 
-        return result.IsSuccess ? this.Ok(ApiResponse<object?>.Success(null)) : this.BadRequestResponse<object?>(result.Error);
+        return result.IsSuccess ? this.Ok(ApiResponse<object?>.Success(null)) : this.FromError<object?>(result.ErrorDetails);
     }
 }

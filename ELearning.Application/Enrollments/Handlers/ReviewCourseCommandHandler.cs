@@ -45,7 +45,7 @@ public sealed class ReviewCourseCommandHandler(
         }
         catch (Exception ex) when (ex is InvalidOperationException or ArgumentOutOfRangeException)
         {
-            return Result.Failure(ex.Message);
+            return Result.Failure(ApplicationError.Conflict(ex.Message));
         }
 
         await enrollmentRepository.UpdateAsync(enrollment, cancellationToken);

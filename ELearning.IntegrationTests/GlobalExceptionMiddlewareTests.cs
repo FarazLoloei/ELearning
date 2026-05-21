@@ -33,5 +33,6 @@ public sealed class GlobalExceptionMiddlewareTests
         using var payload = await JsonDocument.ParseAsync(context.Response.Body, cancellationToken: cancellationToken);
         payload.RootElement.GetProperty("status").GetInt32().Should().Be(StatusCodes.Status409Conflict);
         payload.RootElement.GetProperty("title").GetString().Should().Be("Concurrency conflict");
+        payload.RootElement.GetProperty("code").GetString().Should().Be("conflict.concurrency");
     }
 }

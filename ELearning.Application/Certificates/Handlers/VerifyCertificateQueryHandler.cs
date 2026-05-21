@@ -18,7 +18,7 @@ public sealed class VerifyCertificateQueryHandler(ICertificateReadRepository cer
         var certificate = await certificateReadRepository.GetByCodeAsync(request.CertificateCode, cancellationToken);
         if (certificate is null)
         {
-            return Result.Failure<CertificateDto>("Certificate not found.");
+            return Result.Failure<CertificateDto>(ApplicationError.NotFound("Certificate not found."));
         }
 
         return Result.Success(new CertificateDto(

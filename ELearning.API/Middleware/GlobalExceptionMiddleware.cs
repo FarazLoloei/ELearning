@@ -4,7 +4,9 @@
 
 namespace ELearning.API.Middleware;
 
+using ELearning.API.Infrastructure;
 using ELearning.Application.Common.Exceptions;
+using ELearning.Application.Common.Model;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -24,15 +26,43 @@ public sealed class GlobalExceptionMiddleware(RequestDelegate next, ILogger<Glob
 
     private async Task HandleExceptionAsync(HttpContext context, Exception exception)
     {
-        var (statusCode, title) = exception switch
+        var (statusCode, title, code, detail) = exception switch
         {
-            ValidationException => (StatusCodes.Status400BadRequest, "Validation failed"),
-            NotFoundException => (StatusCodes.Status404NotFound, "Resource not found"),
-            ForbiddenAccessException => (StatusCodes.Status403Forbidden, "Forbidden"),
-            UnauthorizedAccessException => (StatusCodes.Status401Unauthorized, "Unauthorized"),
-            DomainApplicationException => (StatusCodes.Status400BadRequest, "Application error"),
-            DbUpdateConcurrencyException => (StatusCodes.Status409Conflict, "Concurrency conflict"),
-            _ => (StatusCodes.Status500InternalServerError, "Internal server error"),
+            ValidationException => (
+                StatusCodes.Status400BadRequest,
+                "Validation failed",
+                ApplicationErrorCodes.ValidationFailed,
+                exception.Message),
+            NotFoundException => (
+                StatusCodes.Status404NotFound,
+                "Resource not found",
+                ApplicationErrorCodes.ResourceNotFound,
+                exception.Message),
+            ForbiddenAccessException => (
+                StatusCodes.Status403Forbidden,
+                "Forbidden",
+                ApplicationErrorCodes.AuthorizationForbidden,
+                exception.Message),
+            UnauthorizedAccessException => (
+                StatusCodes.Status401Unauthorized,
+                "Unauthorized",
+                ApplicationErrorCodes.AuthenticationUnauthorized,
+                exception.Message),
+            DomainApplicationException => (
+                StatusCodes.Status400BadRequest,
+                "Invalid request",
+                ApplicationErrorCodes.RequestInvalid,
+                exception.Message),
+            DbUpdateConcurrencyException => (
+                StatusCodes.Status409Conflict,
+                "Concurrency conflict",
+                ApplicationErrorCodes.ConcurrencyConflict,
+                exception.Message),
+            _ => (
+                StatusCodes.Status500InternalServerError,
+                "Internal server error",
+                ApplicationErrorCodes.UnexpectedError,
+                "An unexpected error occurred."),
         };
 
         if (statusCode >= 500)
@@ -44,23 +74,10 @@ public sealed class GlobalExceptionMiddleware(RequestDelegate next, ILogger<Glob
             logger.LogWarning(exception, "Handled exception for request {Method} {Path}", context.Request.Method, context.Request.Path);
         }
 
-        var problemDetails = new ProblemDetails
-        {
-            Status = statusCode,
-            Title = title,
-            Detail = exception.Message,
-            Instance = context.Request.Path,
-        };
+        ProblemDetails problemDetails = exception is ValidationException validationException
+            ? ApiProblemDetailsFactory.CreateValidation(context, validationException.Errors, detail)
+            : ApiProblemDetailsFactory.Create(context, statusCode, title, detail, code);
 
-        problemDetails.Extensions["traceId"] = context.TraceIdentifier;
-
-        if (exception is ValidationException validationException)
-        {
-            problemDetails.Extensions["errors"] = validationException.Errors;
-        }
-
-        context.Response.StatusCode = statusCode;
-        context.Response.ContentType = "application/problem+json";
-        await context.Response.WriteAsJsonAsync(problemDetails, options: null, contentType: "application/problem+json");
+        await ApiProblemDetailsFactory.WriteAsync(context, problemDetails);
     }
 }

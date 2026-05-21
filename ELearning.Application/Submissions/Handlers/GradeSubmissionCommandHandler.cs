@@ -40,7 +40,7 @@ public class GradeSubmissionCommandHandler(
 
         if (submission.IsGraded)
         {
-            return Result.Failure("Submission is already graded.");
+            return Result.Failure(ApplicationError.Conflict("Submission is already graded."));
         }
 
         // Get the assignment to check max points
@@ -70,7 +70,7 @@ public class GradeSubmissionCommandHandler(
         }
         catch (Exception ex) when (ex is InvalidOperationException or ArgumentOutOfRangeException)
         {
-            return Result.Failure(ex.Message);
+            return Result.Failure(ApplicationError.Conflict(ex.Message));
         }
 
         await enrollmentRepository.UpdateAsync(enrollment, cancellationToken);

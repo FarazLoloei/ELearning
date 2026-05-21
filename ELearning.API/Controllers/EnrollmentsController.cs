@@ -27,7 +27,7 @@ public class EnrollmentsController(IApiFacade apiFacade) : ApiControllerBase
     {
         var query = new GetEnrollmentDetailQuery { EnrollmentId = id };
         var result = await apiFacade.SendAsync(query, cancellationToken);
-        return this.FromResult(result, error => error.StartsWith("Enrollment not found", StringComparison.OrdinalIgnoreCase));
+        return this.FromResult(result);
     }
 
     [HttpPost]
@@ -41,7 +41,7 @@ public class EnrollmentsController(IApiFacade apiFacade) : ApiControllerBase
         var result = await apiFacade.SendAsync(command, cancellationToken);
         if (!result.IsSuccess)
         {
-            return this.BadRequestResponse<object?>(result.Error);
+            return this.FromError<object?>(result.ErrorDetails);
         }
 
         return this.CreatedResponse();
@@ -58,7 +58,7 @@ public class EnrollmentsController(IApiFacade apiFacade) : ApiControllerBase
         CancellationToken cancellationToken)
     {
         var result = await apiFacade.SendAsync(new StartLessonCommand(id, lessonId), cancellationToken);
-        return this.FromResult(result, error => error.StartsWith("Enrollment not found", StringComparison.OrdinalIgnoreCase));
+        return this.FromResult(result);
     }
 
     [HttpPost("{id:guid}/lessons/{lessonId:guid}/complete")]
@@ -72,7 +72,7 @@ public class EnrollmentsController(IApiFacade apiFacade) : ApiControllerBase
         CancellationToken cancellationToken)
     {
         var result = await apiFacade.SendAsync(new CompleteLessonCommand(id, lessonId), cancellationToken);
-        return this.FromResult(result, error => error.StartsWith("Enrollment not found", StringComparison.OrdinalIgnoreCase));
+        return this.FromResult(result);
     }
 
     [HttpPut("{id:guid}/status")]
@@ -87,11 +87,11 @@ public class EnrollmentsController(IApiFacade apiFacade) : ApiControllerBase
     {
         if (id != command.EnrollmentId)
         {
-            return this.BadRequestResponse<object?>("Route id does not match payload EnrollmentId.");
+            return this.RouteIdMismatchResponse<object?>("EnrollmentId");
         }
 
         var result = await apiFacade.SendAsync(command, cancellationToken);
-        return this.FromResult(result, error => error.StartsWith("Enrollment not found", StringComparison.OrdinalIgnoreCase));
+        return this.FromResult(result);
     }
 
     [HttpPost("{id:guid}/review")]
@@ -108,6 +108,6 @@ public class EnrollmentsController(IApiFacade apiFacade) : ApiControllerBase
             new ReviewCourseCommand(id, request.Rating, request.Review),
             cancellationToken);
 
-        return this.FromResult(result, error => error.StartsWith("Enrollment not found", StringComparison.OrdinalIgnoreCase));
+        return this.FromResult(result);
     }
 }

@@ -42,7 +42,7 @@ public sealed class CompleteLessonCommandHandler(
 
         if (!course.ContainsLesson(request.LessonId))
         {
-            return Result.Failure("The lesson does not belong to the enrolled course.");
+            return Result.Failure(ApplicationError.Conflict("The lesson does not belong to the enrolled course."));
         }
 
         try
@@ -55,7 +55,7 @@ public sealed class CompleteLessonCommandHandler(
         }
         catch (InvalidOperationException ex)
         {
-            return Result.Failure(ex.Message);
+            return Result.Failure(ApplicationError.Conflict(ex.Message));
         }
 
         await enrollmentRepository.UpdateAsync(enrollment, cancellationToken);
