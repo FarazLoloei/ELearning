@@ -40,7 +40,7 @@ public sealed class AddCourseLessonCommandHandler(
 
         if (lessonType is null)
         {
-            return Result.Failure<Guid>($"Invalid lesson type: {request.TypeId}");
+            return Result.Failure<Guid>(ApplicationError.BadRequest($"Invalid lesson type: {request.TypeId}"));
         }
 
         Lesson lesson;
@@ -64,7 +64,7 @@ public sealed class AddCourseLessonCommandHandler(
         }
         catch (Exception ex) when (ex is InvalidOperationException or ArgumentException or ArgumentOutOfRangeException)
         {
-            return Result.Failure<Guid>(ex.Message);
+            return Result.Failure<Guid>(ApplicationError.Conflict(ex.Message));
         }
 
         await courseRepository.UpdateAsync(course, cancellationToken);

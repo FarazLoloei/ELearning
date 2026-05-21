@@ -62,12 +62,12 @@ public sealed class IssueCertificateForCompletedEnrollmentCommandHandler(
         }
         catch (InvalidOperationException ex)
         {
-            return Result.Failure<CertificateDto>(ex.Message);
+            return Result.Failure<CertificateDto>(ApplicationError.Conflict(ex.Message));
         }
 
         if (certificate is null)
         {
-            return Result.Failure<CertificateDto>("Certificates are available only after successful course completion.");
+            return Result.Failure<CertificateDto>(ApplicationError.Conflict("Certificates are available only after successful course completion."));
         }
 
         return Result.Success(new CertificateDto(

@@ -52,7 +52,7 @@ public class CoursesController(IApiFacade apiFacade) : ApiControllerBase
     {
         var query = new GetCourseDetailQuery { CourseId = id };
         var result = await apiFacade.SendAsync(query, cancellationToken);
-        return this.FromResult(result, error => error.StartsWith("Course not found", StringComparison.OrdinalIgnoreCase));
+        return this.FromResult(result);
     }
 
     [HttpGet("{id:guid}/reviews")]
@@ -61,7 +61,7 @@ public class CoursesController(IApiFacade apiFacade) : ApiControllerBase
     public async Task<ActionResult<ApiResponse<IReadOnlyList<ReviewDto>>>> GetCourseReviews(Guid id, CancellationToken cancellationToken)
     {
         var result = await apiFacade.SendAsync(new GetCourseReviewsQuery(id), cancellationToken);
-        return this.FromResult(result, error => error.StartsWith("Course not found", StringComparison.OrdinalIgnoreCase));
+        return this.FromResult(result);
     }
 
     [HttpGet("featured")]
@@ -79,7 +79,7 @@ public class CoursesController(IApiFacade apiFacade) : ApiControllerBase
         var result = await apiFacade.SendAsync(query, cancellationToken);
         if (!result.IsSuccess)
         {
-            return this.BadRequestResponse<List<CourseListDto>>(result.Error);
+            return this.FromError<List<CourseListDto>>(result.ErrorDetails);
         }
 
         return this.Ok(ApiResponse<List<CourseListDto>>.Success(result.Value.Items.ToList()));
@@ -99,7 +99,7 @@ public class CoursesController(IApiFacade apiFacade) : ApiControllerBase
         var result = await apiFacade.SendAsync(query, cancellationToken);
         if (!result.IsSuccess)
         {
-            return this.BadRequestResponse<List<CourseListDto>>(result.Error);
+            return this.FromError<List<CourseListDto>>(result.ErrorDetails);
         }
 
         return this.Ok(ApiResponse<List<CourseListDto>>.Success(result.Value.Items.ToList()));
@@ -116,7 +116,7 @@ public class CoursesController(IApiFacade apiFacade) : ApiControllerBase
         var result = await apiFacade.SendAsync(command, cancellationToken);
         if (!result.IsSuccess)
         {
-            return this.BadRequestResponse<object?>(result.Error);
+            return this.FromError<object?>(result.ErrorDetails);
         }
 
         return this.CreatedResponse();
@@ -134,11 +134,11 @@ public class CoursesController(IApiFacade apiFacade) : ApiControllerBase
     {
         if (id != command.CourseId)
         {
-            return this.BadRequestResponse<object?>("Route id does not match payload CourseId.");
+            return this.RouteIdMismatchResponse<object?>("CourseId");
         }
 
         var result = await apiFacade.SendAsync(command, cancellationToken);
-        return this.FromResult(result, error => error.StartsWith("Course not found", StringComparison.OrdinalIgnoreCase));
+        return this.FromResult(result);
     }
 
     [HttpPost("{courseId:guid}/modules")]
@@ -160,7 +160,7 @@ public class CoursesController(IApiFacade apiFacade) : ApiControllerBase
         var result = await apiFacade.SendAsync(command, cancellationToken);
         if (!result.IsSuccess)
         {
-            return this.BadRequestResponse<Guid>(result.Error);
+            return this.FromError<Guid>(result.ErrorDetails);
         }
 
         return this.StatusCode(StatusCodes.Status201Created, ApiResponse<Guid>.Success(result.Value));
@@ -191,7 +191,7 @@ public class CoursesController(IApiFacade apiFacade) : ApiControllerBase
         var result = await apiFacade.SendAsync(command, cancellationToken);
         if (!result.IsSuccess)
         {
-            return this.BadRequestResponse<Guid>(result.Error);
+            return this.FromError<Guid>(result.ErrorDetails);
         }
 
         return this.StatusCode(StatusCodes.Status201Created, ApiResponse<Guid>.Success(result.Value));
@@ -220,7 +220,7 @@ public class CoursesController(IApiFacade apiFacade) : ApiControllerBase
         var result = await apiFacade.SendAsync(command, cancellationToken);
         if (!result.IsSuccess)
         {
-            return this.BadRequestResponse<Guid>(result.Error);
+            return this.FromError<Guid>(result.ErrorDetails);
         }
 
         return this.StatusCode(StatusCodes.Status201Created, ApiResponse<Guid>.Success(result.Value));
@@ -233,7 +233,7 @@ public class CoursesController(IApiFacade apiFacade) : ApiControllerBase
     public async Task<ActionResult<ApiResponse<object?>>> DeleteCourse(Guid id, CancellationToken cancellationToken)
     {
         var result = await apiFacade.SendAsync(new DeleteCourseCommand(id), cancellationToken);
-        return this.FromResult(result, error => error.StartsWith("Course not found", StringComparison.OrdinalIgnoreCase));
+        return this.FromResult(result);
     }
 
     [HttpPost("{id:guid}/submit-for-review")]
@@ -244,7 +244,7 @@ public class CoursesController(IApiFacade apiFacade) : ApiControllerBase
     public async Task<ActionResult<ApiResponse<object?>>> SubmitForReview(Guid id, CancellationToken cancellationToken)
     {
         var result = await apiFacade.SendAsync(new SubmitCourseForReviewCommand(id), cancellationToken);
-        return this.FromResult(result, error => error.StartsWith("Course not found", StringComparison.OrdinalIgnoreCase));
+        return this.FromResult(result);
     }
 
     [HttpPost("{id:guid}/approve-publication")]
@@ -255,7 +255,7 @@ public class CoursesController(IApiFacade apiFacade) : ApiControllerBase
     public async Task<ActionResult<ApiResponse<object?>>> ApprovePublication(Guid id, CancellationToken cancellationToken)
     {
         var result = await apiFacade.SendAsync(new ApproveCoursePublicationCommand(id), cancellationToken);
-        return this.FromResult(result, error => error.StartsWith("Course not found", StringComparison.OrdinalIgnoreCase));
+        return this.FromResult(result);
     }
 
     [HttpPost("{id:guid}/reject-publication")]
@@ -270,11 +270,11 @@ public class CoursesController(IApiFacade apiFacade) : ApiControllerBase
     {
         if (id != command.CourseId)
         {
-            return this.BadRequestResponse<object?>("Route id does not match payload CourseId.");
+            return this.RouteIdMismatchResponse<object?>("CourseId");
         }
 
         var result = await apiFacade.SendAsync(command, cancellationToken);
-        return this.FromResult(result, error => error.StartsWith("Course not found", StringComparison.OrdinalIgnoreCase));
+        return this.FromResult(result);
     }
 
     [HttpPost("{id:guid}/archive")]
@@ -285,6 +285,6 @@ public class CoursesController(IApiFacade apiFacade) : ApiControllerBase
     public async Task<ActionResult<ApiResponse<object?>>> Archive(Guid id, CancellationToken cancellationToken)
     {
         var result = await apiFacade.SendAsync(new ArchiveCourseCommand(id), cancellationToken);
-        return this.FromResult(result, error => error.StartsWith("Course not found", StringComparison.OrdinalIgnoreCase));
+        return this.FromResult(result);
     }
 }

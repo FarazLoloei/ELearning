@@ -47,14 +47,14 @@ public class CreateEnrollmentCommandHandler(
         }
         catch (InvalidOperationException ex)
         {
-            return Result.Failure(ex.Message);
+            return Result.Failure(ApplicationError.Conflict(ex.Message));
         }
 
         // Check if student is already enrolled
         var alreadyEnrolled = await enrollmentRepository.GetByStudentAndCourseIdAsync(studentId, request.CourseId, cancellationToken) is not null;
         if (alreadyEnrolled)
         {
-            return Result.Failure("You are already enrolled in this course.");
+            return Result.Failure(ApplicationError.Conflict("You are already enrolled in this course."));
         }
 
         var enrollment = new Enrollment(studentId, course.Id);

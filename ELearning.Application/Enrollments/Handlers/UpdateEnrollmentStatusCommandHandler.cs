@@ -47,16 +47,16 @@ public class UpdateEnrollmentStatusCommandHandler(
             }
             else if (status.Equals("Completed", StringComparison.OrdinalIgnoreCase))
             {
-                return Result.Failure("Course completion is driven by lesson progression and cannot be set manually.");
+                return Result.Failure(ApplicationError.Conflict("Course completion is driven by lesson progression and cannot be set manually."));
             }
             else
             {
-                return Result.Failure("Invalid status value.");
+                return Result.Failure(ApplicationError.BadRequest("Invalid status value."));
             }
         }
         catch (InvalidOperationException ex)
         {
-            return Result.Failure(ex.Message);
+            return Result.Failure(ApplicationError.Conflict(ex.Message));
         }
 
         await enrollmentRepository.UpdateAsync(enrollment, cancellationToken);

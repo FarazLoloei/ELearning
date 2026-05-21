@@ -5,6 +5,8 @@
 namespace ELearning.API.Controllers;
 
 using ELearning.API.Contracts;
+using ELearning.API.Infrastructure;
+using ELearning.Application.Common.Model;
 using Microsoft.AspNetCore.Mvc;
 using ApplicationModel = ELearning.Application.Common.Model;
 using Result = ELearning.Application.Common.Model.Result;
@@ -12,45 +14,49 @@ using Result = ELearning.Application.Common.Model.Result;
 [ApiController]
 public abstract class ApiControllerBase : ControllerBase
 {
-    protected ActionResult<ApiResponse<T>> FromResult<T>(ApplicationModel.Result<T> result, Func<string, bool>? isNotFound = null)
+    protected ActionResult<ApiResponse<T>> FromResult<T>(ApplicationModel.Result<T> result)
     {
         if (result.IsSuccess)
         {
             return this.Ok(ApiResponse<T>.Success(result.Value));
         }
 
-        return this.BuildFailure<T>(result.Error, isNotFound);
+        return this.FromError<T>(result.ErrorDetails);
     }
 
-    protected ActionResult<ApiResponse<object?>> FromResult(Result result, Func<string, bool>? isNotFound = null)
+    protected ActionResult<ApiResponse<object?>> FromResult(Result result)
     {
         if (result.IsSuccess)
         {
             return this.Ok(ApiResponse<object?>.Success(null));
         }
 
-        return this.BuildFailure<object?>(result.Error, isNotFound);
+        return this.FromError<object?>(result.ErrorDetails);
     }
 
     protected ActionResult<ApiResponse<object?>> CreatedResponse() =>
         this.StatusCode(StatusCodes.Status201Created, ApiResponse<object?>.Success(null));
 
     protected ActionResult<ApiResponse<T>> UnauthorizedResponse<T>(string message) =>
-        this.Unauthorized(ApiResponse<T>.Failure("unauthorized", message));
+        this.FromError<T>(ApplicationError.Unauthorized(message));
 
     protected ActionResult<ApiResponse<T>> BadRequestResponse<T>(string message) =>
-        this.BadRequest(ApiResponse<T>.Failure("bad_request", message));
+        this.FromError<T>(ApplicationError.BadRequest(message));
 
     protected ActionResult<ApiResponse<T>> NotFoundResponse<T>(string message) =>
-        this.NotFound(ApiResponse<T>.Failure("not_found", message));
+        this.FromError<T>(ApplicationError.NotFound(message));
 
-    private ActionResult<ApiResponse<T>> BuildFailure<T>(string message, Func<string, bool>? isNotFound)
+    protected ActionResult<ApiResponse<T>> RouteIdMismatchResponse<T>(string payloadIdName) =>
+        this.FromError<T>(ApplicationError.BadRequest(
+            $"Route id does not match payload {payloadIdName}.",
+            ApplicationErrorCodes.RouteIdMismatch));
+
+    protected ActionResult<ApiResponse<T>> FromError<T>(ApplicationError? error)
     {
-        if (isNotFound?.Invoke(message) == true)
-        {
-            return this.NotFoundResponse<T>(message);
-        }
+        var problemDetails = ApiProblemDetailsFactory.Create(
+            this.HttpContext,
+            error ?? ApplicationError.BadRequest("The request could not be completed."));
 
-        return this.BadRequestResponse<T>(message);
+        return ApiProblemDetailsFactory.ToObjectResult(problemDetails);
     }
 }

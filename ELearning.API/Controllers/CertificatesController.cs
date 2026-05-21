@@ -31,7 +31,7 @@ public sealed class CertificatesController(IApiFacade apiFacade) : ApiController
             new IssueCertificateForCompletedEnrollmentCommand(enrollmentId),
             cancellationToken);
 
-        return this.FromResult(result, error => error.StartsWith("Enrollment not found", StringComparison.OrdinalIgnoreCase));
+        return this.FromResult(result);
     }
 
     [HttpGet("enrollments/{enrollmentId:guid}")]
@@ -43,7 +43,7 @@ public sealed class CertificatesController(IApiFacade apiFacade) : ApiController
         CancellationToken cancellationToken)
     {
         var result = await apiFacade.SendAsync(new GetEnrollmentCertificateQuery(enrollmentId), cancellationToken);
-        return this.FromResult(result, error => error.StartsWith("Certificate not found", StringComparison.OrdinalIgnoreCase));
+        return this.FromResult(result);
     }
 
     [HttpGet("verify/{certificateCode}")]
@@ -54,6 +54,6 @@ public sealed class CertificatesController(IApiFacade apiFacade) : ApiController
         CancellationToken cancellationToken)
     {
         var result = await apiFacade.SendAsync(new VerifyCertificateQuery(certificateCode), cancellationToken);
-        return this.FromResult(result, error => error.StartsWith("Certificate not found", StringComparison.OrdinalIgnoreCase));
+        return this.FromResult(result);
     }
 }

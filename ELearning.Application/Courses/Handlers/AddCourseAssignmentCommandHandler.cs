@@ -39,7 +39,7 @@ public sealed class AddCourseAssignmentCommandHandler(
 
         if (assignmentType is null)
         {
-            return Result.Failure<Guid>($"Invalid assignment type: {request.TypeId}");
+            return Result.Failure<Guid>(ApplicationError.BadRequest($"Invalid assignment type: {request.TypeId}"));
         }
 
         Assignment assignment;
@@ -61,7 +61,7 @@ public sealed class AddCourseAssignmentCommandHandler(
         }
         catch (Exception ex) when (ex is InvalidOperationException or ArgumentException or ArgumentOutOfRangeException)
         {
-            return Result.Failure<Guid>(ex.Message);
+            return Result.Failure<Guid>(ApplicationError.Conflict(ex.Message));
         }
 
         await courseRepository.UpdateAsync(course, cancellationToken);

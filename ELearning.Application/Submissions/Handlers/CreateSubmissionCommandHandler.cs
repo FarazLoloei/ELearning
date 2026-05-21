@@ -43,7 +43,7 @@ public class CreateSubmissionCommandHandler(
 
         if (!course.ContainsAssignment(request.AssignmentId))
         {
-            return Result.Failure("The assessment does not belong to the enrolled course.");
+            return Result.Failure(ApplicationError.Conflict("The assessment does not belong to the enrolled course."));
         }
 
         var enrollment = await enrollmentRepository.GetByStudentAndCourseIdAsync(studentId, module.CourseId, cancellationToken)
@@ -62,7 +62,7 @@ public class CreateSubmissionCommandHandler(
         }
         catch (Exception ex) when (ex is InvalidOperationException or ArgumentOutOfRangeException)
         {
-            return Result.Failure(ex.Message);
+            return Result.Failure(ApplicationError.Conflict(ex.Message));
         }
 
         await enrollmentRepository.UpdateAsync(enrollment, cancellationToken);

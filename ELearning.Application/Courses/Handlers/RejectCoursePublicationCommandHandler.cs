@@ -37,7 +37,7 @@ public sealed class RejectCoursePublicationCommandHandler(
         }
         catch (Exception ex) when (ex is InvalidOperationException or ArgumentException)
         {
-            return Result.Failure(ex.Message);
+            return Result.Failure(ApplicationError.Conflict(ex.Message));
         }
 
         await courseRepository.UpdateAsync(course, cancellationToken);

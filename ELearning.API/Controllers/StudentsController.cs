@@ -26,7 +26,7 @@ public class StudentsController(IApiFacade apiFacade) : ApiControllerBase
     {
         var query = new GetStudentProfileQuery { StudentId = id };
         var result = await apiFacade.SendAsync(query, cancellationToken);
-        return this.FromResult(result, error => error.StartsWith("Student not found", StringComparison.OrdinalIgnoreCase));
+        return this.FromResult(result);
     }
 
     [HttpGet("{id:guid}/progress")]
@@ -37,7 +37,7 @@ public class StudentsController(IApiFacade apiFacade) : ApiControllerBase
     {
         var query = new GetStudentProgressQuery { StudentId = id };
         var result = await apiFacade.SendAsync(query, cancellationToken);
-        return this.FromResult(result, error => error.StartsWith("Student", StringComparison.OrdinalIgnoreCase));
+        return this.FromResult(result);
     }
 
     [HttpGet("{id:guid}/enrollments")]

@@ -26,7 +26,7 @@ public class SubmissionsController(IApiFacade apiFacade) : ApiControllerBase
     {
         var query = new GetSubmissionDetailQuery { SubmissionId = id };
         var result = await apiFacade.SendAsync(query, cancellationToken);
-        return this.FromResult(result, error => error.StartsWith("Submission not found", StringComparison.OrdinalIgnoreCase));
+        return this.FromResult(result);
     }
 
     [HttpPost]
@@ -40,7 +40,7 @@ public class SubmissionsController(IApiFacade apiFacade) : ApiControllerBase
         var result = await apiFacade.SendAsync(command, cancellationToken);
         if (!result.IsSuccess)
         {
-            return this.BadRequestResponse<object?>(result.Error);
+            return this.FromError<object?>(result.ErrorDetails);
         }
 
         return this.CreatedResponse();
@@ -58,10 +58,10 @@ public class SubmissionsController(IApiFacade apiFacade) : ApiControllerBase
     {
         if (id != command.SubmissionId)
         {
-            return this.BadRequestResponse<object?>("Route id does not match payload SubmissionId.");
+            return this.RouteIdMismatchResponse<object?>("SubmissionId");
         }
 
         var result = await apiFacade.SendAsync(command, cancellationToken);
-        return this.FromResult(result, error => error.StartsWith("Submission not found", StringComparison.OrdinalIgnoreCase));
+        return this.FromResult(result);
     }
 }

@@ -14,6 +14,7 @@ using ELearning.Application;
 using ELearning.Infrastructure;
 using ELearning.Infrastructure.DaprServices;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
@@ -109,6 +110,44 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             IssuerSigningKey = new SymmetricSecurityKey(
                 Encoding.UTF8.GetBytes(jwtSettings["Secret"] ?? throw new InvalidOperationException("JWT Secret is not configured"))),
         };
+
+        options.Events = new JwtBearerEvents
+        {
+            OnChallenge = async context =>
+            {
+                context.HandleResponse();
+
+                if (context.Response.HasStarted)
+                {
+                    return;
+                }
+
+                var problemDetails = ApiProblemDetailsFactory.Create(
+                    context.HttpContext,
+                    StatusCodes.Status401Unauthorized,
+                    "Unauthorized",
+                    "Authentication is required to access this resource.",
+                    ELearning.Application.Common.Model.ApplicationErrorCodes.AuthenticationUnauthorized);
+
+                await ApiProblemDetailsFactory.WriteAsync(context.HttpContext, problemDetails);
+            },
+            OnForbidden = async context =>
+            {
+                if (context.Response.HasStarted)
+                {
+                    return;
+                }
+
+                var problemDetails = ApiProblemDetailsFactory.Create(
+                    context.HttpContext,
+                    StatusCodes.Status403Forbidden,
+                    "Forbidden",
+                    "You do not have permission to access this resource.",
+                    ELearning.Application.Common.Model.ApplicationErrorCodes.AuthorizationForbidden);
+
+                await ApiProblemDetailsFactory.WriteAsync(context.HttpContext, problemDetails);
+            },
+        };
     });
 
 builder.Services.AddRateLimiter(options =>
@@ -171,6 +210,25 @@ builder.Services.AddControllers()
         options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
         options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
     });
+
+builder.Services.Configure<ApiBehaviorOptions>(options =>
+{
+    options.InvalidModelStateResponseFactory = context =>
+    {
+        var errors = context.ModelState
+            .Where(entry => entry.Value?.Errors.Count > 0)
+            .ToDictionary(
+                entry => entry.Key,
+                entry => entry.Value!.Errors
+                    .Select(error => string.IsNullOrWhiteSpace(error.ErrorMessage)
+                        ? "The input was not valid."
+                        : error.ErrorMessage)
+                    .ToArray());
+
+        var problemDetails = ApiProblemDetailsFactory.CreateValidation(context.HttpContext, errors);
+        return ApiProblemDetailsFactory.ToObjectResult(problemDetails);
+    };
+});
 
 // Add HttpContextAccessor for CurrentUserService
 builder.Services.AddHttpContextAccessor();

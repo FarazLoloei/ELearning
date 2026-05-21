@@ -59,7 +59,7 @@ public sealed class CourseAuthoringWorkflowIntegrationTests : IClassFixture<Real
     }
 
     [Fact]
-    public async Task CourseCannotBeSubmittedWithoutContent_ReturnsBadRequest()
+    public async Task CourseCannotBeSubmittedWithoutContent_ReturnsConflict()
     {
         var cancellationToken = TestContext.Current.CancellationToken;
         var instructorId = await this.SeedInstructorAsync(cancellationToken);
@@ -72,7 +72,7 @@ public sealed class CourseAuthoringWorkflowIntegrationTests : IClassFixture<Real
             "Instructor",
             cancellationToken);
 
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        response.StatusCode.Should().Be(HttpStatusCode.Conflict);
     }
 
     [Fact]

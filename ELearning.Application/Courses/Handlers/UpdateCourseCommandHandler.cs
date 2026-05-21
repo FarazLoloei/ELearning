@@ -47,7 +47,8 @@ public class UpdateCourseCommandHandler(
 
         if (category is null || level is null)
         {
-            return Result.Failure($"Invalid category or level. Category: {category?.Name ?? "null"}, Level: {level?.Name ?? "null"}");
+            return Result.Failure(ApplicationError.BadRequest(
+                $"Invalid category or level. Category: {category?.Name ?? "null"}, Level: {level?.Name ?? "null"}"));
         }
 
         try
@@ -64,7 +65,7 @@ public class UpdateCourseCommandHandler(
         }
         catch (Exception ex) when (ex is InvalidOperationException or ArgumentException)
         {
-            return Result.Failure(ex.Message);
+            return Result.Failure(ApplicationError.Conflict(ex.Message));
         }
 
         await courseRepository.UpdateAsync(course, cancellationToken);

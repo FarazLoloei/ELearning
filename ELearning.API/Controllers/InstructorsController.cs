@@ -28,7 +28,7 @@ public class InstructorsController(IApiFacade apiFacade) : ApiControllerBase
     {
         var query = new GetInstructorProfileQuery { InstructorId = id };
         var result = await apiFacade.SendAsync(query, cancellationToken);
-        return this.FromResult(result, error => error.StartsWith("Instructor not found", StringComparison.OrdinalIgnoreCase));
+        return this.FromResult(result);
     }
 
     [HttpGet("{id:guid}/with-courses")]
@@ -38,7 +38,7 @@ public class InstructorsController(IApiFacade apiFacade) : ApiControllerBase
     {
         var query = new GetInstructorCoursesQuery { InstructorId = id };
         var result = await apiFacade.SendAsync(query, cancellationToken);
-        return this.FromResult(result, error => error.StartsWith("Instructor not found", StringComparison.OrdinalIgnoreCase));
+        return this.FromResult(result);
     }
 
     [HttpGet("{id:guid}/pending-submissions")]

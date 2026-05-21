@@ -28,7 +28,7 @@ public sealed class RevokeRefreshTokenCommandHandler(
         if (refreshTokenState is null)
         {
             await securityAuditWriter.WriteAsync(null, "auth.revoke", false, "Refresh token not found", cancellationToken);
-            return Result.Failure("Refresh token was not found.");
+            return Result.Failure(ApplicationError.BadRequest("Refresh token was not found."));
         }
 
         var currentUserId = currentUserService.UserId.Value;

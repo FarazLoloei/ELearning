@@ -43,7 +43,7 @@ public class DeleteCourseCommandHandler(
         }
         catch (InvalidOperationException ex)
         {
-            return Result.Failure(ex.Message);
+            return Result.Failure(ApplicationError.Conflict(ex.Message));
         }
 
         await courseRepository.DeleteAsync(course, cancellationToken);
