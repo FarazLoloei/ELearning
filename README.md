@@ -175,6 +175,48 @@ Current local verification:
 - `ELearning.Application.Tests`: `106` passing
 - `ELearning.IntegrationTests`: `22` passing
 
+## GitHub Actions CI/CD
+
+This repository now includes two GitHub Actions workflows:
+
+- `CI`: restores, builds, tests, scans dependencies for known vulnerabilities, and validates the API Docker image build
+- `CD`: builds and publishes the API Docker image to GitHub Container Registry (`ghcr.io`)
+
+Use these steps to activate them in GitHub:
+
+1. Push the workflow files in `.github/workflows/` to your GitHub repository.
+2. In GitHub, open `Settings -> Actions -> General`.
+3. Ensure Actions are enabled for the repository.
+4. Set `Workflow permissions` to `Read and write permissions` so the `CD` workflow can push to GitHub Container Registry with `GITHUB_TOKEN`.
+5. If your default branch is not `main` or `master`, update the branch filters in `.github/workflows/ci.yml` and `.github/workflows/cd.yml`.
+6. Open the `Actions` tab and run `CI` manually once with `workflow_dispatch`, or trigger it with a pull request.
+7. Merge or push to your default branch to trigger `CD`, or run `CD` manually from the `Actions` tab.
+
+Published container image:
+
+- `ghcr.io/<your-github-owner>/<your-repository-name>-api`
+
+Runtime configuration you should set in your hosting platform before running the published image:
+
+- `JwtSettings__Issuer`
+- `JwtSettings__Audience`
+- `JwtSettings__Secret`
+- `JwtSettings__ExpiryInDays`
+- `JwtSettings__RefreshTokenExpiryInDays`
+- `Ocelot__Enabled=false`
+
+Database configuration options:
+
+- Demo/local-style deployment: `Database__Provider=SqliteInMemory`
+- SQL Server deployment: `Database__Provider=SqlServer` and `ConnectionStrings__DefaultConnection`
+
+Container notes:
+
+- The API Dockerfile now targets `.NET 10`, which matches the application target framework.
+- The app now loads `ocelot.json` by default and only loads `ocelot.<Environment>.json` when that environment-specific file exists, which makes production container startup safer.
+
+If you want full automatic deployment beyond image publishing, the next step is to connect the published `ghcr.io` image to a host such as Azure Web App for Containers, Render, Fly.io, or a VM/container service and add one provider-specific deploy step.
+
 ## Why This Is A Strong Backend Sample
 
 This project is strongest where reviewers usually look for senior-level judgment:
