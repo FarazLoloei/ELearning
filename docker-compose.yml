@@ -1,0 +1,86 @@
+services:
+  elearning-api:
+    image: elearning-api:local
+    build:
+      context: .
+      dockerfile: ELearning.API/Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
+      Ocelot__Enabled: "false"
+      Database__Provider: SqlServer
+      ConnectionStrings__DefaultConnection: Server=sqlserver,1433;Database=ELearning;User Id=sa;Password=${SQLSERVER_SA_PASSWORD:-E_learning_Dev_123!};Encrypt=True;TrustServerCertificate=True
+      JwtSettings__Issuer: ${JWT_ISSUER:-elearning-compose}
+      JwtSettings__Audience: ${JWT_AUDIENCE:-elearning-compose}
+      JwtSettings__Secret: ${JWT_SECRET:-compose-dev-secret-at-least-32-characters}
+      JwtSettings__ExpiryInDays: ${JWT_EXPIRY_IN_DAYS:-7}
+      JwtSettings__RefreshTokenExpiryInDays: ${JWT_REFRESH_TOKEN_EXPIRY_IN_DAYS:-14}
+      RabbitMq__Enabled: "true"
+      RabbitMq__HostName: rabbitmq
+      RabbitMq__Port: "5672"
+      RabbitMq__UserName: ${RABBITMQ_DEFAULT_USER:-elearning}
+      RabbitMq__Password: ${RABBITMQ_DEFAULT_PASS:-elearning_dev_password}
+      RabbitMq__VirtualHost: /
+      RabbitMq__ExchangeName: elearning.integration.events
+      RabbitMq__NotificationQueueName: elearning.notifications.email
+      RabbitMq__DeadLetterExchangeName: elearning.integration.dead-letter
+      RabbitMq__DeadLetterQueueName: elearning.notifications.email.dead-letter
+      RabbitMq__PublisherConfirmTimeoutSeconds: "5"
+      Observability__ServiceName: elearning-api
+      Observability__ConsoleExporterEnabled: ${OTEL_CONSOLE_EXPORTER_ENABLED:-false}
+      Observability__OtlpEndpoint: ${OTEL_EXPORTER_OTLP_ENDPOINT:-}
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8080/health/ready || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 12
+      start_period: 45s
+
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    ports:
+      - "1433:1433"
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_PID: Developer
+      MSSQL_SA_PASSWORD: ${SQLSERVER_SA_PASSWORD:-E_learning_Dev_123!}
+    volumes:
+      - sqlserver-data:/var/opt/mssql
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P \"$${MSSQL_SA_PASSWORD}\" -C -Q \"SELECT 1\" || /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P \"$${MSSQL_SA_PASSWORD}\" -Q \"SELECT 1\" || exit 1"
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+      start_period: 30s
+
+  rabbitmq:
+    image: rabbitmq:3.13-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER:-elearning}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS:-elearning_dev_password}
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
+
+volumes:
+  sqlserver-data:
+  rabbitmq-data:
