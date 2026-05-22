@@ -28,6 +28,7 @@ public static class ApiConfigurationExtensions
     {
         services.AddSingleton<IValidateOptions<DatabaseOptions>, DatabaseOptionsValidator>();
         services.AddSingleton<IValidateOptions<JwtSettingsOptions>, JwtSettingsOptionsValidator>();
+        services.AddSingleton<IValidateOptions<RabbitMqOptions>, RabbitMqOptionsValidator>();
 
         services.AddOptions<DatabaseOptions>()
             .Bind(configuration.GetSection(DatabaseOptions.SectionName))
@@ -35,6 +36,10 @@ public static class ApiConfigurationExtensions
 
         services.AddOptions<JwtSettingsOptions>()
             .Bind(configuration.GetSection(JwtSettingsOptions.SectionName))
+            .ValidateOnStart();
+
+        services.AddOptions<RabbitMqOptions>()
+            .Bind(configuration.GetSection(RabbitMqOptions.SectionName))
             .ValidateOnStart();
 
         services.AddOptions<ObservabilityOptions>()

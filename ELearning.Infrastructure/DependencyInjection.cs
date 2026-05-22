@@ -35,8 +35,12 @@ public static class DependencyInjection
         services.AddOptions<JwtSettingsOptions>()
             .Bind(configuration.GetSection(JwtSettingsOptions.SectionName));
 
+        services.AddOptions<RabbitMqOptions>()
+            .Bind(configuration.GetSection(RabbitMqOptions.SectionName));
+
         var databaseOptions = configuration.GetSection(DatabaseOptions.SectionName).Get<DatabaseOptions>() ?? new DatabaseOptions();
         var databaseProvider = databaseOptions.Provider;
+        var rabbitMqOptions = configuration.GetSection(RabbitMqOptions.SectionName).Get<RabbitMqOptions>() ?? new RabbitMqOptions();
 
         if (DatabaseProviderNames.IsSqliteInMemory(databaseProvider))
         {
@@ -98,8 +102,18 @@ public static class DependencyInjection
         services.AddHttpContextAccessor();
         services.AddScoped<ICurrentUserService, CurrentUserService>();
 
+        services.AddSingleton<IOutboxIntegrationEventMapper, OutboxIntegrationEventMapper>();
+        if (rabbitMqOptions.Enabled)
+        {
+            services.AddSingleton<IIntegrationEventPublisher, RabbitMqIntegrationEventPublisher>();
+            services.AddHostedService<OutboxDispatcherHostedService>();
+        }
+        else
+        {
+            services.AddSingleton<IIntegrationEventPublisher, NoOpIntegrationEventPublisher>();
+        }
+
         services.AddScoped<IOutboxDispatcher, OutboxDispatcher>();
-        services.AddHostedService<OutboxDispatcherHostedService>();
 
         return services;
     }

@@ -52,4 +52,50 @@ public sealed class ConfigurationValidationTests
         result.Failed.Should().BeTrue();
         result.Failures.Should().Contain(failure => failure.Contains("JwtSettings:Secret", StringComparison.Ordinal));
     }
+
+    [Fact]
+    public void RabbitMqOptionsValidator_ShouldAllowDisabledOptionsWithoutBrokerSettings()
+    {
+        var validator = new RabbitMqOptionsValidator();
+
+        var result = validator.Validate(
+            null,
+            new RabbitMqOptions
+            {
+                Enabled = false,
+                HostName = string.Empty,
+                UserName = string.Empty,
+                Password = string.Empty,
+                VirtualHost = string.Empty,
+                ExchangeName = string.Empty,
+                PublisherConfirmTimeoutSeconds = 0,
+            });
+
+        result.Failed.Should().BeFalse();
+    }
+
+    [Fact]
+    public void RabbitMqOptionsValidator_ShouldRequireBrokerSettingsWhenEnabled()
+    {
+        var validator = new RabbitMqOptionsValidator();
+
+        var result = validator.Validate(
+            null,
+            new RabbitMqOptions
+            {
+                Enabled = true,
+                HostName = string.Empty,
+                Port = 0,
+                UserName = string.Empty,
+                Password = string.Empty,
+                VirtualHost = string.Empty,
+                ExchangeName = string.Empty,
+                PublisherConfirmTimeoutSeconds = 0,
+            });
+
+        result.Failed.Should().BeTrue();
+        result.Failures.Should().Contain(failure => failure.Contains("RabbitMq:HostName", StringComparison.Ordinal));
+        result.Failures.Should().Contain(failure => failure.Contains("RabbitMq:ExchangeName", StringComparison.Ordinal));
+        result.Failures.Should().Contain(failure => failure.Contains("RabbitMq:PublisherConfirmTimeoutSeconds", StringComparison.Ordinal));
+    }
 }

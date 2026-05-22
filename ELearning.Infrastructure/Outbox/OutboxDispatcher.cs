@@ -5,13 +5,13 @@
 namespace ELearning.Infrastructure.Outbox;
 
 using ELearning.Infrastructure.Data;
-using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 public sealed class OutboxDispatcher(
     ApplicationDbContext dbContext,
-    IPublisher publisher,
+    IOutboxIntegrationEventMapper integrationEventMapper,
+    IIntegrationEventPublisher integrationEventPublisher,
     ILogger<OutboxDispatcher> logger) : IOutboxDispatcher
 {
     private const int BatchSize = 50;
@@ -33,13 +33,18 @@ public sealed class OutboxDispatcher(
         {
             try
             {
-                await publisher.Publish(
-                    new OutboxDomainEventNotification(
+                var integrationEvent = integrationEventMapper.Map(message);
+                if (integrationEvent is null)
+                {
+                    logger.LogInformation(
+                        "Skipping outbox message {OutboxMessageId} of type {OutboxMessageType} because it has no external integration event mapping.",
                         message.Id,
-                        message.Type,
-                        message.Payload,
-                        message.OccurredOnUtc),
-                    cancellationToken);
+                        message.Type);
+                }
+                else
+                {
+                    await integrationEventPublisher.PublishAsync(integrationEvent, cancellationToken);
+                }
 
                 message.ProcessedOnUtc = DateTime.UtcNow;
                 message.Error = null;
