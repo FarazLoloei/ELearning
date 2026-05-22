@@ -47,6 +47,21 @@ public sealed class RabbitMqOptionsValidator : IValidateOptions<RabbitMqOptions>
             failures.Add("RabbitMq:ExchangeName is required when RabbitMQ is enabled.");
         }
 
+        if (string.IsNullOrWhiteSpace(options.NotificationQueueName))
+        {
+            failures.Add("RabbitMq:NotificationQueueName is required when RabbitMQ is enabled.");
+        }
+
+        if (string.IsNullOrWhiteSpace(options.DeadLetterExchangeName))
+        {
+            failures.Add("RabbitMq:DeadLetterExchangeName is required when RabbitMQ is enabled.");
+        }
+
+        if (string.IsNullOrWhiteSpace(options.DeadLetterQueueName))
+        {
+            failures.Add("RabbitMq:DeadLetterQueueName is required when RabbitMQ is enabled.");
+        }
+
         if (options.PublisherConfirmTimeoutSeconds <= 0)
         {
             failures.Add("RabbitMq:PublisherConfirmTimeoutSeconds must be greater than zero when RabbitMQ is enabled.");

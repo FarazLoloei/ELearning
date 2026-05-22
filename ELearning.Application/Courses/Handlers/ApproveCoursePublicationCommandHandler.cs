@@ -17,7 +17,7 @@ using MediatR;
 public sealed class ApproveCoursePublicationCommandHandler(
         ICourseRepository courseRepository,
         IUserRepository userRepository,
-        IEmailService emailService,
+        INotificationRequestService notificationRequestService,
         ICurrentUserService currentUserService)
     : IRequestHandler<ApproveCoursePublicationCommand, Result>
 {
@@ -45,10 +45,12 @@ public sealed class ApproveCoursePublicationCommandHandler(
         var instructor = await userRepository.GetByIdForUpdateAsync(course.InstructorId, cancellationToken)
             ?? throw new NotFoundException(nameof(User), course.InstructorId);
 
-        await emailService.SendCourseApprovedAsync(
+        await notificationRequestService.RequestCourseApprovedAsync(
             instructor.Email.Value,
             instructor.FullName,
-            course.Title);
+            course.Title,
+            course.Id,
+            cancellationToken);
 
         return Result.Success();
     }

@@ -4,9 +4,13 @@
 
 namespace ELearning.IntegrationTests;
 
+using ELearning.Infrastructure;
+using ELearning.Infrastructure.Notifications;
 using ELearning.Infrastructure.Options;
 using FluentAssertions;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 public sealed class ConfigurationValidationTests
 {
@@ -90,12 +94,38 @@ public sealed class ConfigurationValidationTests
                 Password = string.Empty,
                 VirtualHost = string.Empty,
                 ExchangeName = string.Empty,
+                NotificationQueueName = string.Empty,
+                DeadLetterExchangeName = string.Empty,
+                DeadLetterQueueName = string.Empty,
                 PublisherConfirmTimeoutSeconds = 0,
             });
 
         result.Failed.Should().BeTrue();
         result.Failures.Should().Contain(failure => failure.Contains("RabbitMq:HostName", StringComparison.Ordinal));
         result.Failures.Should().Contain(failure => failure.Contains("RabbitMq:ExchangeName", StringComparison.Ordinal));
+        result.Failures.Should().Contain(failure => failure.Contains("RabbitMq:NotificationQueueName", StringComparison.Ordinal));
+        result.Failures.Should().Contain(failure => failure.Contains("RabbitMq:DeadLetterExchangeName", StringComparison.Ordinal));
+        result.Failures.Should().Contain(failure => failure.Contains("RabbitMq:DeadLetterQueueName", StringComparison.Ordinal));
         result.Failures.Should().Contain(failure => failure.Contains("RabbitMq:PublisherConfirmTimeoutSeconds", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void AddInfrastructure_WhenRabbitMqIsDisabled_ShouldNotRegisterNotificationConsumerHostedService()
+    {
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["Database:Provider"] = "SqliteInMemory",
+                ["Database:SqliteInMemoryConnection"] = "Data Source=:memory:;Cache=Shared",
+                ["RabbitMq:Enabled"] = "false",
+            })
+            .Build();
+        var services = new ServiceCollection();
+
+        services.AddInfrastructure(configuration);
+
+        services.Should().NotContain(
+            descriptor => descriptor.ServiceType == typeof(IHostedService) &&
+                          descriptor.ImplementationType == typeof(RabbitMqNotificationConsumerHostedService));
     }
 }

@@ -21,7 +21,7 @@ public class GradeSubmissionCommandHandler(
         IAssignmentReadRepository assignmentRepository,
         ICourseRepository courseRepository,
         IUserRepository userRepository,
-        IEmailService emailService,
+        INotificationRequestService notificationRequestService,
         ICurrentUserService currentUserService)
     : IRequestHandler<GradeSubmissionCommand, Result>
 {
@@ -78,11 +78,13 @@ public class GradeSubmissionCommandHandler(
         var student = await userRepository.GetByIdForUpdateAsync(enrollment.StudentId, cancellationToken)
             ?? throw new NotFoundException(nameof(User), enrollment.StudentId);
 
-        await emailService.SendAssignmentGradedAsync(
+        await notificationRequestService.RequestAssignmentGradedAsync(
             student.Email.Value,
             student.FullName,
             assignment.Title,
-            request.Score);
+            request.Score,
+            submission.Id,
+            cancellationToken);
 
         return Result.Success();
     }

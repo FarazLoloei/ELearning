@@ -119,6 +119,33 @@ public sealed class OutboxIntegrationEventMapperTests
         publishMessage.Should().BeNull();
     }
 
+    [Fact]
+    public void Map_ShouldCreateNotificationRequestedIntegrationEvent()
+    {
+        var mapper = new OutboxIntegrationEventMapper();
+        var integrationEvent = new NotificationRequestedIntegrationEvent(
+            Guid.NewGuid(),
+            "enrollment.confirmation",
+            "student@example.com",
+            "Student One",
+            "Welcome",
+            "Hello",
+            IsHtml: false,
+            "Enrollment",
+            Guid.NewGuid(),
+            DateTime.UtcNow);
+        var message = CreateMessage(
+            integrationEvent.EventId,
+            nameof(NotificationRequestedIntegrationEvent),
+            integrationEvent);
+
+        var publishMessage = mapper.Map(message);
+
+        publishMessage.Should().NotBeNull();
+        publishMessage!.EventType.Should().Be(nameof(NotificationRequestedIntegrationEvent));
+        publishMessage.RoutingKey.Should().Be(OutboxIntegrationEventMapper.NotificationRequestedRoutingKey);
+    }
+
     private static OutboxMessage CreateMessage(Guid id, string type, object payload) =>
         new()
         {

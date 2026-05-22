@@ -15,6 +15,8 @@ public sealed class OutboxIntegrationEventMapper : IOutboxIntegrationEventMapper
 
     public const string SubmissionGradedRoutingKey = "submission.graded.v1";
 
+    public const string NotificationRequestedRoutingKey = "notification.requested.v1";
+
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
 
     public IntegrationEventPublishMessage? Map(OutboxMessage message)
@@ -32,6 +34,11 @@ public sealed class OutboxIntegrationEventMapper : IOutboxIntegrationEventMapper
         if (IsEventType(message.Type, "SubmissionGradedEvent"))
         {
             return MapSubmissionGraded(message);
+        }
+
+        if (IsEventType(message.Type, nameof(NotificationRequestedIntegrationEvent)))
+        {
+            return MapNotificationRequested(message);
         }
 
         return null;
@@ -81,6 +88,16 @@ public sealed class OutboxIntegrationEventMapper : IOutboxIntegrationEventMapper
             message,
             nameof(SubmissionGradedIntegrationEvent),
             SubmissionGradedRoutingKey,
+            integrationEvent);
+    }
+
+    private static IntegrationEventPublishMessage MapNotificationRequested(OutboxMessage message)
+    {
+        var integrationEvent = DeserializePayload<NotificationRequestedIntegrationEvent>(message.Payload);
+        return CreatePublishMessage(
+            message,
+            nameof(NotificationRequestedIntegrationEvent),
+            NotificationRequestedRoutingKey,
             integrationEvent);
     }
 
