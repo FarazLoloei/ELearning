@@ -10,14 +10,15 @@ using ELearning.Application.Auth.Abstractions;
 using ELearning.Application.Auth.Models;
 using ELearning.Infrastructure.Data;
 using ELearning.Infrastructure.Data.Models;
+using ELearning.Infrastructure.Options;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 
 public sealed class RefreshTokenStore(
         ApplicationDbContext dbContext,
         IHttpContextAccessor httpContextAccessor,
-        IConfiguration configuration) : IRefreshTokenStore
+        IOptions<JwtSettingsOptions> jwtSettingsOptions) : IRefreshTokenStore
 {
     private const int RefreshTokenByteSize = 64;
 
@@ -93,8 +94,7 @@ public sealed class RefreshTokenStore(
 
     private int GetRefreshTokenExpiryDays()
     {
-        var value = configuration["JwtSettings:RefreshTokenExpiryInDays"];
-        return int.TryParse(value, out var parsed) && parsed > 0 ? parsed : 14;
+        return jwtSettingsOptions.Value.RefreshTokenExpiryInDays;
     }
 
     private static string GenerateRefreshToken()

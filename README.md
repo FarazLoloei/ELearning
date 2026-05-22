@@ -157,11 +157,21 @@ Useful endpoints:
 - Swagger UI: `/`
 - REST: `/api/v1/*` and compatibility routes under `/api/*`
 - GraphQL: `/graphql`
+- Liveness probe: `/health/live`
+- Readiness probe: `/health/ready`
 
 Database notes:
 
-- sqlite in-memory is the default local experience
-- SQL Server can be configured through the existing provider settings
+- sqlite in-memory is the default local and test experience
+- SQL Server is the production-capable relational provider and uses EF Core migrations
+- Dapper read models use provider-aware SQL fragments for paging and simple string concatenation
+
+Observability notes:
+
+- OpenTelemetry tracing, metrics, and logging are configured at startup
+- ASP.NET Core and HTTP client instrumentation are enabled
+- console export is disabled by default and can be enabled with `Observability:ConsoleExporterEnabled`
+- OTLP export is enabled only when `Observability:OtlpEndpoint` is configured
 
 ## Build And Test
 
@@ -172,8 +182,8 @@ dotnet test ELearning.sln -nologo /p:UseSharedCompilation=false
 
 Current local verification:
 
-- `ELearning.Application.Tests`: `106` passing
-- `ELearning.IntegrationTests`: `22` passing
+- `ELearning.Application.Tests`: `110` passing
+- `ELearning.IntegrationTests`: `40` passing
 
 ## Why This Is A Strong Backend Sample
 
