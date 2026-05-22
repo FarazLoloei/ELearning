@@ -54,6 +54,8 @@ public class ApplicationDbContext : DbContext
 
     public DbSet<OutboxMessage> OutboxMessages { get; set; } = null!;
 
+    public DbSet<ProcessedIntegrationMessage> ProcessedIntegrationMessages { get; set; } = null!;
+
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
         this.UpdateSqliteConcurrencyTokens();

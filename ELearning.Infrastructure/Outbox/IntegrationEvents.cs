@@ -20,3 +20,15 @@ public sealed record SubmissionGradedIntegrationEvent(
     Guid EventId,
     Guid SubmissionId,
     DateTime OccurredOnUtc);
+
+public sealed record NotificationRequestedIntegrationEvent(
+    Guid EventId,
+    string NotificationType,
+    string RecipientEmail,
+    string RecipientName,
+    string Subject,
+    string Body,
+    bool IsHtml,
+    string Source,
+    Guid SourceId,
+    DateTime OccurredOnUtc);

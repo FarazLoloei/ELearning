@@ -17,6 +17,7 @@ using ELearning.Domain.Entities.EnrollmentAggregate.Abstractions.Repositories;
 using ELearning.Domain.Entities.UserAggregate.Abstractions.Repositories;
 using ELearning.Infrastructure.Data;
 using ELearning.Infrastructure.Data.Repositories;
+using ELearning.Infrastructure.Notifications;
 using ELearning.Infrastructure.Options;
 using ELearning.Infrastructure.Outbox;
 using ELearning.Infrastructure.Services;
@@ -93,6 +94,7 @@ public static class DependencyInjection
 
         services.AddTransient<IDateTime, DateTimeService>();
         services.AddTransient<IEmailService, EmailService>();
+        services.AddScoped<INotificationRequestService, NotificationRequestService>();
         services.AddTransient<IFileStorageService, FileStorageService>();
         services.AddScoped<IAccessTokenIssuer, AccessTokenIssuer>();
         services.AddScoped<IRefreshTokenStore, RefreshTokenStore>();
@@ -103,10 +105,12 @@ public static class DependencyInjection
         services.AddScoped<ICurrentUserService, CurrentUserService>();
 
         services.AddSingleton<IOutboxIntegrationEventMapper, OutboxIntegrationEventMapper>();
+        services.AddScoped<INotificationIntegrationEventHandler, NotificationIntegrationEventHandler>();
         if (rabbitMqOptions.Enabled)
         {
             services.AddSingleton<IIntegrationEventPublisher, RabbitMqIntegrationEventPublisher>();
             services.AddHostedService<OutboxDispatcherHostedService>();
+            services.AddHostedService<RabbitMqNotificationConsumerHostedService>();
         }
         else
         {

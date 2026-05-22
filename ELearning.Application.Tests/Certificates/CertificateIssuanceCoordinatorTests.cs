@@ -22,7 +22,7 @@ public sealed class CertificateIssuanceCoordinatorTests
     public async Task TryIssueForCompletedEnrollmentAsync_WhenEnrollmentIsNotCompleted_ReturnsNull()
     {
         var student = CreateStudent();
-        var coordinator = CreateCoordinator(student, out _, out var emailService);
+        var coordinator = CreateCoordinator(student, out _, out var notificationRequestService);
         var course = CreateCourse();
         var enrollment = new Enrollment(student.Id, course.Id);
 
@@ -32,14 +32,14 @@ public sealed class CertificateIssuanceCoordinatorTests
             TestContext.Current.CancellationToken);
 
         certificate.Should().BeNull();
-        emailService.CertificateEmailsSent.Should().Be(0);
+        notificationRequestService.CertificateNotificationsRequested.Should().Be(0);
     }
 
     [Fact]
     public async Task TryIssueForCompletedEnrollmentAsync_WhenCalledTwice_IssuesOnlyOneCertificate()
     {
         var student = CreateStudent();
-        var coordinator = CreateCoordinator(student, out var repository, out var emailService);
+        var coordinator = CreateCoordinator(student, out var repository, out var notificationRequestService);
         var course = CreateCourse();
         var enrollment = new Enrollment(student.Id, course.Id);
         enrollment.CompleteLesson(Guid.NewGuid(), totalLessonsInCourse: 1, requiredAssignmentIds: []);
@@ -58,19 +58,19 @@ public sealed class CertificateIssuanceCoordinatorTests
         secondCertificate.Should().NotBeNull();
         secondCertificate!.Id.Should().Be(firstCertificate!.Id);
         repository.StoredCertificates.Should().ContainSingle();
-        emailService.CertificateEmailsSent.Should().Be(1);
+        notificationRequestService.CertificateNotificationsRequested.Should().Be(1);
     }
 
     private static CertificateIssuanceCoordinator CreateCoordinator(
         Student student,
         out InMemoryCertificateRepository certificateRepository,
-        out FakeEmailService emailService)
+        out FakeNotificationRequestService notificationRequestService)
     {
         certificateRepository = new InMemoryCertificateRepository();
-        emailService = new FakeEmailService();
+        notificationRequestService = new FakeNotificationRequestService();
         var userRepository = new InMemoryUserRepository(student);
 
-        return new CertificateIssuanceCoordinator(certificateRepository, userRepository, emailService);
+        return new CertificateIssuanceCoordinator(certificateRepository, userRepository, notificationRequestService);
     }
 
     private static Student CreateStudent() =>
@@ -140,23 +140,49 @@ public sealed class CertificateIssuanceCoordinatorTests
         public Task<int> GetUsersCountAsync(CancellationToken cancellationToken = default) => Task.FromResult(1);
     }
 
-    private sealed class FakeEmailService : IEmailService
+    private sealed class FakeNotificationRequestService : INotificationRequestService
     {
-        public int CertificateEmailsSent { get; private set; }
+        public int CertificateNotificationsRequested { get; private set; }
 
-        public Task SendEmailAsync(string to, string subject, string body, bool isHtml = false) => Task.CompletedTask;
+        public Task RequestEnrollmentConfirmationAsync(
+            string recipientEmail,
+            string studentName,
+            string courseName,
+            Guid sourceId,
+            CancellationToken cancellationToken) => Task.CompletedTask;
 
-        public Task SendEnrollmentConfirmationAsync(string to, string studentName, string courseName) => Task.CompletedTask;
+        public Task RequestAssignmentGradedAsync(
+            string recipientEmail,
+            string studentName,
+            string assignmentName,
+            int score,
+            Guid sourceId,
+            CancellationToken cancellationToken) => Task.CompletedTask;
 
-        public Task SendAssignmentGradedAsync(string to, string studentName, string assignmentName, int score) => Task.CompletedTask;
+        public Task RequestCourseApprovedAsync(
+            string recipientEmail,
+            string instructorName,
+            string courseName,
+            Guid sourceId,
+            CancellationToken cancellationToken) => Task.CompletedTask;
 
-        public Task SendCourseApprovedAsync(string to, string instructorName, string courseName) => Task.CompletedTask;
+        public Task RequestCourseRejectedAsync(
+            string recipientEmail,
+            string instructorName,
+            string courseName,
+            string reason,
+            Guid sourceId,
+            CancellationToken cancellationToken) => Task.CompletedTask;
 
-        public Task SendCourseRejectedAsync(string to, string instructorName, string courseName, string reason) => Task.CompletedTask;
-
-        public Task SendCertificateIssuedAsync(string to, string studentName, string courseName, string certificateCode)
+        public Task RequestCertificateIssuedAsync(
+            string recipientEmail,
+            string studentName,
+            string courseName,
+            string certificateCode,
+            Guid sourceId,
+            CancellationToken cancellationToken)
         {
-            this.CertificateEmailsSent++;
+            this.CertificateNotificationsRequested++;
             return Task.CompletedTask;
         }
     }

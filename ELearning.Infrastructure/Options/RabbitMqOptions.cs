@@ -22,5 +22,11 @@ public sealed class RabbitMqOptions
 
     public string ExchangeName { get; init; } = "elearning.integration.events";
 
+    public string NotificationQueueName { get; init; } = "elearning.notifications.email";
+
+    public string DeadLetterExchangeName { get; init; } = "elearning.integration.dead-letter";
+
+    public string DeadLetterQueueName { get; init; } = "elearning.notifications.email.dead-letter";
+
     public int PublisherConfirmTimeoutSeconds { get; init; } = 5;
 }

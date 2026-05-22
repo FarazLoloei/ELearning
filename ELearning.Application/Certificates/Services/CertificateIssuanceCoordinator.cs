@@ -15,7 +15,7 @@ using ELearning.Domain.Entities.UserAggregate.Abstractions.Repositories;
 public sealed class CertificateIssuanceCoordinator(
         ICertificateRepository certificateRepository,
         IUserRepository userRepository,
-        IEmailService emailService)
+        INotificationRequestService notificationRequestService)
 {
     public async Task<Certificate?> TryIssueForCompletedEnrollmentAsync(
         Enrollment enrollment,
@@ -47,11 +47,13 @@ public sealed class CertificateIssuanceCoordinator(
         var student = await userRepository.GetByIdForUpdateAsync(enrollment.StudentId, cancellationToken)
             ?? throw new InvalidOperationException("Completed enrollment is associated with a missing student.");
 
-        await emailService.SendCertificateIssuedAsync(
+        await notificationRequestService.RequestCertificateIssuedAsync(
             student.Email.Value,
             student.FullName,
             course.Title,
-            certificate.CertificateCode);
+            certificate.CertificateCode,
+            certificate.Id,
+            cancellationToken);
 
         return certificate;
     }
