@@ -1,0 +1,29 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: elearning-api-config
+data:
+  ASPNETCORE_ENVIRONMENT: Production
+  ASPNETCORE_URLS: http://+:8080
+  Ocelot__Enabled: "false"
+
+  Database__Provider: SqlServer
+
+  RabbitMq__Enabled: "true"
+  RabbitMq__HostName: rabbitmq
+  RabbitMq__Port: "5672"
+  RabbitMq__VirtualHost: /
+  RabbitMq__ExchangeName: elearning.integration.events
+  RabbitMq__NotificationQueueName: elearning.notifications.email
+  RabbitMq__DeadLetterExchangeName: elearning.integration.dead-letter
+  RabbitMq__DeadLetterQueueName: elearning.notifications.email.dead-letter
+  RabbitMq__PublisherConfirmTimeoutSeconds: "5"
+
+  JwtSettings__Issuer: elearning-api
+  JwtSettings__Audience: elearning-api
+  JwtSettings__ExpiryInDays: "7"
+  JwtSettings__RefreshTokenExpiryInDays: "14"
+
+  Observability__ServiceName: elearning-api
+  Observability__ConsoleExporterEnabled: "false"
+  Observability__OtlpEndpoint: ""

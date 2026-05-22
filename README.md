@@ -160,6 +160,34 @@ Useful endpoints:
 - Liveness probe: `/health/live`
 - Readiness probe: `/health/ready`
 
+### Running With Docker Compose
+
+The repository includes a local container stack for running the API with SQL Server and RabbitMQ:
+
+```powershell
+Copy-Item .env.example .env
+docker compose up --build -d
+```
+
+Compose services:
+
+- API: `http://localhost:8080`
+- RabbitMQ management UI: `http://localhost:15672`
+- SQL Server: `localhost,1433`
+
+Validate container health:
+
+```powershell
+Invoke-RestMethod http://localhost:8080/health/live
+Invoke-RestMethod http://localhost:8080/health/ready
+```
+
+Stop the local stack:
+
+```powershell
+docker compose down
+```
+
 Database notes:
 
 - sqlite in-memory is the default local and test experience
@@ -173,6 +201,17 @@ Observability notes:
 - console export is disabled by default and can be enabled with `Observability:ConsoleExporterEnabled`
 - OTLP export is enabled only when `Observability:OtlpEndpoint` is configured
 
+Kubernetes notes:
+
+- API deployment manifests live under `deploy/kubernetes/base`
+- the manifests use liveness, readiness, and startup probes against the health endpoints
+- SQL Server and RabbitMQ are modeled as external dependencies; use managed services or dedicated operators for real environments
+- validate manifests locally with:
+
+```powershell
+kubectl apply --dry-run=client -k deploy/kubernetes/base
+```
+
 ## Build And Test
 
 ```powershell
@@ -183,7 +222,7 @@ dotnet test ELearning.sln -nologo /p:UseSharedCompilation=false
 Current local verification:
 
 - `ELearning.Application.Tests`: `110` passing
-- `ELearning.IntegrationTests`: `40` passing
+- `ELearning.IntegrationTests`: `55` passing
 
 ## Why This Is A Strong Backend Sample
 
