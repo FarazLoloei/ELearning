@@ -15,7 +15,7 @@ using Microsoft.EntityFrameworkCore;
 /// <summary>
 /// Reads enrollment projections directly from the owned database.
 /// </summary>
-public class EnrollmentReadRepository(ApplicationDbContext context) : IEnrollmentReadRepository
+public class EnrollmentReadRepository(ApplicationDbContext context, ISqlDialect sqlDialect) : IEnrollmentReadRepository
 {
     /// <summary>
     /// Gets a single enrollment detail projection by identifier.
@@ -112,6 +112,7 @@ public class EnrollmentReadRepository(ApplicationDbContext context) : IEnrollmen
     {
         var connection = context.Database.GetDbConnection();
         await connection.EnsureOpenAsync(cancellationToken);
+        var pagingClause = sqlDialect.Page();
 
         const string countSql = """
                                 SELECT COUNT(*)
@@ -119,57 +120,57 @@ public class EnrollmentReadRepository(ApplicationDbContext context) : IEnrollmen
                                 WHERE StudentId = @StudentId
                                 """;
 
-        const string sql = """
-                           SELECT e.Id,
-                                  e.StudentId,
-                                  u.FirstName AS StudentFirstName,
-                                  u.LastName AS StudentLastName,
-                                  e.CourseId,
-                                  c.Title AS CourseTitle,
-                                  e.Status AS StatusId,
-                                  e.createdAtUTC AS EnrollmentDate,
-                                  e.CompletedDateUTC AS CompletedDate,
-                                  CASE
-                                      WHEN COALESCE(tl.TotalLessons, 0) + COALESCE(ta.TotalAssignments, 0) = 0 THEN 0.0
-                                      ELSE (
-                                          CAST(COALESCE(cl.CompletedLessons, 0) + COALESCE(sa.SubmittedAssignments, 0) AS FLOAT) /
-                                          CAST(COALESCE(tl.TotalLessons, 0) + COALESCE(ta.TotalAssignments, 0) AS FLOAT)
-                                      ) * 100.0
-                                  END AS CompletionPercentage
-                           FROM Enrollments e
-                           INNER JOIN Users u ON u.Id = e.StudentId
-                           INNER JOIN Courses c ON c.Id = e.CourseId
-                           LEFT JOIN (
-                               SELECT m.CourseId,
-                                      COUNT(l.Id) AS TotalLessons
-                               FROM Modules m
-                               LEFT JOIN Lessons l ON l.ModuleId = m.Id
-                               GROUP BY m.CourseId
-                           ) tl ON tl.CourseId = e.CourseId
-                           LEFT JOIN (
-                               SELECT EnrollmentId,
-                                      COUNT(DISTINCT LessonId) AS CompletedLessons
-                               FROM Progresses
-                               WHERE Status = 3
-                               GROUP BY EnrollmentId
-                           ) cl ON cl.EnrollmentId = e.Id
-                           LEFT JOIN (
-                               SELECT m.CourseId,
-                                      COUNT(a.Id) AS TotalAssignments
-                               FROM Modules m
-                               LEFT JOIN Assignments a ON a.ModuleId = m.Id
-                               GROUP BY m.CourseId
-                           ) ta ON ta.CourseId = e.CourseId
-                           LEFT JOIN (
-                               SELECT EnrollmentId,
-                                      COUNT(DISTINCT AssignmentId) AS SubmittedAssignments
-                               FROM Submissions
-                               GROUP BY EnrollmentId
-                           ) sa ON sa.EnrollmentId = e.Id
-                           WHERE e.StudentId = @StudentId
-                           ORDER BY e.createdAtUTC DESC, e.Id
-                           LIMIT @PageSize OFFSET @Offset
-                           """;
+        var sql = $$"""
+                    SELECT e.Id,
+                           e.StudentId,
+                           u.FirstName AS StudentFirstName,
+                           u.LastName AS StudentLastName,
+                           e.CourseId,
+                           c.Title AS CourseTitle,
+                           e.Status AS StatusId,
+                           e.createdAtUTC AS EnrollmentDate,
+                           e.CompletedDateUTC AS CompletedDate,
+                           CASE
+                               WHEN COALESCE(tl.TotalLessons, 0) + COALESCE(ta.TotalAssignments, 0) = 0 THEN 0.0
+                               ELSE (
+                                   CAST(COALESCE(cl.CompletedLessons, 0) + COALESCE(sa.SubmittedAssignments, 0) AS FLOAT) /
+                                   CAST(COALESCE(tl.TotalLessons, 0) + COALESCE(ta.TotalAssignments, 0) AS FLOAT)
+                               ) * 100.0
+                           END AS CompletionPercentage
+                    FROM Enrollments e
+                    INNER JOIN Users u ON u.Id = e.StudentId
+                    INNER JOIN Courses c ON c.Id = e.CourseId
+                    LEFT JOIN (
+                        SELECT m.CourseId,
+                               COUNT(l.Id) AS TotalLessons
+                        FROM Modules m
+                        LEFT JOIN Lessons l ON l.ModuleId = m.Id
+                        GROUP BY m.CourseId
+                    ) tl ON tl.CourseId = e.CourseId
+                    LEFT JOIN (
+                        SELECT EnrollmentId,
+                               COUNT(DISTINCT LessonId) AS CompletedLessons
+                        FROM Progresses
+                        WHERE Status = 3
+                        GROUP BY EnrollmentId
+                    ) cl ON cl.EnrollmentId = e.Id
+                    LEFT JOIN (
+                        SELECT m.CourseId,
+                               COUNT(a.Id) AS TotalAssignments
+                        FROM Modules m
+                        LEFT JOIN Assignments a ON a.ModuleId = m.Id
+                        GROUP BY m.CourseId
+                    ) ta ON ta.CourseId = e.CourseId
+                    LEFT JOIN (
+                        SELECT EnrollmentId,
+                               COUNT(DISTINCT AssignmentId) AS SubmittedAssignments
+                        FROM Submissions
+                        GROUP BY EnrollmentId
+                    ) sa ON sa.EnrollmentId = e.Id
+                    WHERE e.StudentId = @StudentId
+                    ORDER BY e.createdAtUTC DESC, e.Id
+                    {{pagingClause}}
+                    """;
 
         var parameters = new
         {
@@ -203,64 +204,65 @@ public class EnrollmentReadRepository(ApplicationDbContext context) : IEnrollmen
     {
         var connection = context.Database.GetDbConnection();
         await connection.EnsureOpenAsync(cancellationToken);
+        var pagingClause = sqlDialect.Page();
 
         const string countSql = """
                                 SELECT COUNT(*)
                                 FROM Enrollments
                                 """;
 
-        const string sql = """
-                           SELECT e.Id,
-                                  e.StudentId,
-                                  u.FirstName AS StudentFirstName,
-                                  u.LastName AS StudentLastName,
-                                  e.CourseId,
-                                  c.Title AS CourseTitle,
-                                  e.Status AS StatusId,
-                                  e.createdAtUTC AS EnrollmentDate,
-                                  e.CompletedDateUTC AS CompletedDate,
-                                  CASE
-                                      WHEN COALESCE(tl.TotalLessons, 0) + COALESCE(ta.TotalAssignments, 0) = 0 THEN 0.0
-                                      ELSE (
-                                          CAST(COALESCE(cl.CompletedLessons, 0) + COALESCE(sa.SubmittedAssignments, 0) AS FLOAT) /
-                                          CAST(COALESCE(tl.TotalLessons, 0) + COALESCE(ta.TotalAssignments, 0) AS FLOAT)
-                                      ) * 100.0
-                                  END AS CompletionPercentage,
-                                  e.CourseRatingValue AS CourseRating,
-                                  e.Review
-                           FROM Enrollments e
-                           INNER JOIN Users u ON u.Id = e.StudentId
-                           INNER JOIN Courses c ON c.Id = e.CourseId
-                           LEFT JOIN (
-                               SELECT m.CourseId,
-                                      COUNT(l.Id) AS TotalLessons
-                               FROM Modules m
-                               LEFT JOIN Lessons l ON l.ModuleId = m.Id
-                               GROUP BY m.CourseId
-                           ) tl ON tl.CourseId = e.CourseId
-                           LEFT JOIN (
-                               SELECT EnrollmentId,
-                                      COUNT(DISTINCT LessonId) AS CompletedLessons
-                               FROM Progresses
-                               WHERE Status = 3
-                               GROUP BY EnrollmentId
-                           ) cl ON cl.EnrollmentId = e.Id
-                           LEFT JOIN (
-                               SELECT m.CourseId,
-                                      COUNT(a.Id) AS TotalAssignments
-                               FROM Modules m
-                               LEFT JOIN Assignments a ON a.ModuleId = m.Id
-                               GROUP BY m.CourseId
-                           ) ta ON ta.CourseId = e.CourseId
-                           LEFT JOIN (
-                               SELECT EnrollmentId,
-                                      COUNT(DISTINCT AssignmentId) AS SubmittedAssignments
-                               FROM Submissions
-                               GROUP BY EnrollmentId
-                           ) sa ON sa.EnrollmentId = e.Id
-                           ORDER BY e.createdAtUTC DESC, e.Id
-                           LIMIT @PageSize OFFSET @Offset
-                           """;
+        var sql = $$"""
+                    SELECT e.Id,
+                           e.StudentId,
+                           u.FirstName AS StudentFirstName,
+                           u.LastName AS StudentLastName,
+                           e.CourseId,
+                           c.Title AS CourseTitle,
+                           e.Status AS StatusId,
+                           e.createdAtUTC AS EnrollmentDate,
+                           e.CompletedDateUTC AS CompletedDate,
+                           CASE
+                               WHEN COALESCE(tl.TotalLessons, 0) + COALESCE(ta.TotalAssignments, 0) = 0 THEN 0.0
+                               ELSE (
+                                   CAST(COALESCE(cl.CompletedLessons, 0) + COALESCE(sa.SubmittedAssignments, 0) AS FLOAT) /
+                                   CAST(COALESCE(tl.TotalLessons, 0) + COALESCE(ta.TotalAssignments, 0) AS FLOAT)
+                               ) * 100.0
+                           END AS CompletionPercentage,
+                           e.CourseRatingValue AS CourseRating,
+                           e.Review
+                    FROM Enrollments e
+                    INNER JOIN Users u ON u.Id = e.StudentId
+                    INNER JOIN Courses c ON c.Id = e.CourseId
+                    LEFT JOIN (
+                        SELECT m.CourseId,
+                               COUNT(l.Id) AS TotalLessons
+                        FROM Modules m
+                        LEFT JOIN Lessons l ON l.ModuleId = m.Id
+                        GROUP BY m.CourseId
+                    ) tl ON tl.CourseId = e.CourseId
+                    LEFT JOIN (
+                        SELECT EnrollmentId,
+                               COUNT(DISTINCT LessonId) AS CompletedLessons
+                        FROM Progresses
+                        WHERE Status = 3
+                        GROUP BY EnrollmentId
+                    ) cl ON cl.EnrollmentId = e.Id
+                    LEFT JOIN (
+                        SELECT m.CourseId,
+                               COUNT(a.Id) AS TotalAssignments
+                        FROM Modules m
+                        LEFT JOIN Assignments a ON a.ModuleId = m.Id
+                        GROUP BY m.CourseId
+                    ) ta ON ta.CourseId = e.CourseId
+                    LEFT JOIN (
+                        SELECT EnrollmentId,
+                               COUNT(DISTINCT AssignmentId) AS SubmittedAssignments
+                        FROM Submissions
+                        GROUP BY EnrollmentId
+                    ) sa ON sa.EnrollmentId = e.Id
+                    ORDER BY e.createdAtUTC DESC, e.Id
+                    {{pagingClause}}
+                    """;
 
         var totalCount = await connection.QuerySingleAsync<int>(
             new CommandDefinition(countSql, cancellationToken: cancellationToken));

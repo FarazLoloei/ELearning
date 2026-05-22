@@ -12,7 +12,7 @@ using ELearning.SharedKernel;
 using ELearning.SharedKernel.Models;
 using Microsoft.EntityFrameworkCore;
 
-public class SubmissionReadRepository(ApplicationDbContext context) : ISubmissionReadRepository
+public class SubmissionReadRepository(ApplicationDbContext context, ISqlDialect sqlDialect) : ISubmissionReadRepository
 {
     public async Task<SubmissionReadModel?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
@@ -70,15 +70,16 @@ public class SubmissionReadRepository(ApplicationDbContext context) : ISubmissio
     {
         var connection = context.Database.GetDbConnection();
         await connection.EnsureOpenAsync(cancellationToken);
+        var fetchFirstClause = sqlDialect.FetchFirst("1");
 
-        const string sql = """
-                           SELECT s.Id, s.EnrollmentId, s.AssignmentId, s.Content, s.FileUrl, s.IsGraded, s.Score, s.Feedback, s.SubmittedDate, s.GradedById, s.GradedDate
-                           FROM Submissions s
-                           INNER JOIN Enrollments e ON e.Id = s.EnrollmentId
-                           WHERE e.StudentId = @StudentId AND s.AssignmentId = @AssignmentId
-                           ORDER BY s.SubmittedDate DESC
-                           LIMIT 1
-                           """;
+        var sql = $$"""
+                    SELECT s.Id, s.EnrollmentId, s.AssignmentId, s.Content, s.FileUrl, s.IsGraded, s.Score, s.Feedback, s.SubmittedDate, s.GradedById, s.GradedDate
+                    FROM Submissions s
+                    INNER JOIN Enrollments e ON e.Id = s.EnrollmentId
+                    WHERE e.StudentId = @StudentId AND s.AssignmentId = @AssignmentId
+                    ORDER BY s.SubmittedDate DESC
+                    {{fetchFirstClause}}
+                    """;
 
         return await connection.QuerySingleOrDefaultAsync<SubmissionReadModel>(
             new CommandDefinition(sql, new { StudentId = studentId, AssignmentId = assignmentId }, cancellationToken: cancellationToken));
@@ -106,18 +107,19 @@ public class SubmissionReadRepository(ApplicationDbContext context) : ISubmissio
     {
         var connection = context.Database.GetDbConnection();
         await connection.EnsureOpenAsync(cancellationToken);
+        var pagingClause = sqlDialect.Page();
 
         const string countSql = """
                                 SELECT COUNT(*)
                                 FROM Submissions
                                 """;
 
-        const string sql = """
-                           SELECT Id, EnrollmentId, AssignmentId, Content, FileUrl, IsGraded, Score, Feedback, SubmittedDate, GradedById, GradedDate
-                           FROM Submissions
-                           ORDER BY SubmittedDate DESC, Id
-                           LIMIT @PageSize OFFSET @Offset
-                           """;
+        var sql = $$"""
+                    SELECT Id, EnrollmentId, AssignmentId, Content, FileUrl, IsGraded, Score, Feedback, SubmittedDate, GradedById, GradedDate
+                    FROM Submissions
+                    ORDER BY SubmittedDate DESC, Id
+                    {{pagingClause}}
+                    """;
 
         var totalCount = await connection.QuerySingleAsync<int>(
             new CommandDefinition(countSql, cancellationToken: cancellationToken));

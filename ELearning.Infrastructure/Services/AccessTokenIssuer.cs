@@ -9,26 +9,21 @@ using System.Security.Claims;
 using System.Text;
 using ELearning.Application.Auth.Abstractions;
 using ELearning.Domain.Entities.UserAggregate;
-using Microsoft.Extensions.Configuration;
+using ELearning.Infrastructure.Options;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 
-public sealed class AccessTokenIssuer(IConfiguration configuration) : IAccessTokenIssuer
+public sealed class AccessTokenIssuer(IOptions<JwtSettingsOptions> jwtSettingsOptions) : IAccessTokenIssuer
 {
     public string IssueToken(User user)
     {
         ArgumentNullException.ThrowIfNull(user);
 
-        var jwtSettings = configuration.GetSection("JwtSettings");
-        var secret = jwtSettings["Secret"] ?? throw new InvalidOperationException("JwtSettings:Secret is not configured.");
-        var expiryInDaysValue = jwtSettings["ExpiryInDays"] ?? throw new InvalidOperationException("JwtSettings:ExpiryInDays is not configured.");
-        if (!double.TryParse(expiryInDaysValue, out var expiryInDays))
-        {
-            throw new InvalidOperationException("JwtSettings:ExpiryInDays is invalid.");
-        }
+        var jwtSettings = jwtSettingsOptions.Value;
 
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret));
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.Secret));
         var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-        var expiry = DateTime.UtcNow.AddDays(expiryInDays);
+        var expiry = DateTime.UtcNow.AddDays(jwtSettings.ExpiryInDays);
 
         var claims = new[]
         {
@@ -41,8 +36,8 @@ public sealed class AccessTokenIssuer(IConfiguration configuration) : IAccessTok
         };
 
         var token = new JwtSecurityToken(
-            issuer: jwtSettings["Issuer"],
-            audience: jwtSettings["Audience"],
+            issuer: jwtSettings.Issuer,
+            audience: jwtSettings.Audience,
             claims: claims,
             expires: expiry,
             signingCredentials: credentials);

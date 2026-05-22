@@ -2,244 +2,39 @@
 // Copyright (c) FarazLoloei. All rights reserved.
 // </copyright>
 
-using System.Reflection;
-using System.Text;
-using System.Text.Json.Serialization;
-using System.Threading.RateLimiting;
-using ELearning.API.Facades;
 using ELearning.API.GraphQL;
 using ELearning.API.Infrastructure;
 using ELearning.API.Middleware;
 using ELearning.Application;
 using ELearning.Infrastructure;
 using ELearning.Infrastructure.DaprServices;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.RateLimiting;
-using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi;
-using Ocelot.Cache.CacheManager;
-using Ocelot.DependencyInjection;
 using Ocelot.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add application layer
-builder.Services.AddApplication();
-
-// Add infrastructure layer (includes CurrentUserService)
-builder.Services.AddInfrastructure(builder.Configuration);
-
-// Add Dapr services for read operations
-builder.Services.AddDaprServices(builder.Configuration);
-
-// Add GraphQL services
-builder.Services.AddGraphQLServices();
-
-// Configure configuration sources
-builder.Configuration
-    .SetBasePath(builder.Environment.ContentRootPath)
-    .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-    .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: true)
-    .AddJsonFile($"ocelot.{builder.Environment.EnvironmentName}.json", optional: false, reloadOnChange: true)
-    .AddEnvironmentVariables();
+builder.Configuration.AddApiConfigurationSources(builder.Environment);
 
 var ocelotGatewayEnabled = OcelotGatewayMode.IsEnabled(builder.Configuration);
 
-// Add API versioning
-builder.Services.AddApiVersioning(options =>
-{
-    options.DefaultApiVersion = new Asp.Versioning.ApiVersion(1, 0);
-    options.AssumeDefaultVersionWhenUnspecified = true;
-    options.ReportApiVersions = true;
-    options.ApiVersionReader = Asp.Versioning.ApiVersionReader.Combine(
-        new Asp.Versioning.UrlSegmentApiVersionReader(),
-        new Asp.Versioning.HeaderApiVersionReader("api-version"));
-}).AddApiExplorer(options =>
-{
-    // Format the version as "'v'major[.minor][-status]"
-    options.GroupNameFormat = "'v'VVV";
-    options.SubstituteApiVersionInUrl = true;
-});
+builder.Services.AddApiConfigurationValidation(builder.Configuration);
+builder.AddApiObservability();
 
-// Add CORS
-var allowedCorsOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>();
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy(
-        "CorsPolicy",
-        policyBuilder =>
-        {
-            if (allowedCorsOrigins is { Length: > 0 })
-            {
-                policyBuilder
-                    .WithOrigins(allowedCorsOrigins)
-                    .AllowAnyMethod()
-                    .AllowAnyHeader();
-            }
-            else if (builder.Environment.IsDevelopment())
-            {
-                policyBuilder
-                    .AllowAnyOrigin()
-                    .AllowAnyMethod()
-                    .AllowAnyHeader();
-            }
-        });
-});
+builder.Services.AddApplication();
+builder.Services.AddInfrastructure(builder.Configuration);
+builder.Services.AddDaprServices(builder.Configuration);
+builder.Services.AddGraphQLServices();
 
-// Add Ocelot only when running in gateway mode
-if (ocelotGatewayEnabled)
-{
-    builder.Services.AddOcelot(builder.Configuration)
-        .AddCacheManager(settings => settings.WithDictionaryHandle());
-}
+builder.Services.AddApiPresentation();
+builder.Services.AddApiCors(builder.Configuration, builder.Environment);
+builder.Services.AddApiGateway(builder.Configuration, ocelotGatewayEnabled);
+builder.Services.AddApiAuthentication();
+builder.Services.AddApiRateLimiting();
+builder.Services.AddApiHealthChecks();
 
-// Add authentication
-var jwtSettings = builder.Configuration.GetSection("JwtSettings");
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(options =>
-    {
-        options.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateIssuer = true,
-            ValidateAudience = true,
-            ValidateLifetime = true,
-            ValidateIssuerSigningKey = true,
-            ValidIssuer = jwtSettings["Issuer"],
-            ValidAudience = jwtSettings["Audience"],
-            IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(jwtSettings["Secret"] ?? throw new InvalidOperationException("JWT Secret is not configured"))),
-        };
-
-        options.Events = new JwtBearerEvents
-        {
-            OnChallenge = async context =>
-            {
-                context.HandleResponse();
-
-                if (context.Response.HasStarted)
-                {
-                    return;
-                }
-
-                var problemDetails = ApiProblemDetailsFactory.Create(
-                    context.HttpContext,
-                    StatusCodes.Status401Unauthorized,
-                    "Unauthorized",
-                    "Authentication is required to access this resource.",
-                    ELearning.Application.Common.Model.ApplicationErrorCodes.AuthenticationUnauthorized);
-
-                await ApiProblemDetailsFactory.WriteAsync(context.HttpContext, problemDetails);
-            },
-            OnForbidden = async context =>
-            {
-                if (context.Response.HasStarted)
-                {
-                    return;
-                }
-
-                var problemDetails = ApiProblemDetailsFactory.Create(
-                    context.HttpContext,
-                    StatusCodes.Status403Forbidden,
-                    "Forbidden",
-                    "You do not have permission to access this resource.",
-                    ELearning.Application.Common.Model.ApplicationErrorCodes.AuthorizationForbidden);
-
-                await ApiProblemDetailsFactory.WriteAsync(context.HttpContext, problemDetails);
-            },
-        };
-    });
-
-builder.Services.AddRateLimiter(options =>
-{
-    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
-    options.AddFixedWindowLimiter("AuthEndpoints", limiterOptions =>
-    {
-        limiterOptions.PermitLimit = 10;
-        limiterOptions.Window = TimeSpan.FromMinutes(1);
-        limiterOptions.QueueLimit = 0;
-        limiterOptions.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
-    });
-});
-
-// Add swagger with JWT support
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(c =>
-{
-    c.SwaggerDoc("v1", new OpenApiInfo
-    {
-        Title = "E-Learning Platform API",
-        Version = "v1",
-        Description = "REST-first API for the E-Learning platform. GraphQL is available as a secondary interface at /graphql.",
-        Contact = new OpenApiContact
-        {
-            Name = "E-Learning API"
-        },
-    });
-
-    var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
-    var xmlPath = System.IO.Path.Combine(AppContext.BaseDirectory, xmlFile);
-    if (File.Exists(xmlPath))
-    {
-        c.IncludeXmlComments(xmlPath, includeControllerXmlComments: true);
-    }
-
-    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-    {
-        Description = "JWT Authorization header using the Bearer scheme.",
-        Name = "Authorization",
-        In = ParameterLocation.Header,
-        Type = SecuritySchemeType.Http,
-        Scheme = "bearer",
-        BearerFormat = "JWT",
-    });
-
-    c.AddSecurityRequirement(document => new OpenApiSecurityRequirement
-    {
-        {
-            new OpenApiSecuritySchemeReference("Bearer", document, null!),
-            new List<string>()
-        },
-    });
-});
-
-// Add controllers
-builder.Services.AddControllers()
-    .AddJsonOptions(options =>
-    {
-        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
-        options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
-    });
-
-builder.Services.Configure<ApiBehaviorOptions>(options =>
-{
-    options.InvalidModelStateResponseFactory = context =>
-    {
-        var errors = context.ModelState
-            .Where(entry => entry.Value?.Errors.Count > 0)
-            .ToDictionary(
-                entry => entry.Key,
-                entry => entry.Value!.Errors
-                    .Select(error => string.IsNullOrWhiteSpace(error.ErrorMessage)
-                        ? "The input was not valid."
-                        : error.ErrorMessage)
-                    .ToArray());
-
-        var problemDetails = ApiProblemDetailsFactory.CreateValidation(context.HttpContext, errors);
-        return ApiProblemDetailsFactory.ToObjectResult(problemDetails);
-    };
-});
-
-// Add HttpContextAccessor for CurrentUserService
-builder.Services.AddHttpContextAccessor();
-builder.Services.AddScoped<IApiFacade, ApiFacade>();
-
-// Build the app
 var app = builder.Build();
 
 await DatabaseInitializer.InitializeAsync(app.Services, app.Configuration);
 
-// Configure the HTTP request pipeline
 if (!app.Environment.IsDevelopment())
 {
     app.UseHsts();
@@ -262,16 +57,16 @@ app.UseCors("CorsPolicy");
 app.UseAuthentication();
 app.UseAuthorization();
 
-// Map endpoints for monolith mode; gateway mode delegates to Ocelot pipeline.
+app.MapApiHealthChecks();
+
 if (!ocelotGatewayEnabled)
 {
-    app.MapControllers(); // REST API endpoints
-    app.MapGraphQL();     // GraphQL endpoint at /graphql
+    app.MapControllers();
+    app.MapGraphQL();
 }
 else
 {
     await app.UseOcelot();
 }
 
-// Run the app
 app.Run();

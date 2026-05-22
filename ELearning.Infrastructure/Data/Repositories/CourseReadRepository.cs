@@ -14,7 +14,7 @@ using ELearning.SharedKernel;
 using ELearning.SharedKernel.Models;
 using Microsoft.EntityFrameworkCore;
 
-public class CourseReadRepository(ApplicationDbContext context) : ICourseReadRepository
+public class CourseReadRepository(ApplicationDbContext context, ISqlDialect sqlDialect) : ICourseReadRepository
 {
     public async Task<PaginatedList<CourseReadModel>> SearchAsync(
         string? searchTerm,
@@ -33,6 +33,7 @@ public class CourseReadRepository(ApplicationDbContext context) : ICourseReadRep
         parameters.Add("PublishedStatusId", CourseStatus.Published.Id);
 
         var whereClause = BuildWhereClause(searchTerm, categoryId, levelId, isFeatured, parameters);
+        var pagingClause = sqlDialect.Page();
 
         var countSql = $$"""
                          SELECT COUNT(*)
@@ -66,7 +67,7 @@ public class CourseReadRepository(ApplicationDbContext context) : ICourseReadRep
                          ) ec ON ec.CourseId = c.Id
                          {{whereClause}}
                          ORDER BY c.createdAtUTC DESC, c.Id
-                         LIMIT @PageSize OFFSET @Offset
+                         {{pagingClause}}
                          """;
 
         var totalCount = await connection.QuerySingleAsync<int>(
@@ -142,18 +143,19 @@ public class CourseReadRepository(ApplicationDbContext context) : ICourseReadRep
         var connection = context.Database.GetDbConnection();
         await connection.EnsureOpenAsync(cancellationToken);
 
-        const string sql = """
-                           SELECT e.Id,
-                                  u.FirstName || ' ' || u.LastName AS StudentName,
-                                  e.CourseRatingValue AS Rating,
-                                  COALESCE(e.Review, '') AS Comment,
-                                  COALESCE(e.ReviewedAtUTC, e.updatedAtUTC, e.createdAtUTC) AS CreatedAt
-                           FROM Enrollments e
-                           INNER JOIN Users u ON u.Id = e.StudentId
-                           WHERE e.CourseId = @CourseId
-                             AND e.CourseRatingValue IS NOT NULL
-                           ORDER BY CreatedAt DESC, e.Id DESC
-                           """;
+        var studentNameExpression = sqlDialect.Concatenate("u.FirstName", "' '", "u.LastName");
+        var sql = $$"""
+                    SELECT e.Id,
+                           {{studentNameExpression}} AS StudentName,
+                           e.CourseRatingValue AS Rating,
+                           COALESCE(e.Review, '') AS Comment,
+                           COALESCE(e.ReviewedAtUTC, e.updatedAtUTC, e.createdAtUTC) AS CreatedAt
+                    FROM Enrollments e
+                    INNER JOIN Users u ON u.Id = e.StudentId
+                    WHERE e.CourseId = @CourseId
+                      AND e.CourseRatingValue IS NOT NULL
+                    ORDER BY CreatedAt DESC, e.Id DESC
+                    """;
 
         var rows = await connection.QueryAsync<CourseReviewReadModel>(
             new CommandDefinition(sql, new { CourseId = courseId }, cancellationToken: cancellationToken));

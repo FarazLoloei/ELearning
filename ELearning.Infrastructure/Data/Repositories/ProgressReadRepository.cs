@@ -12,7 +12,7 @@ using ELearning.SharedKernel;
 using ELearning.SharedKernel.Models;
 using Microsoft.EntityFrameworkCore;
 
-public class ProgressReadRepository(ApplicationDbContext context) : IProgressReadRepository
+public class ProgressReadRepository(ApplicationDbContext context, ISqlDialect sqlDialect) : IProgressReadRepository
 {
     public async Task<ProgressReadModel?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
@@ -151,30 +151,31 @@ public class ProgressReadRepository(ApplicationDbContext context) : IProgressRea
     {
         var connection = context.Database.GetDbConnection();
         await connection.EnsureOpenAsync(cancellationToken);
+        var pagingClause = sqlDialect.Page();
 
         const string countSql = """
                                 SELECT COUNT(*)
                                 FROM Progresses
                                 """;
 
-        const string sql = """
-                           SELECT
-                               Id,
-                               EnrollmentId,
-                               LessonId,
-                               Status AS StatusId,
-                               CASE Status
-                                   WHEN 1 THEN 'NotStarted'
-                                   WHEN 2 THEN 'InProgress'
-                                   WHEN 3 THEN 'Completed'
-                                   ELSE 'Unknown'
-                               END AS StatusName,
-                               CompletedDate,
-                               TimeSpentSeconds
-                           FROM Progresses
-                           ORDER BY EnrollmentId, LessonId, Id
-                           LIMIT @PageSize OFFSET @Offset
-                           """;
+        var sql = $$"""
+                    SELECT
+                        Id,
+                        EnrollmentId,
+                        LessonId,
+                        Status AS StatusId,
+                        CASE Status
+                            WHEN 1 THEN 'NotStarted'
+                            WHEN 2 THEN 'InProgress'
+                            WHEN 3 THEN 'Completed'
+                            ELSE 'Unknown'
+                        END AS StatusName,
+                        CompletedDate,
+                        TimeSpentSeconds
+                    FROM Progresses
+                    ORDER BY EnrollmentId, LessonId, Id
+                    {{pagingClause}}
+                    """;
 
         var totalCount = await connection.QuerySingleAsync<int>(
             new CommandDefinition(countSql, cancellationToken: cancellationToken));

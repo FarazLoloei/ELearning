@@ -17,6 +17,7 @@ using ELearning.Domain.Entities.EnrollmentAggregate.Abstractions.Repositories;
 using ELearning.Domain.Entities.UserAggregate.Abstractions.Repositories;
 using ELearning.Infrastructure.Data;
 using ELearning.Infrastructure.Data.Repositories;
+using ELearning.Infrastructure.Options;
 using ELearning.Infrastructure.Outbox;
 using ELearning.Infrastructure.Services;
 using Microsoft.Data.Sqlite;
@@ -26,16 +27,20 @@ using Microsoft.Extensions.DependencyInjection;
 
 public static class DependencyInjection
 {
-    private const string SqliteInMemoryProvider = "SqliteInMemory";
-    private const string SqlServerProvider = "SqlServer";
-
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
-        var databaseProvider = configuration["Database:Provider"] ?? SqliteInMemoryProvider;
+        services.AddOptions<DatabaseOptions>()
+            .Bind(configuration.GetSection(DatabaseOptions.SectionName));
 
-        if (databaseProvider.Equals(SqliteInMemoryProvider, StringComparison.OrdinalIgnoreCase))
+        services.AddOptions<JwtSettingsOptions>()
+            .Bind(configuration.GetSection(JwtSettingsOptions.SectionName));
+
+        var databaseOptions = configuration.GetSection(DatabaseOptions.SectionName).Get<DatabaseOptions>() ?? new DatabaseOptions();
+        var databaseProvider = databaseOptions.Provider;
+
+        if (DatabaseProviderNames.IsSqliteInMemory(databaseProvider))
         {
-            var connectionString = configuration["Database:SqliteInMemoryConnection"] ?? "Data Source=:memory:;Cache=Shared";
+            var connectionString = databaseOptions.SqliteInMemoryConnection;
 
             services.AddSingleton(_ =>
             {
@@ -50,7 +55,7 @@ public static class DependencyInjection
                 options.UseSqlite(connection);
             });
         }
-        else if (databaseProvider.Equals(SqlServerProvider, StringComparison.OrdinalIgnoreCase))
+        else if (DatabaseProviderNames.IsSqlServer(databaseProvider))
         {
             var defaultConnection = configuration.GetConnectionString("DefaultConnection")
                 ?? throw new InvalidOperationException("ConnectionStrings:DefaultConnection is required when using SqlServer provider.");
@@ -62,8 +67,10 @@ public static class DependencyInjection
         }
         else
         {
-            throw new InvalidOperationException($"Unsupported Database:Provider '{databaseProvider}'. Supported values: {SqliteInMemoryProvider}, {SqlServerProvider}.");
+            throw new InvalidOperationException($"Unsupported Database:Provider '{databaseProvider}'. Supported values: {DatabaseProviderNames.SqliteInMemory}, {DatabaseProviderNames.SqlServer}.");
         }
+
+        services.AddSingleton<ISqlDialect>(_ => SqlDialectFactory.Create(databaseProvider));
 
         services.AddScoped<ICourseRepository, CourseRepository>();
         services.AddScoped<ICertificateRepository, CertificateRepository>();

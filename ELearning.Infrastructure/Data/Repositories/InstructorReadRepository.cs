@@ -12,7 +12,7 @@ using ELearning.SharedKernel;
 using ELearning.SharedKernel.Models;
 using Microsoft.EntityFrameworkCore;
 
-public class InstructorReadRepository(ApplicationDbContext context) : IInstructorReadRepository
+public class InstructorReadRepository(ApplicationDbContext context, ISqlDialect sqlDialect) : IInstructorReadRepository
 {
     public async Task<InstructorReadModel?> GetByIdAsync(Guid instructorId, CancellationToken cancellationToken = default)
     {
@@ -48,27 +48,28 @@ public class InstructorReadRepository(ApplicationDbContext context) : IInstructo
     {
         var connection = context.Database.GetDbConnection();
         await connection.EnsureOpenAsync(cancellationToken);
+        var fetchFirstClause = sqlDialect.FetchFirst("@Count");
 
-        const string sql = """
-                           SELECT u.Id,
-                                  u.FirstName,
-                                  u.LastName,
-                                  u.Email,
-                                  u.Bio,
-                                  u.Expertise,
-                                  u.ProfilePictureUrl,
-                                  COUNT(DISTINCT c.Id) AS TotalCourses,
-                                  COUNT(DISTINCT e.StudentId) AS TotalStudents,
-                                  COALESCE(SUM(c.AverageRatingValue * c.NumberOfRatings), 0) AS WeightedRatingsSum,
-                                  COALESCE(SUM(c.NumberOfRatings), 0) AS TotalRatingsCount
-                           FROM Users u
-                           LEFT JOIN Courses c ON c.InstructorId = u.Id
-                           LEFT JOIN Enrollments e ON e.CourseId = c.Id
-                           WHERE u.UserType = 'Instructor'
-                           GROUP BY u.Id, u.FirstName, u.LastName, u.Email, u.Bio, u.Expertise, u.ProfilePictureUrl
-                           ORDER BY COUNT(DISTINCT c.Id) DESC, u.LastName, u.FirstName
-                           LIMIT @Count
-                           """;
+        var sql = $$"""
+                    SELECT u.Id,
+                           u.FirstName,
+                           u.LastName,
+                           u.Email,
+                           u.Bio,
+                           u.Expertise,
+                           u.ProfilePictureUrl,
+                           COUNT(DISTINCT c.Id) AS TotalCourses,
+                           COUNT(DISTINCT e.StudentId) AS TotalStudents,
+                           COALESCE(SUM(c.AverageRatingValue * c.NumberOfRatings), 0) AS WeightedRatingsSum,
+                           COALESCE(SUM(c.NumberOfRatings), 0) AS TotalRatingsCount
+                    FROM Users u
+                    LEFT JOIN Courses c ON c.InstructorId = u.Id
+                    LEFT JOIN Enrollments e ON e.CourseId = c.Id
+                    WHERE u.UserType = 'Instructor'
+                    GROUP BY u.Id, u.FirstName, u.LastName, u.Email, u.Bio, u.Expertise, u.ProfilePictureUrl
+                    ORDER BY COUNT(DISTINCT c.Id) DESC, u.LastName, u.FirstName
+                    {{fetchFirstClause}}
+                    """;
 
         var rows = await connection.QueryAsync<InstructorSummaryRow>(
             new CommandDefinition(sql, new { Count = count }, cancellationToken: cancellationToken));
@@ -187,6 +188,7 @@ public class InstructorReadRepository(ApplicationDbContext context) : IInstructo
     {
         var connection = context.Database.GetDbConnection();
         await connection.EnsureOpenAsync(cancellationToken);
+        var pagingClause = sqlDialect.Page();
 
         const string countSql = """
                                 SELECT COUNT(*)
@@ -194,26 +196,26 @@ public class InstructorReadRepository(ApplicationDbContext context) : IInstructo
                                 WHERE UserType = 'Instructor'
                                 """;
 
-        const string sql = """
-                           SELECT u.Id,
-                                  u.FirstName,
-                                  u.LastName,
-                                  u.Email,
-                                  u.Bio,
-                                  u.Expertise,
-                                  u.ProfilePictureUrl,
-                                  COUNT(DISTINCT c.Id) AS TotalCourses,
-                                  COUNT(DISTINCT e.StudentId) AS TotalStudents,
-                                  COALESCE(SUM(c.AverageRatingValue * c.NumberOfRatings), 0) AS WeightedRatingsSum,
-                                  COALESCE(SUM(c.NumberOfRatings), 0) AS TotalRatingsCount
-                           FROM Users u
-                           LEFT JOIN Courses c ON c.InstructorId = u.Id
-                           LEFT JOIN Enrollments e ON e.CourseId = c.Id
-                           WHERE u.UserType = 'Instructor'
-                           GROUP BY u.Id, u.FirstName, u.LastName, u.Email, u.Bio, u.Expertise, u.ProfilePictureUrl
-                           ORDER BY u.LastName, u.FirstName
-                           LIMIT @PageSize OFFSET @Offset
-                           """;
+        var sql = $$"""
+                    SELECT u.Id,
+                           u.FirstName,
+                           u.LastName,
+                           u.Email,
+                           u.Bio,
+                           u.Expertise,
+                           u.ProfilePictureUrl,
+                           COUNT(DISTINCT c.Id) AS TotalCourses,
+                           COUNT(DISTINCT e.StudentId) AS TotalStudents,
+                           COALESCE(SUM(c.AverageRatingValue * c.NumberOfRatings), 0) AS WeightedRatingsSum,
+                           COALESCE(SUM(c.NumberOfRatings), 0) AS TotalRatingsCount
+                    FROM Users u
+                    LEFT JOIN Courses c ON c.InstructorId = u.Id
+                    LEFT JOIN Enrollments e ON e.CourseId = c.Id
+                    WHERE u.UserType = 'Instructor'
+                    GROUP BY u.Id, u.FirstName, u.LastName, u.Email, u.Bio, u.Expertise, u.ProfilePictureUrl
+                    ORDER BY u.LastName, u.FirstName
+                    {{pagingClause}}
+                    """;
 
         var totalCount = await connection.QuerySingleAsync<int>(
             new CommandDefinition(countSql, cancellationToken: cancellationToken));

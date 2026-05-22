@@ -78,6 +78,7 @@ public class ApplicationDbContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(System.Reflection.Assembly.GetExecutingAssembly());
+        ConfigureBaseEntityFields(modelBuilder);
 
         if (this.Database.IsSqlite())
         {
@@ -85,6 +86,23 @@ public class ApplicationDbContext : DbContext
         }
 
         base.OnModelCreating(modelBuilder);
+    }
+
+    private static void ConfigureBaseEntityFields(ModelBuilder modelBuilder)
+    {
+        foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+        {
+            if (!typeof(BaseEntity).IsAssignableFrom(entityType.ClrType))
+            {
+                continue;
+            }
+
+            var entity = modelBuilder.Entity(entityType.ClrType);
+            entity.Property<DateTime>("createdAtUTC")
+                .HasColumnName("createdAtUTC");
+            entity.Property<DateTime?>("updatedAtUTC")
+                .HasColumnName("updatedAtUTC");
+        }
     }
 
     private static void ConfigureSqliteConcurrencyTokenSaveBehavior(ModelBuilder modelBuilder)

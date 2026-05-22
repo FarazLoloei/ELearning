@@ -5,20 +5,19 @@
 namespace ELearning.API.Infrastructure;
 
 using ELearning.Infrastructure.Data;
+using ELearning.Infrastructure.Options;
 using Microsoft.EntityFrameworkCore;
 
 public static class DatabaseInitializer
 {
-    private const string SqlServerProvider = "SqlServer";
-
     public static bool ShouldApplyMigrations(string? provider) =>
-        string.Equals(provider, SqlServerProvider, StringComparison.OrdinalIgnoreCase);
+        DatabaseProviderNames.IsSqlServer(provider);
 
     public static async Task InitializeAsync(IServiceProvider services, IConfiguration configuration, CancellationToken cancellationToken = default)
     {
         using var scope = services.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-        var provider = configuration["Database:Provider"];
+        var provider = configuration["Database:Provider"] ?? DatabaseProviderNames.SqliteInMemory;
 
         if (ShouldApplyMigrations(provider))
         {

@@ -12,7 +12,7 @@ using ELearning.SharedKernel;
 using ELearning.SharedKernel.Models;
 using Microsoft.EntityFrameworkCore;
 
-public class StudentReadRepository(ApplicationDbContext context) : IStudentReadRepository
+public class StudentReadRepository(ApplicationDbContext context, ISqlDialect sqlDialect) : IStudentReadRepository
 {
     public async Task<StudentReadModel?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
@@ -86,6 +86,7 @@ public class StudentReadRepository(ApplicationDbContext context) : IStudentReadR
     {
         var connection = context.Database.GetDbConnection();
         await connection.EnsureOpenAsync(cancellationToken);
+        var pagingClause = sqlDialect.Page();
 
         const string countSql = """
                                 SELECT COUNT(*)
@@ -93,13 +94,13 @@ public class StudentReadRepository(ApplicationDbContext context) : IStudentReadR
                                 WHERE UserType = 'Student'
                                 """;
 
-        const string sql = """
-                           SELECT Id, FirstName, LastName, Email, ProfilePictureUrl, LastLoginDate
-                           FROM Users
-                           WHERE UserType = 'Student'
-                           ORDER BY LastName, FirstName, Id
-                           LIMIT @PageSize OFFSET @Offset
-                           """;
+        var sql = $$"""
+                    SELECT Id, FirstName, LastName, Email, ProfilePictureUrl, LastLoginDate
+                    FROM Users
+                    WHERE UserType = 'Student'
+                    ORDER BY LastName, FirstName, Id
+                    {{pagingClause}}
+                    """;
 
         var totalCount = await connection.QuerySingleAsync<int>(
             new CommandDefinition(countSql, cancellationToken: cancellationToken));
