@@ -16,8 +16,8 @@ using ELearning.Application.Students.Dtos;
 using ELearning.Application.Students.Queries;
 using ELearning.Application.Submissions.Dtos;
 using ELearning.Application.Submissions.Queries;
+using HotChocolate.Authorization;
 using MediatR;
-using Microsoft.AspNetCore.Authorization;
 
 /// <summary>
 /// GraphQL query root type.
@@ -181,7 +181,7 @@ public class Query
     [UseFiltering]
     [UseSorting]
     [GraphQLDescription("Get pending submissions for an instructor")]
-    [Authorize(Roles = "Instructor")]
+    [Authorize(Roles = new[] { "Instructor" })]
     public async Task<IEnumerable<SubmissionDto>> GetPendingSubmissions(
         [Service] IMediator mediator,
         Guid instructorId,

@@ -12,8 +12,8 @@ using ELearning.Application.Common.Model;
 using ELearning.Application.Courses.Commands;
 using ELearning.Application.Enrollments.Commands;
 using ELearning.Application.Submissions.Commands;
+using HotChocolate.Authorization;
 using MediatR;
-using Microsoft.AspNetCore.Authorization;
 
 /// <summary>
 /// GraphQL mutation root type.
@@ -22,7 +22,7 @@ using Microsoft.AspNetCore.Authorization;
 public class Mutation(ILogger<Mutation> logger)
 {
     [GraphQLDescription("Create a new course")]
-    [Authorize(Roles = "Instructor")]
+    [Authorize(Roles = new[] { "Instructor" })]
     public async Task<CoursePayload> CreateCourse(
         [Service] IMediator mediator,
         CreateCourseInput input)
@@ -49,7 +49,7 @@ public class Mutation(ILogger<Mutation> logger)
     }
 
     [GraphQLDescription("Enroll in a course")]
-    [Authorize(Roles = "Student")]
+    [Authorize(Roles = new[] { "Student" })]
     public async Task<EnrollmentPayload> CreateEnrollment(
         [Service] IMediator mediator,
         CreateEnrollmentInput input)
@@ -64,7 +64,7 @@ public class Mutation(ILogger<Mutation> logger)
     }
 
     [GraphQLDescription("Submit an assignment")]
-    [Authorize(Roles = "Student")]
+    [Authorize(Roles = new[] { "Student" })]
     public async Task<SubmissionPayload> CreateSubmission(
         [Service] IMediator mediator,
         CreateSubmissionInput input)
@@ -81,7 +81,7 @@ public class Mutation(ILogger<Mutation> logger)
     }
 
     [GraphQLDescription("Grade a submission")]
-    [Authorize(Roles = "Instructor,Admin")]
+    [Authorize(Roles = new[] { "Instructor", "Admin" })]
     public async Task<GradeSubmissionPayload> GradeSubmission(
         [Service] IMediator mediator,
         GradeSubmissionInput input)
@@ -98,7 +98,7 @@ public class Mutation(ILogger<Mutation> logger)
     }
 
     [GraphQLDescription("Update an existing course")]
-    [Authorize(Roles = "Instructor")]
+    [Authorize(Roles = new[] { "Instructor" })]
     public async Task<OperationPayload> UpdateCourse(
         [Service] IMediator mediator,
         UpdateCourseInput input)
@@ -121,7 +121,7 @@ public class Mutation(ILogger<Mutation> logger)
     }
 
     [GraphQLDescription("Add a module to a course")]
-    [Authorize(Roles = "Instructor")]
+    [Authorize(Roles = new[] { "Instructor" })]
     public async Task<OperationPayload> AddCourseModule(
         [Service] IMediator mediator,
         AddCourseModuleInput input,
@@ -140,7 +140,7 @@ public class Mutation(ILogger<Mutation> logger)
     }
 
     [GraphQLDescription("Add a lesson to a course module")]
-    [Authorize(Roles = "Instructor")]
+    [Authorize(Roles = new[] { "Instructor" })]
     public async Task<OperationPayload> AddCourseLesson(
         [Service] IMediator mediator,
         AddCourseLessonInput input,
@@ -164,7 +164,7 @@ public class Mutation(ILogger<Mutation> logger)
     }
 
     [GraphQLDescription("Add an assignment to a course module")]
-    [Authorize(Roles = "Instructor")]
+    [Authorize(Roles = new[] { "Instructor" })]
     public async Task<OperationPayload> AddCourseAssignment(
         [Service] IMediator mediator,
         AddCourseAssignmentInput input,
@@ -186,7 +186,7 @@ public class Mutation(ILogger<Mutation> logger)
     }
 
     [GraphQLDescription("Delete a course")]
-    [Authorize(Roles = "Instructor,Admin")]
+    [Authorize(Roles = new[] { "Instructor", "Admin" })]
     public async Task<OperationPayload> DeleteCourse(
         [Service] IMediator mediator,
         Guid courseId)
@@ -198,7 +198,7 @@ public class Mutation(ILogger<Mutation> logger)
     }
 
     [GraphQLDescription("Submit a course for admin review")]
-    [Authorize(Roles = "Instructor")]
+    [Authorize(Roles = new[] { "Instructor" })]
     public async Task<OperationPayload> SubmitCourseForReview(
         [Service] IMediator mediator,
         Guid courseId)
@@ -210,7 +210,7 @@ public class Mutation(ILogger<Mutation> logger)
     }
 
     [GraphQLDescription("Approve a course for publication")]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = new[] { "Admin" })]
     public async Task<OperationPayload> ApproveCoursePublication(
         [Service] IMediator mediator,
         Guid courseId)
@@ -222,7 +222,7 @@ public class Mutation(ILogger<Mutation> logger)
     }
 
     [GraphQLDescription("Reject a course review submission")]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = new[] { "Admin" })]
     public async Task<OperationPayload> RejectCoursePublication(
         [Service] IMediator mediator,
         Guid courseId,
@@ -235,7 +235,7 @@ public class Mutation(ILogger<Mutation> logger)
     }
 
     [GraphQLDescription("Archive a course")]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = new[] { "Admin" })]
     public async Task<OperationPayload> ArchiveCourse(
         [Service] IMediator mediator,
         Guid courseId)
@@ -247,7 +247,7 @@ public class Mutation(ILogger<Mutation> logger)
     }
 
     [GraphQLDescription("Mark a lesson as started for an enrolled student")]
-    [Authorize(Roles = "Student")]
+    [Authorize(Roles = new[] { "Student" })]
     public async Task<OperationPayload> StartLesson(
         [Service] IMediator mediator,
         Guid enrollmentId,
@@ -260,7 +260,7 @@ public class Mutation(ILogger<Mutation> logger)
     }
 
     [GraphQLDescription("Mark a lesson as completed for an enrolled student")]
-    [Authorize(Roles = "Student")]
+    [Authorize(Roles = new[] { "Student" })]
     public async Task<OperationPayload> CompleteLesson(
         [Service] IMediator mediator,
         Guid enrollmentId,
@@ -273,7 +273,7 @@ public class Mutation(ILogger<Mutation> logger)
     }
 
     [GraphQLDescription("Submit a review for a completed enrollment")]
-    [Authorize(Roles = "Student")]
+    [Authorize(Roles = new[] { "Student" })]
     public async Task<OperationPayload> ReviewCourse(
         [Service] IMediator mediator,
         Guid enrollmentId,
@@ -287,7 +287,7 @@ public class Mutation(ILogger<Mutation> logger)
     }
 
     [GraphQLDescription("Issue or retrieve the certificate for a completed enrollment")]
-    [Authorize(Roles = "Student,Admin")]
+    [Authorize(Roles = new[] { "Student", "Admin" })]
     public async Task<CertificatePayload> IssueEnrollmentCertificate(
         [Service] IMediator mediator,
         Guid enrollmentId)
@@ -299,7 +299,7 @@ public class Mutation(ILogger<Mutation> logger)
     }
 
     [GraphQLDescription("Pause, resume, or abandon an enrollment without affecting completion rules")]
-    [Authorize(Roles = "Student,Admin")]
+    [Authorize(Roles = new[] { "Student", "Admin" })]
     public async Task<OperationPayload> UpdateEnrollmentStatus(
         [Service] IMediator mediator,
         UpdateEnrollmentStatusInput input)
