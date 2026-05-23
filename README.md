@@ -1,141 +1,129 @@
 # E-Learning Platform API
 
-Production-inspired backend sample for an e-learning platform built as a modular monolith with Clean Architecture and DDD-inspired design.
+[![ci](https://github.com/FarazLoloei/ELearning/actions/workflows/ci.yml/badge.svg)](https://github.com/FarazLoloei/ELearning/actions/workflows/ci.yml)
 
-This repository exists as a senior-level backend portfolio project. The goal is not to showcase every possible feature, but to show deliberate architecture, explicit business workflows, and credible product behavior in a codebase that is still practical to review.
+Production-inspired backend sample for an e-learning platform built as a modular monolith with Clean Architecture, DDD-inspired workflow modeling, CQRS with MediatR, reliable messaging, and cloud-ready foundations.
+
+This repository is a senior .NET backend portfolio project. It is intentionally not a full learning-management product or a production guarantee; it is a focused sample that shows deliberate architecture, credible business workflows, and practical deployment readiness.
 
 ## Why This Project Exists
 
-Many sample backends stop at CRUD. This project is intentionally shaped around product workflows instead:
+Many sample backends stop at CRUD. This project is shaped around product workflows instead:
 
-- instructors author courses and submit them for review
-- admins govern publication through explicit moderation actions
-- students enroll in published courses
-- learners progress through lessons and assessments
-- course completion is earned through real eligibility rules
-- completed learners can review courses and receive certificates
+- instructors author courses with modules, lessons, and assignments
+- admins govern publication through review, approval, and rejection actions
+- students enroll in published courses and progress through lessons
+- assessments are submitted and graded
+- completion rules unlock review and certificate workflows
+- important outcomes are published through an outbox and RabbitMQ-backed notification flow
 
-The result is a sample that is closer to a real product backend than a database wrapper.
+## Key Features
 
-## Product Overview
+- JWT authentication with refresh-token rotation
+- role-aware workflows for students, instructors, and admins
+- course authoring, publication review, approval, rejection, and archiving
+- enrollment, lesson progression, assessment submission, grading, reviews, and certificates
+- REST API as the primary interface, with GraphQL as a secondary interface
+- consistent REST error contracts with `ProblemDetails`
+- EF Core write model, Dapper read models, SQL Server migrations, and SQLite in-memory local/test defaults
+- outbox pattern, RabbitMQ integration events, and idempotent notification processing
+- health endpoints, OpenTelemetry basics, Docker Compose, Kubernetes manifests, CI, tests, and dependency scanning
 
-The platform models three primary actors:
+## Technology Stack
 
-- `Student`
-- `Instructor`
-- `Admin`
+| Area | Technologies |
+| --- | --- |
+| Runtime | .NET 10, ASP.NET Core 10 |
+| Architecture | Clean Architecture-style layering, modular monolith, DDD-inspired aggregates |
+| Application flow | CQRS with MediatR, FluentValidation pipeline behaviors |
+| API | REST controllers, Swagger/OpenAPI, GraphQL with HotChocolate |
+| Persistence | EF Core, SQL Server migrations, SQLite in-memory, Dapper read models |
+| Messaging | Outbox pattern, RabbitMQ, idempotent notification consumer |
+| Security | JWT bearer auth, refresh tokens, role-based authorization, security audit events |
+| Observability | Health checks, OpenTelemetry tracing/metrics/logging basics |
+| Delivery readiness | Dockerfile, Docker Compose, Kubernetes Kustomize base, GitHub Actions CI |
+| Quality | Unit/domain tests, integration tests, architecture tests, vulnerability scan |
 
-Core business capabilities currently implemented:
+## Architecture At A Glance
 
-- identity and access with JWT auth and refresh-token rotation
-- course authoring and explicit course lifecycle governance
-- enrollment with lifecycle-aware eligibility
-- lesson progression and rule-driven course completion
-- assessment submission and grading
-- reviews and ratings
-- certificate issuance and verification
-- lightweight notifications for important outcomes
+```mermaid
+flowchart LR
+    Client[REST / GraphQL clients] --> API[ELearning.API]
+    API --> Application[ELearning.Application]
+    Application --> Domain[ELearning.Domain]
+    Infrastructure[ELearning.Infrastructure] --> Application
+    Infrastructure --> Domain
+    API --> Infrastructure
+    Infrastructure --> Sql[(SQL Server / SQLite)]
+    Infrastructure --> Rabbit[(RabbitMQ)]
+```
 
-## Architecture Overview
+The solution keeps business rules in the domain/application layers and keeps infrastructure concerns behind adapters. See [Architecture](docs/architecture.md) for the deeper explanation.
 
-The solution is a modular monolith with clear inward dependency direction:
+## Business Workflows
 
-- `ELearning.API`
-  REST controllers, GraphQL schema, transport concerns, composition root
-- `ELearning.Application`
-  commands, queries, handlers, DTOs, orchestration, validation, transaction pipeline
-- `ELearning.Domain`
-  aggregates, entities, value objects, invariants, explicit business behavior
-- `ELearning.Infrastructure`
-  EF Core, Dapper read models, repositories, auth adapters, email delivery, outbox dispatcher
-- `ELearning.SharedKernel`
-  small shared abstractions and base types
-- `ELearning.Application.Tests`
-  domain/application-focused tests
-- `ELearning.IntegrationTests`
-  end-to-end HTTP and authorization coverage
+```mermaid
+stateDiagram-v2
+    [*] --> Draft
+    Draft --> InReview: Submit for review
+    InReview --> Published: Admin approves
+    InReview --> Rejected: Admin rejects
+    Rejected --> Draft: Instructor edits
+    Published --> Archived: Archive
+```
 
-High-level dependency direction:
+Representative workflows:
 
-- `API -> Application`
-- `Infrastructure -> Application + Domain`
-- `Application -> Domain + SharedKernel`
-- `Domain -> SharedKernel`
+- instructor creates a course, adds modules/lessons/assignments, and submits it for review
+- admin approves or rejects publication
+- student enrolls in a published course
+- student progresses through lessons and assessments
+- completed students can review a course and receive a certificate
 
-## Domain And Workflow Highlights
-
-This project is intentionally centered on explicit workflows:
-
-- `Course` owns lifecycle transitions such as draft creation, review submission, approval, rejection, and archiving
-- `Enrollment` owns progression, assessment submission, review eligibility, and completion state
-- assessment definitions stay with course authoring, while assessment execution is handled through enrollment-centered workflow
-- certificates are issued only for legitimately completed enrollments and only once per enrollment
-
-Examples of non-CRUD behavior in the current model:
-
-- students can enroll only in published courses
-- only draft/rejected courses are instructor-editable
-- course completion requires lessons and required assessments
-- a course review is allowed only after authoritative completion
-- a certificate can be verified by public certificate code
-
-## Example Workflows
-
-### Course Governance
-
-1. Instructor creates a course in `Draft`
-2. Instructor submits the course for review
-3. Admin approves publication or rejects with feedback
-4. Published courses become visible in the public catalog
-
-### Learning And Completion
-
-1. Student enrolls in a published course
-2. Student starts and completes lessons explicitly
-3. Student submits required assessments
-4. Completion is earned when authoritative eligibility is satisfied
-5. Certificate issuance becomes available for that completed enrollment
-
-### Post-Completion Outcomes
-
-1. Student submits a review for the completed course
-2. Course rating is updated through the domain flow
-3. Student can retrieve or verify the issued certificate
-
-## API Surface Overview
-
-REST is the primary interface. GraphQL is available as a secondary interface that reuses the same application use cases.
-
-Representative REST capabilities:
+## API Capabilities
 
 - auth: login, register, refresh, revoke
-- courses: catalog queries, lifecycle actions, moderation actions, reviews
-- enrollments: enroll, progression actions, review submission
-- submissions: submit assessment, grade assessment
+- courses: catalog, authoring, lifecycle actions, moderation, reviews
+- enrollments: enroll, start lesson, complete lesson, submit review
+- submissions: create and grade assessment submissions
 - certificates: issue, retrieve by enrollment, verify by public code
 
-Transport design notes:
+Useful endpoints:
 
-- REST responses use a consistent response envelope
-- GraphQL is intentionally secondary and does not duplicate business logic
-- controllers and GraphQL mutations stay thin and delegate to application handlers
+- Swagger UI: `/`
+- REST: `/api/v1/*` and compatibility routes under `/api/*`
+- GraphQL: `/graphql`
+- Liveness probe: `/health/live`
+- Readiness probe: `/health/ready`
 
-## Key Technical Decisions And Tradeoffs
+## Messaging, Outbox, And Notifications
 
-- The project uses a modular monolith instead of microservices to keep the sample cohesive and reviewable.
-- Domain modeling is DDD-inspired, not dogmatic. Aggregates are used where they add clarity and invariant protection.
-- The application layer orchestrates use cases explicitly instead of relying on broad services or fat controllers.
-- Infrastructure contains adapters and persistence details, not business workflow orchestration.
-- Notifications are intentionally lightweight. The project uses the existing email seam for valuable outcomes instead of building a full notification center.
-- Certificates are simple, verifiable records. This sample does not add document rendering or PDF generation because that would add more infrastructure spectacle than product signal.
+Domain events are persisted to an outbox during the same database save. A hosted publisher maps supported outbox messages to integration events and publishes them to RabbitMQ when messaging is enabled. Notification requests use a dedicated `notification.requested.v1` integration event and are handled idempotently by a RabbitMQ consumer.
 
-## Running The Project
+Implemented routing keys include:
+
+- `course.published.v1`
+- `student.enrolled.v1`
+- `submission.graded.v1`
+- `notification.requested.v1`
+
+See [Messaging](docs/messaging.md) and [ADR 0002](docs/adr/0002-outbox-rabbitmq-notifications.md).
+
+## Observability And Health
+
+- `/health/live` checks the process is alive
+- `/health/ready` checks database connectivity
+- OpenTelemetry tracing, metrics, and logging are configured at startup
+- console export is disabled by default
+- OTLP export is enabled only when `Observability:OtlpEndpoint` is configured
+
+## Run Locally
 
 Prerequisites:
 
 - .NET 10 SDK
 
-Configure local secrets for JWT settings:
+Configure local JWT secrets:
 
 ```powershell
 dotnet user-secrets set "JwtSettings:Issuer" "elearning-local" --project ELearning.API/ELearning.API.csproj
@@ -152,71 +140,62 @@ Run the API:
 dotnet run --project ELearning.API/ELearning.API.csproj
 ```
 
-Useful endpoints:
+## Docker Compose Quick Start
 
-- Swagger UI: `/`
-- REST: `/api/v1/*` and compatibility routes under `/api/*`
-- GraphQL: `/graphql`
-- Liveness probe: `/health/live`
-- Readiness probe: `/health/ready`
-
-### Running With Docker Compose
-
-The repository includes a local container stack for running the API with SQL Server and RabbitMQ:
+The local container stack runs the API with SQL Server and RabbitMQ:
 
 ```powershell
 Copy-Item .env.example .env
 docker compose up --build -d
 ```
 
-Compose services:
+Services:
 
 - API: `http://localhost:8080`
 - RabbitMQ management UI: `http://localhost:15672`
 - SQL Server: `localhost,1433`
 
-Validate container health:
+Validate health:
 
 ```powershell
 Invoke-RestMethod http://localhost:8080/health/live
 Invoke-RestMethod http://localhost:8080/health/ready
 ```
 
-Stop the local stack:
+Stop the stack:
 
 ```powershell
 docker compose down
 ```
 
-Database notes:
+## Kubernetes Readiness
 
-- sqlite in-memory is the default local and test experience
-- SQL Server is the production-capable relational provider and uses EF Core migrations
-- Dapper read models use provider-aware SQL fragments for paging and simple string concatenation
+Kustomize base manifests live under `deploy/kubernetes/base` and include:
 
-Observability notes:
+- API deployment
+- ClusterIP service
+- ConfigMap
+- example Secret
+- liveness, readiness, and startup probes
+- resource requests and limits
 
-- OpenTelemetry tracing, metrics, and logging are configured at startup
-- ASP.NET Core and HTTP client instrumentation are enabled
-- console export is disabled by default and can be enabled with `Observability:ConsoleExporterEnabled`
-- OTLP export is enabled only when `Observability:OtlpEndpoint` is configured
+The Kubernetes files model SQL Server and RabbitMQ as external dependencies. For a real environment, use managed services or dedicated operators instead of treating these sample manifests as full production infrastructure.
 
-Kubernetes notes:
-
-- API deployment manifests live under `deploy/kubernetes/base`
-- the manifests use liveness, readiness, and startup probes against the health endpoints
-- SQL Server and RabbitMQ are modeled as external dependencies; use managed services or dedicated operators for real environments
-- validate manifests locally with:
+Render manifests:
 
 ```powershell
-kubectl apply --dry-run=client -k deploy/kubernetes/base
+kubectl kustomize deploy/kubernetes/base
 ```
 
-## Build And Test
+## Validate The Project
 
 ```powershell
+dotnet restore ELearning.sln
 dotnet build ELearning.sln -nologo /p:UseSharedCompilation=false
 dotnet test ELearning.sln -nologo /p:UseSharedCompilation=false
+dotnet list ELearning.sln package --vulnerable --include-transitive
+docker compose config
+kubectl kustomize deploy/kubernetes/base
 ```
 
 Current local verification:
@@ -224,27 +203,33 @@ Current local verification:
 - `ELearning.Application.Tests`: `110` passing
 - `ELearning.IntegrationTests`: `55` passing
 
+## Documentation
+
+- [Architecture](docs/architecture.md)
+- [Messaging](docs/messaging.md)
+- [Deployment](docs/deployment.md)
+- [Testing](docs/testing.md)
+- [ADR 0001: Modular Monolith](docs/adr/0001-modular-monolith.md)
+- [ADR 0002: Outbox, RabbitMQ, And Notifications](docs/adr/0002-outbox-rabbitmq-notifications.md)
+
+## Security Notes
+
+- JWT secrets are configured through user secrets, environment variables, or Kubernetes Secrets.
+- Development `.env.example` values are examples only and should not be reused for real environments.
+- CI runs restore, build, tests with coverage, and transitive dependency vulnerability scanning.
+- The sample does not include a real SMTP provider, payment provider, file storage provider, or production identity provider.
+
+## Known Limitations
+
+- Email delivery is represented by an application seam and logging implementation, not a real SMTP or third-party provider.
+- Kubernetes manifests are API readiness artifacts, not a full production platform.
+- SQL Server and RabbitMQ production hosting are intentionally left to managed services or dedicated operators.
+- GraphQL is secondary and does not attempt to expose every REST workflow.
+- The project focuses on backend architecture and workflows, not a frontend UI.
+
 ## Why This Is A Strong Backend Sample
 
-This project is strongest where reviewers usually look for senior-level judgment:
-
-- explicit workflow modeling instead of generic status mutation
-- deliberate layer boundaries with architecture tests
-- domain rules placed in aggregates and application use cases instead of controllers
-- pragmatic read/write separation without unnecessary distributed complexity
-- credible auth, moderation, progression, assessment, review, certificate, and notification flows
-
-It is intentionally not a “perfect enterprise platform.” It is a realistic sample that balances architecture quality with repo readability.
-
-## Future Improvements
-
-Good next steps if the project were extended further:
-
-- richer authoring flows for modules, lessons, and assessments
-- review moderation and review editing policies
-- certificate rendering/export if the product needs it
-- stronger notification persistence/history beyond email delivery
-- deployment guidance and production environment configuration examples
+This project demonstrates senior-level backend judgment through explicit workflow modeling, clear layer boundaries, pragmatic CQRS, provider-aware persistence, reliable messaging foundations, observable health endpoints, deployment-ready artifacts, and meaningful automated tests without turning the sample into an over-engineered platform.
 
 ## License
 
