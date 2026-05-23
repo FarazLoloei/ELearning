@@ -16,7 +16,6 @@ public abstract class PayloadBase
     public bool IsSuccess => !this.errors.Any();
 
     [GraphQLDescription("List of errors that occurred during the operation")]
-    [UseFiltering]
     public IReadOnlyList<Error> Errors => this.errors.AsReadOnly();
 
     protected PayloadBase()

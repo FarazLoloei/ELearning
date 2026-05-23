@@ -20,6 +20,7 @@ public static class GraphQLConfiguration
             .AddType<InstructorType>()
             .AddType<EnrollmentType>()
             .AddType<SubmissionType>()
+            .AddAuthorization()
             .AddFiltering()
             .AddSorting()
             .AddProjections();

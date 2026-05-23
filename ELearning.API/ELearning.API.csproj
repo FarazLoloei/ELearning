@@ -16,6 +16,7 @@
     <PackageReference Include="Asp.Versioning.Mvc.ApiExplorer" Version="8.1.1" />
     <PackageReference Include="HotChocolate" Version="15.1.14" />
     <PackageReference Include="HotChocolate.AspNetCore" Version="15.1.14" />
+    <PackageReference Include="HotChocolate.AspNetCore.Authorization" Version="15.1.14" />
     <PackageReference Include="HotChocolate.Data" Version="15.1.14" />
     <PackageReference Include="HotChocolate.Types" Version="15.1.14" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.5" />
