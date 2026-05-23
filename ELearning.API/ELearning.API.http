@@ -1,6 +1,138 @@
-@ELearning.API_HostAddress = http://localhost:5080
+@host = http://localhost:5080
+@password = P@ssword123!
+@instructorEmail = instructor{{$guid}}@example.com
+@studentEmail = student{{$guid}}@example.com
 
-GET {{ELearning.API_HostAddress}}/weatherforecast/
+# Replace these placeholders with IDs returned by the API or seeded data.
+@courseId = 00000000-0000-0000-0000-000000000000
+@moduleId = 00000000-0000-0000-0000-000000000000
+@lessonId = 00000000-0000-0000-0000-000000000000
+@assignmentId = 00000000-0000-0000-0000-000000000000
+@publishedCourseId = 00000000-0000-0000-0000-000000000000
+
+### Health - live
+GET {{host}}/health/live
 Accept: application/json
 
-###
+### Health - ready
+GET {{host}}/health/ready
+Accept: application/json
+
+### Register instructor
+# @name registerInstructor
+POST {{host}}/api/auth/register/instructor
+Content-Type: application/json
+
+{
+  "firstName": "Ada",
+  "lastName": "Instructor",
+  "email": "{{instructorEmail}}",
+  "password": "{{password}}",
+  "bio": "Backend engineering instructor.",
+  "expertise": "Clean Architecture, .NET, cloud-ready APIs"
+}
+
+### Login instructor
+# @name loginInstructor
+POST {{host}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "{{instructorEmail}}",
+  "password": "{{password}}"
+}
+
+### Register student
+# @name registerStudent
+POST {{host}}/api/auth/register/student
+Content-Type: application/json
+
+{
+  "firstName": "Sam",
+  "lastName": "Student",
+  "email": "{{studentEmail}}",
+  "password": "{{password}}"
+}
+
+### Login student
+# @name loginStudent
+POST {{host}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "{{studentEmail}}",
+  "password": "{{password}}"
+}
+
+### Create course
+POST {{host}}/api/courses
+Authorization: Bearer {{loginInstructor.response.body.$.data.token}}
+Content-Type: application/json
+
+{
+  "title": "REST-First API Design with .NET",
+  "description": "A portfolio sample course for pragmatic backend API design.",
+  "categoryId": 1,
+  "levelId": 2,
+  "price": 0,
+  "durationHours": 2,
+  "durationMinutes": 30
+}
+
+### Add module
+POST {{host}}/api/courses/{{courseId}}/modules
+Authorization: Bearer {{loginInstructor.response.body.$.data.token}}
+Content-Type: application/json
+
+{
+  "title": "Module 1",
+  "description": "REST API contract fundamentals.",
+  "order": 1
+}
+
+### Add lesson
+POST {{host}}/api/courses/{{courseId}}/modules/{{moduleId}}/lessons
+Authorization: Bearer {{loginInstructor.response.body.$.data.token}}
+Content-Type: application/json
+
+{
+  "title": "Public API contracts",
+  "content": "Keep transport contracts separate from application commands.",
+  "typeId": 2,
+  "order": 1,
+  "durationHours": 0,
+  "durationMinutes": 20
+}
+
+### Add assignment
+POST {{host}}/api/courses/{{courseId}}/modules/{{moduleId}}/assignments
+Authorization: Bearer {{loginInstructor.response.body.$.data.token}}
+Content-Type: application/json
+
+{
+  "title": "Contract review",
+  "description": "Review a controller and identify transport/application coupling.",
+  "typeId": 1,
+  "maxPoints": 10
+}
+
+### Submit course for review
+POST {{host}}/api/courses/{{courseId}}/submit-for-review
+Authorization: Bearer {{loginInstructor.response.body.$.data.token}}
+
+### Enroll student in published course
+POST {{host}}/api/enrollments
+Authorization: Bearer {{loginStudent.response.body.$.data.token}}
+Content-Type: application/json
+
+{
+  "courseId": "{{publishedCourseId}}"
+}
+
+### GraphQL secondary API example - public course catalog query
+POST {{host}}/graphql
+Content-Type: application/json
+
+{
+  "query": "query { courses(first: 5) { nodes { id title instructorName category level } } }"
+}

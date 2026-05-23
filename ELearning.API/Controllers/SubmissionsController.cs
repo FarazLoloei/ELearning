@@ -7,7 +7,8 @@ namespace ELearning.API.Controllers;
 using Asp.Versioning;
 using ELearning.API.Contracts;
 using ELearning.API.Facades;
-using ELearning.Application.Submissions.Commands;
+using ELearning.API.Mapping;
+using ELearning.API.Models;
 using ELearning.Application.Submissions.Dtos;
 using ELearning.Application.Submissions.Queries;
 using Microsoft.AspNetCore.Authorization;
@@ -34,9 +35,10 @@ public class SubmissionsController(IApiFacade apiFacade) : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<ApiResponse<object?>>> CreateSubmission(
-        CreateSubmissionCommand command,
+        CreateSubmissionRequest request,
         CancellationToken cancellationToken)
     {
+        var command = request.ToCommand();
         var result = await apiFacade.SendAsync(command, cancellationToken);
         if (!result.IsSuccess)
         {
@@ -53,14 +55,15 @@ public class SubmissionsController(IApiFacade apiFacade) : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<ApiResponse<object?>>> GradeSubmission(
         Guid id,
-        GradeSubmissionCommand command,
+        GradeSubmissionRequest request,
         CancellationToken cancellationToken)
     {
-        if (id != command.SubmissionId)
+        if (id != request.SubmissionId)
         {
             return this.RouteIdMismatchResponse<object?>("SubmissionId");
         }
 
+        var command = request.ToCommand();
         var result = await apiFacade.SendAsync(command, cancellationToken);
         return this.FromResult(result);
     }

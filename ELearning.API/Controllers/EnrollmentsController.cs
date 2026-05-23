@@ -7,6 +7,7 @@ namespace ELearning.API.Controllers;
 using Asp.Versioning;
 using ELearning.API.Contracts;
 using ELearning.API.Facades;
+using ELearning.API.Mapping;
 using ELearning.API.Models;
 using ELearning.Application.Enrollments.Commands;
 using ELearning.Application.Enrollments.Dtos;
@@ -35,9 +36,10 @@ public class EnrollmentsController(IApiFacade apiFacade) : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<ApiResponse<object?>>> CreateEnrollment(
-        CreateEnrollmentCommand command,
+        CreateEnrollmentRequest request,
         CancellationToken cancellationToken)
     {
+        var command = request.ToCommand();
         var result = await apiFacade.SendAsync(command, cancellationToken);
         if (!result.IsSuccess)
         {
@@ -82,14 +84,15 @@ public class EnrollmentsController(IApiFacade apiFacade) : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<ApiResponse<object?>>> UpdateEnrollmentStatus(
         Guid id,
-        UpdateEnrollmentStatusCommand command,
+        UpdateEnrollmentStatusRequest request,
         CancellationToken cancellationToken)
     {
-        if (id != command.EnrollmentId)
+        if (id != request.EnrollmentId)
         {
             return this.RouteIdMismatchResponse<object?>("EnrollmentId");
         }
 
+        var command = request.ToCommand();
         var result = await apiFacade.SendAsync(command, cancellationToken);
         return this.FromResult(result);
     }

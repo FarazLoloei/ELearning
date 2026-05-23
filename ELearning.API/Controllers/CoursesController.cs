@@ -7,6 +7,7 @@ namespace ELearning.API.Controllers;
 using Asp.Versioning;
 using ELearning.API.Contracts;
 using ELearning.API.Facades;
+using ELearning.API.Mapping;
 using ELearning.API.Models;
 using ELearning.Application.Courses.Commands;
 using ELearning.Application.Courses.Dtos;
@@ -110,9 +111,10 @@ public class CoursesController(IApiFacade apiFacade) : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<ApiResponse<object?>>> CreateCourse(
-        CreateCourseCommand command,
+        CreateCourseRequest request,
         CancellationToken cancellationToken)
     {
+        var command = request.ToCommand();
         var result = await apiFacade.SendAsync(command, cancellationToken);
         if (!result.IsSuccess)
         {
@@ -129,14 +131,15 @@ public class CoursesController(IApiFacade apiFacade) : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<ApiResponse<object?>>> UpdateCourse(
         Guid id,
-        UpdateCourseCommand command,
+        UpdateCourseRequest request,
         CancellationToken cancellationToken)
     {
-        if (id != command.CourseId)
+        if (id != request.CourseId)
         {
             return this.RouteIdMismatchResponse<object?>("CourseId");
         }
 
+        var command = request.ToCommand();
         var result = await apiFacade.SendAsync(command, cancellationToken);
         return this.FromResult(result);
     }
@@ -265,14 +268,15 @@ public class CoursesController(IApiFacade apiFacade) : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<ApiResponse<object?>>> RejectPublication(
         Guid id,
-        RejectCoursePublicationCommand command,
+        RejectCoursePublicationRequest request,
         CancellationToken cancellationToken)
     {
-        if (id != command.CourseId)
+        if (id != request.CourseId)
         {
             return this.RouteIdMismatchResponse<object?>("CourseId");
         }
 
+        var command = request.ToCommand();
         var result = await apiFacade.SendAsync(command, cancellationToken);
         return this.FromResult(result);
     }
