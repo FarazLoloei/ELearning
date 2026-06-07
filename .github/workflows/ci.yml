@@ -35,8 +35,25 @@ jobs:
         shell: bash
         run: |
           mkdir -p TestResults/ci
-          dotnet list ELearning.sln package --vulnerable --include-transitive > TestResults/ci/dependency-scan.txt
+          : > TestResults/ci/dependency-scan.txt
+
+          projects=(
+            "ELearning.API/ELearning.API.csproj"
+            "ELearning.Application/ELearning.Application.csproj"
+            "ELearning.Domain/ELearning.Domain.csproj"
+            "ELearning.Infrastructure/ELearning.Infrastructure.csproj"
+            "ELearning.SharedKernel/ELearning.SharedKernel.csproj"
+            "ELearning.Application.Tests/ELearning.Application.Tests.csproj"
+            "ELearning.IntegrationTests/ELearning.IntegrationTests.csproj"
+          )
+
+          for project in "${projects[@]}"; do
+            echo "Scanning $project" | tee -a TestResults/ci/dependency-scan.txt
+            dotnet list "$project" package --vulnerable --include-transitive | tee -a TestResults/ci/dependency-scan.txt
+          done
+
           cat TestResults/ci/dependency-scan.txt
+
           if grep -qi "has the following vulnerable packages" TestResults/ci/dependency-scan.txt; then
             echo "Vulnerable dependencies detected."
             exit 1
