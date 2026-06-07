@@ -1,0 +1,1721 @@
+{
+  "info": {
+    "_postman_id": "c5f4d245-5528-4b0e-b947-1c9e3c8f6a11",
+    "name": "E-Learning Manual Smoke",
+    "description": "Manual shadow/smoke workflow for the E-Learning backend portfolio API.\n\nKnown blockers and notes:\n- No public admin registration/bootstrap endpoint exists in the REST API. Admin approval requests are included as optional/manual and require an out-of-band admin token.\n- CreateCourse, CreateEnrollment, and CreateSubmission return 201 with data = null, so IDs must be recovered from follow-up read endpoints.\n- /health/ready checks database readiness only; it does not verify RabbitMQ readiness.\n- Prefer /api/v1 routes throughout this collection.\n- Draft course recovery uses GET /api/v1/instructors/{{instructorId}}/with-courses by exact uniqueCourseTitle match.\n- For a stronger demo, the happy path adds a module, lesson, and assignment before submit-for-review.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "event": [],
+  "item": [
+    {
+      "name": "00 Health",
+      "item": [
+        {
+          "name": "GET /health/live",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "const body = pm.response.json();",
+                  "pm.test('Health payload is healthy', function () {",
+                  "  pm.expect(body.status).to.eql('Healthy');",
+                  "  pm.expect(body.entries).to.be.an('object');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/health/live",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "health",
+                "live"
+              ]
+            },
+            "description": "Anonymous liveness check."
+          },
+          "response": []
+        },
+        {
+          "name": "GET /health/ready",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "const body = pm.response.json();",
+                  "pm.test('Ready payload is healthy', function () {",
+                  "  pm.expect(body.status).to.eql('Healthy');",
+                  "  pm.expect(body.entries).to.be.an('object');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/health/ready",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "health",
+                "ready"
+              ]
+            },
+            "description": "Anonymous readiness check. This confirms database readiness, not RabbitMQ readiness."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "01 Auth",
+      "item": [
+        {
+          "name": "POST /api/v1/auth/register/instructor",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.environment.get('password')) {",
+                  "  pm.environment.set('password', 'P@ssword123!');",
+                  "}",
+                  "const stamp = Date.now();",
+                  "pm.environment.set('instructorEmail', `instructor.${stamp}@example.com`);"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "const body = pm.response.json();",
+                  "pm.test('Instructor registration succeeded', function () {",
+                  "  pm.expect(body.succeeded).to.eql(true);",
+                  "  pm.expect(body.data.success).to.eql(true);",
+                  "});",
+                  "pm.environment.set('instructorToken', body.data.token);",
+                  "pm.environment.set('instructorId', body.data.userId);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"Ada\",\n  \"lastName\": \"Instructor\",\n  \"email\": \"{{instructorEmail}}\",\n  \"password\": \"{{password}}\",\n  \"bio\": \"Backend engineering instructor.\",\n  \"expertise\": \"Clean Architecture, .NET, backend API design\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/register/instructor",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "register",
+                "instructor"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "POST /api/v1/auth/login (Instructor)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "const body = pm.response.json();",
+                  "pm.expect(body.succeeded).to.eql(true);",
+                  "pm.expect(body.data.success).to.eql(true);",
+                  "pm.environment.set('instructorToken', body.data.token);",
+                  "pm.environment.set('instructorId', body.data.userId);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{instructorEmail}}\",\n  \"password\": \"{{password}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "login"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "POST /api/v1/auth/register/student",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.environment.get('password')) {",
+                  "  pm.environment.set('password', 'P@ssword123!');",
+                  "}",
+                  "const stamp = Date.now();",
+                  "pm.environment.set('studentEmail', `student.${stamp}@example.com`);"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "const body = pm.response.json();",
+                  "pm.expect(body.succeeded).to.eql(true);",
+                  "pm.expect(body.data.success).to.eql(true);",
+                  "pm.environment.set('studentToken', body.data.token);",
+                  "pm.environment.set('studentId', body.data.userId);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"Sam\",\n  \"lastName\": \"Student\",\n  \"email\": \"{{studentEmail}}\",\n  \"password\": \"{{password}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/register/student",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "register",
+                "student"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "POST /api/v1/auth/login (Student)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "const body = pm.response.json();",
+                  "pm.expect(body.succeeded).to.eql(true);",
+                  "pm.expect(body.data.success).to.eql(true);",
+                  "pm.environment.set('studentToken', body.data.token);",
+                  "pm.environment.set('studentId', body.data.userId);",
+                  "if (body.data.refreshToken) {",
+                  "  pm.environment.set('studentRefreshToken', body.data.refreshToken);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{studentEmail}}\",\n  \"password\": \"{{password}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "login"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "POST /api/v1/auth/refresh",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "const body = pm.response.json();",
+                  "pm.expect(body.succeeded).to.eql(true);",
+                  "pm.expect(body.data.success).to.eql(true);",
+                  "pm.environment.set('studentToken', body.data.token);",
+                  "pm.environment.set('studentRefreshToken', body.data.refreshToken);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{studentRefreshToken}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/refresh",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "refresh"
+              ]
+            },
+            "description": "Optional auth rotation check for the student account."
+          },
+          "response": []
+        },
+        {
+          "name": "POST /api/v1/auth/revoke",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "const body = pm.response.json();",
+                  "pm.expect(body.succeeded).to.eql(true);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{studentToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{studentRefreshToken}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/revoke",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "revoke"
+              ]
+            },
+            "description": "Optional revoke check. Run after refresh if you want to validate token invalidation."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "02 Instructor Authoring",
+      "item": [
+        {
+          "name": "POST /api/v1/courses",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.environment.get('uniqueCourseTitle')) {",
+                  "  pm.environment.set('uniqueCourseTitle', `REST Smoke ${Date.now()}`);",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 201', function () {",
+                  "  pm.response.to.have.status(201);",
+                  "});",
+                  "const body = pm.response.json();",
+                  "pm.expect(body.succeeded).to.eql(true);",
+                  "pm.test('Create course does not return data payload', function () {",
+                  "  pm.expect(body.data).to.eql(null);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{instructorToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"{{uniqueCourseTitle}}\",\n  \"description\": \"A portfolio smoke-test course for the E-Learning backend API.\",\n  \"categoryId\": 1,\n  \"levelId\": 1,\n  \"price\": 0,\n  \"durationHours\": 1,\n  \"durationMinutes\": 0\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/courses",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "courses"
+              ]
+            },
+            "description": "Creates a draft course. The API returns 201 with data = null, so recover courseId via the next request."
+          },
+          "response": []
+        },
+        {
+          "name": "GET /api/v1/instructors/{{instructorId}}/with-courses",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "const body = pm.response.json();",
+                  "pm.expect(body.succeeded).to.eql(true);",
+                  "const courses = (body.data && body.data.courses) || [];",
+                  "const match = courses.find(c => c.title === pm.environment.get('uniqueCourseTitle'));",
+                  "pm.test('Draft course is found by unique title', function () {",
+                  "  pm.expect(match).to.exist;",
+                  "});",
+                  "if (match) {",
+                  "  pm.environment.set('courseId', match.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/instructors/{{instructorId}}/with-courses",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "instructors",
+                "{{instructorId}}",
+                "with-courses"
+              ]
+            },
+            "description": "Recovers draft courseId by matching uniqueCourseTitle. This is the preferred recovery path for newly created draft courses."
+          },
+          "response": []
+        },
+        {
+          "name": "POST /api/v1/courses/{{courseId}}/modules",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 201', function () {",
+                  "  pm.response.to.have.status(201);",
+                  "});",
+                  "const body = pm.response.json();",
+                  "pm.expect(body.succeeded).to.eql(true);",
+                  "pm.environment.set('moduleId', body.data);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{instructorToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Module 1\",\n  \"description\": \"REST API contract fundamentals.\",\n  \"order\": 1\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/courses/{{courseId}}/modules",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "courses",
+                "{{courseId}}",
+                "modules"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "POST /api/v1/courses/{{courseId}}/modules/{{moduleId}}/lessons",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 201', function () {",
+                  "  pm.response.to.have.status(201);",
+                  "});",
+                  "const body = pm.response.json();",
+                  "pm.expect(body.succeeded).to.eql(true);",
+                  "pm.environment.set('lessonId', body.data);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{instructorToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Lesson 1\",\n  \"content\": \"Keep transport contracts separate from application commands.\",\n  \"typeId\": 2,\n  \"order\": 1,\n  \"durationHours\": 0,\n  \"durationMinutes\": 20\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/courses/{{courseId}}/modules/{{moduleId}}/lessons",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "courses",
+                "{{courseId}}",
+                "modules",
+                "{{moduleId}}",
+                "lessons"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "POST /api/v1/courses/{{courseId}}/modules/{{moduleId}}/assignments",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 201', function () {",
+                  "  pm.response.to.have.status(201);",
+                  "});",
+                  "const body = pm.response.json();",
+                  "pm.expect(body.succeeded).to.eql(true);",
+                  "pm.environment.set('assignmentId', body.data);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{instructorToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Assignment 1\",\n  \"description\": \"Review a controller and identify transport/application coupling.\",\n  \"typeId\": 1,\n  \"maxPoints\": 10\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/courses/{{courseId}}/modules/{{moduleId}}/assignments",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "courses",
+                "{{courseId}}",
+                "modules",
+                "{{moduleId}}",
+                "assignments"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "POST /api/v1/courses/{{courseId}}/submit-for-review",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "const body = pm.response.json();",
+                  "pm.expect(body.succeeded).to.eql(true);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{instructorToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/courses/{{courseId}}/submit-for-review",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "courses",
+                "{{courseId}}",
+                "submit-for-review"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET /api/v1/courses/{{courseId}}",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200 for owner view', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "const body = pm.response.json();",
+                  "pm.expect(body.succeeded).to.eql(true);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{instructorToken}}"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/courses/{{courseId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "courses",
+                "{{courseId}}"
+              ]
+            },
+            "description": "Optional owner verification for the authored course."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "03 Optional Admin",
+      "description": "These requests are optional/manual because the API does not expose a public admin registration/bootstrap flow.",
+      "item": [
+        {
+          "name": "POST /api/v1/courses/{{courseId}}/approve-publication",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/courses/{{courseId}}/approve-publication",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "courses",
+                "{{courseId}}",
+                "approve-publication"
+              ]
+            },
+            "description": "Optional manual step. Requires an out-of-band admin token."
+          },
+          "response": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "name": "POST /api/v1/courses/{{courseId}}/reject-publication",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"courseId\": \"{{courseId}}\",\n  \"reason\": \"Add a clearer module introduction before publishing.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/courses/{{courseId}}/reject-publication",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "courses",
+                "{{courseId}}",
+                "reject-publication"
+              ]
+            },
+            "description": "Optional manual step. Requires an out-of-band admin token."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "04 Student Learning",
+      "item": [
+        {
+          "name": "POST /api/v1/enrollments",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 201', function () {",
+                  "  pm.response.to.have.status(201);",
+                  "});",
+                  "const body = pm.response.json();",
+                  "pm.expect(body.succeeded).to.eql(true);",
+                  "pm.expect(body.data).to.eql(null);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{studentToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"courseId\": \"{{courseId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/enrollments",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "enrollments"
+              ]
+            },
+            "description": "Requires the course to be published first."
+          },
+          "response": []
+        },
+        {
+          "name": "GET /api/v1/students/{{studentId}}/enrollments",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "const body = pm.response.json();",
+                  "pm.expect(body.succeeded).to.eql(true);",
+                  "const items = (body.data && body.data.items) || [];",
+                  "const match = items.find(e => e.courseId === pm.environment.get('courseId'));",
+                  "pm.test('Enrollment is found for courseId', function () {",
+                  "  pm.expect(match).to.exist;",
+                  "});",
+                  "if (match) {",
+                  "  pm.environment.set('enrollmentId', match.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{studentToken}}"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/students/{{studentId}}/enrollments?pageNumber=1&pageSize=10",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "students",
+                "{{studentId}}",
+                "enrollments"
+              ],
+              "query": [
+                {
+                  "key": "pageNumber",
+                  "value": "1"
+                },
+                {
+                  "key": "pageSize",
+                  "value": "10"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET /api/v1/enrollments/{{enrollmentId}}",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "const body = pm.response.json();",
+                  "pm.expect(body.succeeded).to.eql(true);",
+                  "const submissions = (body.data && body.data.submissions) || [];",
+                  "const match = submissions.find(s => s.assignmentId === pm.environment.get('assignmentId'));",
+                  "if (match) {",
+                  "  pm.environment.set('submissionId', match.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{studentToken}}"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/enrollments/{{enrollmentId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "enrollments",
+                "{{enrollmentId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "POST /api/v1/enrollments/{{enrollmentId}}/lessons/{{lessonId}}/start",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.response.to.have.status(200);",
+                  "const body = pm.response.json();",
+                  "pm.expect(body.succeeded).to.eql(true);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{studentToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/enrollments/{{enrollmentId}}/lessons/{{lessonId}}/start",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "enrollments",
+                "{{enrollmentId}}",
+                "lessons",
+                "{{lessonId}}",
+                "start"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "POST /api/v1/enrollments/{{enrollmentId}}/lessons/{{lessonId}}/complete",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.response.to.have.status(200);",
+                  "const body = pm.response.json();",
+                  "pm.expect(body.succeeded).to.eql(true);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{studentToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/enrollments/{{enrollmentId}}/lessons/{{lessonId}}/complete",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "enrollments",
+                "{{enrollmentId}}",
+                "lessons",
+                "{{lessonId}}",
+                "complete"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "POST /api/v1/submissions",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.response.to.have.status(201);",
+                  "const body = pm.response.json();",
+                  "pm.expect(body.succeeded).to.eql(true);",
+                  "pm.expect(body.data).to.eql(null);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{studentToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"assignmentId\": \"{{assignmentId}}\",\n  \"content\": \"This is a manual smoke-test submission.\",\n  \"fileUrl\": \"\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/submissions",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "submissions"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET /api/v1/enrollments/{{enrollmentId}} (Recover submissionId)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.response.to.have.status(200);",
+                  "const body = pm.response.json();",
+                  "pm.expect(body.succeeded).to.eql(true);",
+                  "const submissions = (body.data && body.data.submissions) || [];",
+                  "const match = submissions.find(s => s.assignmentId === pm.environment.get('assignmentId'));",
+                  "pm.test('Submission is found for assignmentId', function () {",
+                  "  pm.expect(match).to.exist;",
+                  "});",
+                  "if (match) {",
+                  "  pm.environment.set('submissionId', match.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{studentToken}}"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/enrollments/{{enrollmentId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "enrollments",
+                "{{enrollmentId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET /api/v1/students/{{studentId}}/progress",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.response.to.have.status(200);",
+                  "const body = pm.response.json();",
+                  "pm.expect(body.succeeded).to.eql(true);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{studentToken}}"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/students/{{studentId}}/progress",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "students",
+                "{{studentId}}",
+                "progress"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "05 Optional Grading And Certificate",
+      "item": [
+        {
+          "name": "GET /api/v1/instructors/{{instructorId}}/pending-submissions",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.response.to.have.status(200);",
+                  "const body = pm.response.json();",
+                  "pm.expect(body.succeeded).to.eql(true);",
+                  "const items = (body.data && body.data.items) || [];",
+                  "const match = items.find(s => s.assignmentId === pm.environment.get('assignmentId'));",
+                  "if (match) {",
+                  "  pm.environment.set('submissionId', match.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{instructorToken}}"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/instructors/{{instructorId}}/pending-submissions?pageNumber=1&pageSize=10",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "instructors",
+                "{{instructorId}}",
+                "pending-submissions"
+              ],
+              "query": [
+                {
+                  "key": "pageNumber",
+                  "value": "1"
+                },
+                {
+                  "key": "pageSize",
+                  "value": "10"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "POST /api/v1/submissions/{{submissionId}}/grade",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.response.to.have.status(200);",
+                  "const body = pm.response.json();",
+                  "pm.expect(body.succeeded).to.eql(true);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{instructorToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"submissionId\": \"{{submissionId}}\",\n  \"score\": 9,\n  \"feedback\": \"Strong work for a smoke-test submission.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/submissions/{{submissionId}}/grade",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "submissions",
+                "{{submissionId}}",
+                "grade"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET /api/v1/submissions/{{submissionId}}",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.response.to.have.status(200);",
+                  "const body = pm.response.json();",
+                  "pm.expect(body.succeeded).to.eql(true);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{instructorToken}}"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/submissions/{{submissionId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "submissions",
+                "{{submissionId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "POST /api/v1/enrollments/{{enrollmentId}}/review",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.response.to.have.status(200);",
+                  "const body = pm.response.json();",
+                  "pm.expect(body.succeeded).to.eql(true);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{studentToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"rating\": 5,\n  \"review\": \"Practical and clear backend portfolio sample.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/enrollments/{{enrollmentId}}/review",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "enrollments",
+                "{{enrollmentId}}",
+                "review"
+              ]
+            },
+            "description": "Works only after the enrollment reaches Completed."
+          },
+          "response": []
+        },
+        {
+          "name": "POST /api/v1/certificates/enrollments/{{enrollmentId}}/issue",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.response.to.have.status(200);",
+                  "const body = pm.response.json();",
+                  "pm.expect(body.succeeded).to.eql(true);",
+                  "if (body.data && body.data.certificateCode) {",
+                  "  pm.environment.set('certificateCode', body.data.certificateCode);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{studentToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/certificates/enrollments/{{enrollmentId}}/issue",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "certificates",
+                "enrollments",
+                "{{enrollmentId}}",
+                "issue"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET /api/v1/certificates/enrollments/{{enrollmentId}}",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.response.to.have.status(200);",
+                  "const body = pm.response.json();",
+                  "pm.expect(body.succeeded).to.eql(true);",
+                  "if (body.data && body.data.certificateCode) {",
+                  "  pm.environment.set('certificateCode', body.data.certificateCode);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{studentToken}}"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/certificates/enrollments/{{enrollmentId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "certificates",
+                "enrollments",
+                "{{enrollmentId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET /api/v1/certificates/verify/{{certificateCode}}",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.response.to.have.status(200);",
+                  "const body = pm.response.json();",
+                  "pm.expect(body.succeeded).to.eql(true);",
+                  "if (body.data && body.data.certificateCode) {",
+                  "  pm.environment.set('certificateCode', body.data.certificateCode);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/certificates/verify/{{certificateCode}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "certificates",
+                "verify",
+                "{{certificateCode}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "06 Negative Checks",
+      "item": [
+        {
+          "name": "GET /api/v1/students/{{studentId}}/progress (Unauthenticated)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 401', function () {",
+                  "  pm.response.to.have.status(401);",
+                  "});",
+                  "const body = pm.response.json();",
+                  "pm.expect(body.code).to.eql('authentication.unauthorized');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/students/{{studentId}}/progress",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "students",
+                "{{studentId}}",
+                "progress"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET /api/v1/instructors/{{instructorId}}/pending-submissions (Wrong Role)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 403', function () {",
+                  "  pm.response.to.have.status(403);",
+                  "});",
+                  "const body = pm.response.json();",
+                  "pm.expect(body.code).to.eql('authorization.forbidden');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{studentToken}}"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/instructors/{{instructorId}}/pending-submissions",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "instructors",
+                "{{instructorId}}",
+                "pending-submissions"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "POST /api/v1/courses/{{courseId}}/submit-for-review (Optional Draft Rule Check)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{instructorToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/courses/{{courseId}}/submit-for-review",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "courses",
+                "{{courseId}}",
+                "submit-for-review"
+              ]
+            },
+            "description": "Optional. Use against a separate intentionally incomplete draft course if you want to verify the 409 business-rule response."
+          },
+          "response": []
+        },
+        {
+          "name": "PUT /api/v1/courses/{{courseId}} (Optional Route/Body Mismatch)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{instructorToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"courseId\": \"00000000-0000-0000-0000-000000000001\",\n  \"title\": \"{{uniqueCourseTitle}}\",\n  \"description\": \"Route/body mismatch demo payload.\",\n  \"categoryId\": 1,\n  \"levelId\": 1,\n  \"price\": 0,\n  \"durationHours\": 1,\n  \"durationMinutes\": 0,\n  \"isFeatured\": false\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/courses/{{courseId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "courses",
+                "{{courseId}}"
+              ]
+            },
+            "description": "Optional. Expected to return 400 with request.route_id_mismatch."
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}
