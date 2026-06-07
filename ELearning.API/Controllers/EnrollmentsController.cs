@@ -33,9 +33,9 @@ public class EnrollmentsController(IApiFacade apiFacade) : ApiControllerBase
 
     [HttpPost]
     [Authorize(Roles = "Student")]
-    [ProducesResponseType(StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(ApiResponse<Guid>), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<ApiResponse<object?>>> CreateEnrollment(
+    public async Task<ActionResult<ApiResponse<Guid>>> CreateEnrollment(
         CreateEnrollmentRequest request,
         CancellationToken cancellationToken)
     {
@@ -43,10 +43,10 @@ public class EnrollmentsController(IApiFacade apiFacade) : ApiControllerBase
         var result = await apiFacade.SendAsync(command, cancellationToken);
         if (!result.IsSuccess)
         {
-            return this.FromError<object?>(result.ErrorDetails);
+            return this.FromError<Guid>(result.ErrorDetails);
         }
 
-        return this.CreatedResponse();
+        return this.StatusCode(StatusCodes.Status201Created, ApiResponse<Guid>.Success(result.Value));
     }
 
     [HttpPost("{id:guid}/lessons/{lessonId:guid}/start")]

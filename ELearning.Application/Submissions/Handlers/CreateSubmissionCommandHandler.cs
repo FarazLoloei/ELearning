@@ -20,9 +20,9 @@ public class CreateSubmissionCommandHandler(
         IEnrollmentRepository enrollmentRepository,
         ICourseRepository courseRepository,
         CertificateIssuanceCoordinator certificateIssuanceCoordinator,
-        ICurrentUserService currentUserService) : IRequestHandler<CreateSubmissionCommand, Result>
+        ICurrentUserService currentUserService) : IRequestHandler<CreateSubmissionCommand, Result<Guid>>
 {
-    public async Task<Result> Handle(CreateSubmissionCommand request, CancellationToken cancellationToken)
+    public async Task<Result<Guid>> Handle(CreateSubmissionCommand request, CancellationToken cancellationToken)
     {
         if (!currentUserService.IsAuthenticated || currentUserService.UserId is null)
         {
@@ -38,36 +38,36 @@ public class CreateSubmissionCommandHandler(
         var module = await assignmentRepository.GetModuleForAssignmentAsync(request.AssignmentId, cancellationToken)
             ?? throw new NotFoundException("Module for assignment", request.AssignmentId);
 
+        var enrollment = await enrollmentRepository.GetByStudentAndCourseIdAsync(studentId, module.CourseId, cancellationToken)
+            ?? throw new StudentNotEnrolledException(studentId, module.CourseId);
+
         var course = await courseRepository.GetByIdForUpdateAsync(module.CourseId, cancellationToken)
             ?? throw new NotFoundException(nameof(Course), module.CourseId);
 
         if (!course.ContainsAssignment(request.AssignmentId))
         {
-            return Result.Failure(ApplicationError.Conflict("The assessment does not belong to the enrolled course."));
+            return Result.Failure<Guid>(ApplicationError.Conflict("The assessment does not belong to the enrolled course."));
         }
-
-        var enrollment = await enrollmentRepository.GetByStudentAndCourseIdAsync(studentId, module.CourseId, cancellationToken)
-            ?? throw new StudentNotEnrolledException(studentId, module.CourseId);
 
         try
         {
             course.EnsureAvailableForLearning();
             assignment.EnsureCanAcceptSubmissionAt(DateTime.UtcNow);
-            enrollment.SubmitAssignment(
+            var submission = enrollment.SubmitAssignment(
                 request.AssignmentId,
                 request.Content,
                 request.FileUrl,
                 course.GetTotalLessonCount(),
                 course.GetRequiredAssessmentIds());
+
+            await enrollmentRepository.UpdateAsync(enrollment, cancellationToken);
+            await certificateIssuanceCoordinator.TryIssueForCompletedEnrollmentAsync(enrollment, course, cancellationToken);
+
+            return Result.Success(submission.Id);
         }
         catch (Exception ex) when (ex is InvalidOperationException or ArgumentOutOfRangeException)
         {
-            return Result.Failure(ApplicationError.Conflict(ex.Message));
+            return Result.Failure<Guid>(ApplicationError.Conflict(ex.Message));
         }
-
-        await enrollmentRepository.UpdateAsync(enrollment, cancellationToken);
-        await certificateIssuanceCoordinator.TryIssueForCompletedEnrollmentAsync(enrollment, course, cancellationToken);
-
-        return Result.Success();
     }
 }

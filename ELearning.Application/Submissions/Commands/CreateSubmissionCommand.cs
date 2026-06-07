@@ -7,7 +7,7 @@ namespace ELearning.Application.Submissions.Commands;
 using ELearning.Application.Common.Model;
 using MediatR;
 
-public sealed record CreateSubmissionCommand : IRequest<Result>
+public sealed record CreateSubmissionCommand : IRequest<Result<Guid>>
 {
     public Guid AssignmentId { get; init; }
 

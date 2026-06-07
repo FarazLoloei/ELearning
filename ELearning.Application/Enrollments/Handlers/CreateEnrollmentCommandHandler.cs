@@ -22,9 +22,9 @@ public class CreateEnrollmentCommandHandler(
             IEnrollmentRepository enrollmentRepository,
             INotificationRequestService notificationRequestService,
             ICurrentUserService currentUserService)
-    : IRequestHandler<CreateEnrollmentCommand, Result>
+    : IRequestHandler<CreateEnrollmentCommand, Result<Guid>>
 {
-    public async Task<Result> Handle(CreateEnrollmentCommand request, CancellationToken cancellationToken)
+    public async Task<Result<Guid>> Handle(CreateEnrollmentCommand request, CancellationToken cancellationToken)
     {
         if (!currentUserService.IsAuthenticated || currentUserService.UserId is null)
         {
@@ -47,14 +47,14 @@ public class CreateEnrollmentCommandHandler(
         }
         catch (InvalidOperationException ex)
         {
-            return Result.Failure(ApplicationError.Conflict(ex.Message));
+            return Result.Failure<Guid>(ApplicationError.Conflict(ex.Message));
         }
 
         // Check if student is already enrolled
         var alreadyEnrolled = await enrollmentRepository.GetByStudentAndCourseIdAsync(studentId, request.CourseId, cancellationToken) is not null;
         if (alreadyEnrolled)
         {
-            return Result.Failure(ApplicationError.Conflict("You are already enrolled in this course."));
+            return Result.Failure<Guid>(ApplicationError.Conflict("You are already enrolled in this course."));
         }
 
         var enrollment = new Enrollment(studentId, course.Id);
@@ -66,6 +66,6 @@ public class CreateEnrollmentCommandHandler(
             enrollment.Id,
             cancellationToken);
 
-        return Result.Success();
+        return Result.Success(enrollment.Id);
     }
 }

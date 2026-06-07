@@ -28,6 +28,9 @@ public class CourseRepository : ICourseRepository
             .Include(c => c.Modules)
             .ThenInclude(m => m.Assignments)
             .Include(c => c.Enrollments)
+            .ThenInclude(e => e.Submissions)
+            .Include(c => c.Enrollments)
+            .ThenInclude(e => e.ProgressRecords)
             .FirstOrDefaultAsync(c => c.Id == id, cancellationToken);
     }
 

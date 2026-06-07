@@ -46,14 +46,16 @@ public sealed class CourseAuthoringWorkflowIntegrationTests : IClassFixture<Real
         var title = CreateUniqueTitle("create-course");
 
         var response = await this.PostAsRoleAsync(
-            "/api/courses",
+            "/api/v1/courses",
             CreateCourseRequest(title),
             instructorId,
             "Instructor",
             cancellationToken);
 
         response.StatusCode.Should().Be(HttpStatusCode.Created);
+        var createdCourseId = await ReadResponseDataIdAsync(response, cancellationToken);
         var course = await this.GetCourseByTitleAsync(title, cancellationToken);
+        createdCourseId.Should().Be(course.Id);
         course.InstructorId.Should().Be(instructorId);
         course.Status.Should().Be(CourseStatus.Draft);
     }
@@ -89,7 +91,7 @@ public sealed class CourseAuthoringWorkflowIntegrationTests : IClassFixture<Real
         var courseId = await this.CreateCourseAsync(instructorId, CreateUniqueTitle("submit-empty"), cancellationToken);
 
         var response = await this.PostAsRoleAsync(
-            $"/api/courses/{courseId}/submit-for-review",
+            $"/api/v1/courses/{courseId}/submit-for-review",
             null,
             instructorId,
             "Instructor",
@@ -179,14 +181,14 @@ public sealed class CourseAuthoringWorkflowIntegrationTests : IClassFixture<Real
         var rejectionCourseId = await this.CreateSubmittedCourseAsync(instructorId, CreateUniqueTitle("reject"), cancellationToken);
 
         var approveResponse = await this.PostAsRoleAsync(
-            $"/api/courses/{approvalCourseId}/approve-publication",
+            $"/api/v1/courses/{approvalCourseId}/approve-publication",
             null,
             adminId,
             "Admin",
             cancellationToken);
 
         var rejectResponse = await this.PostAsRoleAsync(
-            $"/api/courses/{rejectionCourseId}/reject-publication",
+            $"/api/v1/courses/{rejectionCourseId}/reject-publication",
             new
             {
                 CourseId = rejectionCourseId,
@@ -206,6 +208,45 @@ public sealed class CourseAuthoringWorkflowIntegrationTests : IClassFixture<Real
         rejectedCourse.RejectionReason.Should().Be("Add a clearer module introduction before publishing.");
     }
 
+    [Fact]
+    public async Task StudentCreatesEnrollment_ReturnsCreatedIdAndPersistsEnrollment()
+    {
+        var cancellationToken = TestContext.Current.CancellationToken;
+        var instructorId = await this.SeedInstructorAsync(cancellationToken);
+        var studentId = await this.SeedStudentAsync(cancellationToken);
+        var courseId = await this.CreatePublishedCourseAsync(instructorId, CreateUniqueTitle("enroll"), cancellationToken);
+
+        var enrollmentId = await this.CreateEnrollmentAsync(studentId, courseId, cancellationToken);
+
+        using var scope = this.factory.Services.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        var enrollment = await dbContext.Enrollments.SingleAsync(e => e.Id == enrollmentId, cancellationToken);
+        enrollment.StudentId.Should().Be(studentId);
+        enrollment.CourseId.Should().Be(courseId);
+    }
+
+    [Fact]
+    public async Task StudentCreatesSubmission_ReturnsCreatedIdAndPersistsSubmission()
+    {
+        var cancellationToken = TestContext.Current.CancellationToken;
+        var instructorId = await this.SeedInstructorAsync(cancellationToken);
+        var studentId = await this.SeedStudentAsync(cancellationToken);
+        var courseId = await this.CreatePublishedCourseWithAssignmentAsync(
+            instructorId,
+            CreateUniqueTitle("submission"),
+            cancellationToken);
+        var assignmentId = await this.GetFirstAssignmentIdAsync(courseId, cancellationToken);
+        var enrollmentId = await this.CreateEnrollmentAsync(studentId, courseId, cancellationToken);
+
+        var submissionId = await this.CreateSubmissionAsync(studentId, assignmentId, cancellationToken);
+
+        using var scope = this.factory.Services.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        var submission = await dbContext.Submissions.SingleAsync(s => s.Id == submissionId, cancellationToken);
+        submission.EnrollmentId.Should().Be(enrollmentId);
+        submission.AssignmentId.Should().Be(assignmentId);
+    }
+
     private async Task<Guid> CreateAuthoredCourseAsync(Guid instructorId, string title, CancellationToken cancellationToken)
     {
         var courseId = await this.CreateCourseAsync(instructorId, title, cancellationToken);
@@ -218,7 +259,7 @@ public sealed class CourseAuthoringWorkflowIntegrationTests : IClassFixture<Real
     {
         var courseId = await this.CreateAuthoredCourseAsync(instructorId, title, cancellationToken);
         var response = await this.PostAsRoleAsync(
-            $"/api/courses/{courseId}/submit-for-review",
+            $"/api/v1/courses/{courseId}/submit-for-review",
             null,
             instructorId,
             "Instructor",
@@ -228,19 +269,60 @@ public sealed class CourseAuthoringWorkflowIntegrationTests : IClassFixture<Real
         return courseId;
     }
 
+    private async Task<Guid> CreatePublishedCourseAsync(Guid instructorId, string title, CancellationToken cancellationToken)
+    {
+        var courseId = await this.CreateSubmittedCourseAsync(instructorId, title, cancellationToken);
+        var response = await this.PostAsRoleAsync(
+            $"/api/v1/courses/{courseId}/approve-publication",
+            null,
+            Guid.NewGuid(),
+            "Admin",
+            cancellationToken);
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        return courseId;
+    }
+
+    private async Task<Guid> CreatePublishedCourseWithAssignmentAsync(Guid instructorId, string title, CancellationToken cancellationToken)
+    {
+        var courseId = await this.CreateCourseAsync(instructorId, title, cancellationToken);
+        var moduleId = await this.AddModuleAsync(courseId, instructorId, cancellationToken);
+        await this.AddLessonAsync(courseId, moduleId, instructorId, cancellationToken);
+        await this.AddAssignmentAsync(courseId, moduleId, instructorId, cancellationToken);
+        var submitResponse = await this.PostAsRoleAsync(
+            $"/api/v1/courses/{courseId}/submit-for-review",
+            null,
+            instructorId,
+            "Instructor",
+            cancellationToken);
+        submitResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var approveResponse = await this.PostAsRoleAsync(
+            $"/api/v1/courses/{courseId}/approve-publication",
+            null,
+            Guid.NewGuid(),
+            "Admin",
+            cancellationToken);
+        approveResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        return courseId;
+    }
+
     private async Task<Guid> CreateCourseAsync(Guid instructorId, string title, CancellationToken cancellationToken)
     {
         var response = await this.PostAsRoleAsync(
-            "/api/courses",
+            "/api/v1/courses",
             CreateCourseRequest(title),
             instructorId,
             "Instructor",
             cancellationToken);
 
         response.StatusCode.Should().Be(HttpStatusCode.Created);
+        var courseId = await ReadResponseDataIdAsync(response, cancellationToken);
         var course = await this.GetCourseByTitleAsync(title, cancellationToken);
+        courseId.Should().Be(course.Id);
         course.RowVersion.Should().NotBeNull();
-        return course.Id;
+        return courseId;
     }
 
     private async Task<Guid> AddModuleAsync(Guid courseId, Guid instructorId, CancellationToken cancellationToken)
@@ -339,6 +421,24 @@ public sealed class CourseAuthoringWorkflowIntegrationTests : IClassFixture<Real
         return instructor.Id;
     }
 
+    private async Task<Guid> SeedStudentAsync(CancellationToken cancellationToken)
+    {
+        using var scope = this.factory.Services.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        var passwordHasher = scope.ServiceProvider.GetRequiredService<IPasswordHasher>();
+        var uniqueValue = Guid.NewGuid().ToString("N");
+
+        var student = new Student(
+            firstName: "Integration",
+            lastName: "Student",
+            email: Email.Create($"course.student.{uniqueValue}@tests.io"),
+            passwordHash: passwordHasher.HashPassword("P@ssword123!"));
+
+        dbContext.Students.Add(student);
+        await dbContext.SaveChangesAsync(cancellationToken);
+        return student.Id;
+    }
+
     private async Task<Course> GetCourseByTitleAsync(
         string title,
         CancellationToken cancellationToken)
@@ -357,6 +457,59 @@ public sealed class CourseAuthoringWorkflowIntegrationTests : IClassFixture<Real
         var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
         return await dbContext.Courses
             .SingleAsync(course => course.Id == courseId, cancellationToken);
+    }
+
+    private async Task<Guid> GetFirstAssignmentIdAsync(Guid courseId, CancellationToken cancellationToken)
+    {
+        using var scope = this.factory.Services.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        var moduleIds = await dbContext.Modules
+            .Where(module => module.CourseId == courseId)
+            .Select(module => module.Id)
+            .ToListAsync(cancellationToken);
+
+        return await dbContext.Assignments
+            .Where(assignment => moduleIds.Contains(assignment.ModuleId))
+            .Select(assignment => assignment.Id)
+            .SingleAsync(cancellationToken);
+    }
+
+    private async Task<Guid> CreateEnrollmentAsync(Guid studentId, Guid courseId, CancellationToken cancellationToken)
+    {
+        var response = await this.PostAsRoleAsync(
+            "/api/v1/enrollments",
+            new
+            {
+                CourseId = courseId,
+            },
+            studentId,
+            "Student",
+            cancellationToken);
+
+        response.StatusCode.Should().Be(
+            HttpStatusCode.Created,
+            await response.Content.ReadAsStringAsync(cancellationToken));
+        return await ReadResponseDataIdAsync(response, cancellationToken);
+    }
+
+    private async Task<Guid> CreateSubmissionAsync(Guid studentId, Guid assignmentId, CancellationToken cancellationToken)
+    {
+        var response = await this.PostAsRoleAsync(
+            "/api/v1/submissions",
+            new
+            {
+                AssignmentId = assignmentId,
+                Content = "Integration test submission content.",
+                FileUrl = string.Empty,
+            },
+            studentId,
+            "Student",
+            cancellationToken);
+
+        response.StatusCode.Should().Be(
+            HttpStatusCode.Created,
+            await response.Content.ReadAsStringAsync(cancellationToken));
+        return await ReadResponseDataIdAsync(response, cancellationToken);
     }
 
     private static object CreateCourseRequest(string title) => new
