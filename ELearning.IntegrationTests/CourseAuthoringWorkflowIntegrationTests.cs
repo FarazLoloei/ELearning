@@ -59,6 +59,29 @@ public sealed class CourseAuthoringWorkflowIntegrationTests : IClassFixture<Real
     }
 
     [Fact]
+    public async Task GetInstructorWithCourses_ReturnsCreatedDraftCourse()
+    {
+        var cancellationToken = TestContext.Current.CancellationToken;
+        var instructorId = await this.SeedInstructorAsync(cancellationToken);
+        var title = CreateUniqueTitle("with-courses");
+        var courseId = await this.CreateCourseAsync(instructorId, title, cancellationToken);
+
+        var response = await this.client.GetAsync($"/api/instructors/{instructorId}/with-courses", cancellationToken);
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        using var responseStream = await response.Content.ReadAsStreamAsync(cancellationToken);
+        using var content = await JsonDocument.ParseAsync(responseStream, cancellationToken: cancellationToken);
+        content.RootElement.GetProperty("succeeded").GetBoolean().Should().BeTrue();
+
+        var courses = content.RootElement.GetProperty("data").GetProperty("courses");
+        courses.EnumerateArray()
+            .Any(course => course.GetProperty("id").GetGuid() == courseId && course.GetProperty("title").GetString() == title)
+            .Should()
+            .BeTrue();
+    }
+
+    [Fact]
     public async Task CourseCannotBeSubmittedWithoutContent_ReturnsConflict()
     {
         var cancellationToken = TestContext.Current.CancellationToken;

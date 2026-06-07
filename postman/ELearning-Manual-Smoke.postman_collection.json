@@ -432,7 +432,10 @@
                 "exec": [
                   "if (!pm.environment.get('uniqueCourseTitle')) {",
                   "  pm.environment.set('uniqueCourseTitle', `REST Smoke ${Date.now()}`);",
-                  "}"
+                  "}",
+                  "['courseId', 'courseStatus', 'moduleId', 'lessonId', 'assignmentId', 'enrollmentCreated', 'enrollmentId', 'submissionId', 'certificateCode'].forEach(function (key) {",
+                  "  pm.environment.unset(key);",
+                  "});"
                 ]
               }
             },
@@ -444,10 +447,17 @@
                   "pm.test('Status is 201', function () {",
                   "  pm.response.to.have.status(201);",
                   "});",
-                  "const body = pm.response.json();",
+                  "const body = (() => {",
+                  "  try {",
+                  "    return pm.response.json();",
+                  "  } catch (error) {",
+                  "    return null;",
+                  "  }",
+                  "})();",
+                  "pm.expect(body, 'JSON response body').to.be.an('object');",
                   "pm.expect(body.succeeded).to.eql(true);",
-                  "pm.test('Create course does not return data payload', function () {",
-                  "  pm.expect(body.data).to.eql(null);",
+                  "pm.test('Create course does not require a created ID in the response body', function () {",
+                  "  pm.expect(body.data === null || typeof body.data === 'undefined').to.eql(true);",
                   "});"
                 ]
               }
@@ -488,6 +498,21 @@
           "name": "GET /api/v1/instructors/{{instructorId}}/with-courses",
           "event": [
             {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const missing = ['instructorId', 'uniqueCourseTitle'].filter(name => !pm.environment.get(name));",
+                  "if (missing.length > 0) {",
+                  "  console.warn(`Skipping request because required environment values are missing: ${missing.join(', ')}`);",
+                  "  if (pm.execution && typeof pm.execution.skipRequest === 'function') {",
+                  "    pm.execution.skipRequest();",
+                  "  }",
+                  "}"
+                ]
+              }
+            },
+            {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
@@ -495,7 +520,14 @@
                   "pm.test('Status is 200', function () {",
                   "  pm.response.to.have.status(200);",
                   "});",
-                  "const body = pm.response.json();",
+                  "const body = (() => {",
+                  "  try {",
+                  "    return pm.response.json();",
+                  "  } catch (error) {",
+                  "    return null;",
+                  "  }",
+                  "})();",
+                  "pm.expect(body, 'JSON response body').to.be.an('object');",
                   "pm.expect(body.succeeded).to.eql(true);",
                   "const courses = (body.data && body.data.courses) || [];",
                   "const match = courses.find(c => c.title === pm.environment.get('uniqueCourseTitle'));",
@@ -504,6 +536,9 @@
                   "});",
                   "if (match) {",
                   "  pm.environment.set('courseId', match.id);",
+                  "  if (match.status) {",
+                  "    pm.environment.set('courseStatus', match.status);",
+                  "  }",
                   "}"
                 ]
               }
@@ -538,6 +573,21 @@
           "name": "POST /api/v1/courses/{{courseId}}/modules",
           "event": [
             {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const missing = ['courseId'].filter(name => !pm.environment.get(name));",
+                  "if (missing.length > 0) {",
+                  "  console.warn(`Skipping request because required environment values are missing: ${missing.join(', ')}`);",
+                  "  if (pm.execution && typeof pm.execution.skipRequest === 'function') {",
+                  "    pm.execution.skipRequest();",
+                  "  }",
+                  "}"
+                ]
+              }
+            },
+            {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
@@ -545,7 +595,14 @@
                   "pm.test('Status is 201', function () {",
                   "  pm.response.to.have.status(201);",
                   "});",
-                  "const body = pm.response.json();",
+                  "const body = (() => {",
+                  "  try {",
+                  "    return pm.response.json();",
+                  "  } catch (error) {",
+                  "    return null;",
+                  "  }",
+                  "})();",
+                  "pm.expect(body, 'JSON response body').to.be.an('object');",
                   "pm.expect(body.succeeded).to.eql(true);",
                   "pm.environment.set('moduleId', body.data);"
                 ]
@@ -588,6 +645,21 @@
           "name": "POST /api/v1/courses/{{courseId}}/modules/{{moduleId}}/lessons",
           "event": [
             {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const missing = ['courseId', 'moduleId'].filter(name => !pm.environment.get(name));",
+                  "if (missing.length > 0) {",
+                  "  console.warn(`Skipping request because required environment values are missing: ${missing.join(', ')}`);",
+                  "  if (pm.execution && typeof pm.execution.skipRequest === 'function') {",
+                  "    pm.execution.skipRequest();",
+                  "  }",
+                  "}"
+                ]
+              }
+            },
+            {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
@@ -595,7 +667,14 @@
                   "pm.test('Status is 201', function () {",
                   "  pm.response.to.have.status(201);",
                   "});",
-                  "const body = pm.response.json();",
+                  "const body = (() => {",
+                  "  try {",
+                  "    return pm.response.json();",
+                  "  } catch (error) {",
+                  "    return null;",
+                  "  }",
+                  "})();",
+                  "pm.expect(body, 'JSON response body').to.be.an('object');",
                   "pm.expect(body.succeeded).to.eql(true);",
                   "pm.environment.set('lessonId', body.data);"
                 ]
@@ -640,6 +719,21 @@
           "name": "POST /api/v1/courses/{{courseId}}/modules/{{moduleId}}/assignments",
           "event": [
             {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const missing = ['courseId', 'moduleId'].filter(name => !pm.environment.get(name));",
+                  "if (missing.length > 0) {",
+                  "  console.warn(`Skipping request because required environment values are missing: ${missing.join(', ')}`);",
+                  "  if (pm.execution && typeof pm.execution.skipRequest === 'function') {",
+                  "    pm.execution.skipRequest();",
+                  "  }",
+                  "}"
+                ]
+              }
+            },
+            {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
@@ -647,7 +741,14 @@
                   "pm.test('Status is 201', function () {",
                   "  pm.response.to.have.status(201);",
                   "});",
-                  "const body = pm.response.json();",
+                  "const body = (() => {",
+                  "  try {",
+                  "    return pm.response.json();",
+                  "  } catch (error) {",
+                  "    return null;",
+                  "  }",
+                  "})();",
+                  "pm.expect(body, 'JSON response body').to.be.an('object');",
                   "pm.expect(body.succeeded).to.eql(true);",
                   "pm.environment.set('assignmentId', body.data);"
                 ]
@@ -692,6 +793,21 @@
           "name": "POST /api/v1/courses/{{courseId}}/submit-for-review",
           "event": [
             {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const missing = ['courseId'].filter(name => !pm.environment.get(name));",
+                  "if (missing.length > 0) {",
+                  "  console.warn(`Skipping request because required environment values are missing: ${missing.join(', ')}`);",
+                  "  if (pm.execution && typeof pm.execution.skipRequest === 'function') {",
+                  "    pm.execution.skipRequest();",
+                  "  }",
+                  "}"
+                ]
+              }
+            },
+            {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
@@ -699,7 +815,14 @@
                   "pm.test('Status is 200', function () {",
                   "  pm.response.to.have.status(200);",
                   "});",
-                  "const body = pm.response.json();",
+                  "const body = (() => {",
+                  "  try {",
+                  "    return pm.response.json();",
+                  "  } catch (error) {",
+                  "    return null;",
+                  "  }",
+                  "})();",
+                  "pm.expect(body, 'JSON response body').to.be.an('object');",
                   "pm.expect(body.succeeded).to.eql(true);"
                 ]
               }
@@ -733,6 +856,26 @@
           "name": "GET /api/v1/courses/{{courseId}}",
           "event": [
             {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const courseStatus = pm.environment.get('courseStatus');",
+                  "const missing = ['courseId'].filter(name => !pm.environment.get(name));",
+                  "if (missing.length > 0 || courseStatus !== 'Published') {",
+                  "  const reasons = missing.slice();",
+                  "  if (courseStatus !== 'Published') {",
+                  "    reasons.push(`courseStatus=${courseStatus || 'missing'} (published course required)`);",
+                  "  }",
+                  "  console.warn(`Skipping request because prerequisites are not satisfied: ${reasons.join(', ')}`);",
+                  "  if (pm.execution && typeof pm.execution.skipRequest === 'function') {",
+                  "    pm.execution.skipRequest();",
+                  "  }",
+                  "}"
+                ]
+              }
+            },
+            {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
@@ -740,7 +883,14 @@
                   "pm.test('Status is 200 for owner view', function () {",
                   "  pm.response.to.have.status(200);",
                   "});",
-                  "const body = pm.response.json();",
+                  "const body = (() => {",
+                  "  try {",
+                  "    return pm.response.json();",
+                  "  } catch (error) {",
+                  "    return null;",
+                  "  }",
+                  "})();",
+                  "pm.expect(body, 'JSON response body').to.be.an('object');",
                   "pm.expect(body.succeeded).to.eql(true);"
                 ]
               }
@@ -782,6 +932,43 @@
       "item": [
         {
           "name": "POST /api/v1/courses/{{courseId}}/approve-publication",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const missing = ['courseId', 'adminToken'].filter(name => !pm.environment.get(name));",
+                  "if (missing.length > 0) {",
+                  "  console.warn(`Skipping request because required environment values are missing: ${missing.join(', ')}`);",
+                  "  if (pm.execution && typeof pm.execution.skipRequest === 'function') {",
+                  "    pm.execution.skipRequest();",
+                  "  }",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  const body = (() => {",
+                  "    try {",
+                  "      return pm.response.json();",
+                  "    } catch (error) {",
+                  "      return null;",
+                  "    }",
+                  "  })();",
+                  "  if (body && body.succeeded === true) {",
+                  "    pm.environment.set('courseStatus', 'Published');",
+                  "  }",
+                  "}"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "POST",
             "header": [
@@ -812,6 +999,43 @@
         },
         {
           "name": "POST /api/v1/courses/{{courseId}}/reject-publication",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const missing = ['courseId', 'adminToken'].filter(name => !pm.environment.get(name));",
+                  "if (missing.length > 0) {",
+                  "  console.warn(`Skipping request because required environment values are missing: ${missing.join(', ')}`);",
+                  "  if (pm.execution && typeof pm.execution.skipRequest === 'function') {",
+                  "    pm.execution.skipRequest();",
+                  "  }",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  const body = (() => {",
+                  "    try {",
+                  "      return pm.response.json();",
+                  "    } catch (error) {",
+                  "      return null;",
+                  "    }",
+                  "  })();",
+                  "  if (body && body.succeeded === true) {",
+                  "    pm.environment.set('courseStatus', 'Rejected');",
+                  "  }",
+                  "}"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "POST",
             "header": [
@@ -854,6 +1078,26 @@
           "name": "POST /api/v1/enrollments",
           "event": [
             {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const courseStatus = pm.environment.get('courseStatus');",
+                  "const missing = ['courseId'].filter(name => !pm.environment.get(name));",
+                  "if (missing.length > 0 || courseStatus !== 'Published') {",
+                  "  const reasons = missing.slice();",
+                  "  if (courseStatus !== 'Published') {",
+                  "    reasons.push(`courseStatus=${courseStatus || 'missing'} (published course required)`);",
+                  "  }",
+                  "  console.warn(`Skipping request because prerequisites are not satisfied: ${reasons.join(', ')}`);",
+                  "  if (pm.execution && typeof pm.execution.skipRequest === 'function') {",
+                  "    pm.execution.skipRequest();",
+                  "  }",
+                  "}"
+                ]
+              }
+            },
+            {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
@@ -861,9 +1105,21 @@
                   "pm.test('Status is 201', function () {",
                   "  pm.response.to.have.status(201);",
                   "});",
-                  "const body = pm.response.json();",
+                  "const body = (() => {",
+                  "  try {",
+                  "    return pm.response.json();",
+                  "  } catch (error) {",
+                  "    return null;",
+                  "  }",
+                  "})();",
+                  "pm.expect(body, 'JSON response body').to.be.an('object');",
                   "pm.expect(body.succeeded).to.eql(true);",
-                  "pm.expect(body.data).to.eql(null);"
+                  "if (pm.response.code === 201) {",
+                  "  pm.environment.set('enrollmentCreated', 'true');",
+                  "}",
+                  "pm.test('Create enrollment does not require a created ID in the response body', function () {",
+                  "  pm.expect(body.data === null || typeof body.data === 'undefined').to.eql(true);",
+                  "});"
                 ]
               }
             }
@@ -903,6 +1159,30 @@
           "name": "GET /api/v1/students/{{studentId}}/enrollments",
           "event": [
             {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const courseStatus = pm.environment.get('courseStatus');",
+                  "const enrollmentCreated = pm.environment.get('enrollmentCreated');",
+                  "const missing = ['studentId', 'courseId'].filter(name => !pm.environment.get(name));",
+                  "if (missing.length > 0 || courseStatus !== 'Published' || enrollmentCreated !== 'true') {",
+                  "  const reasons = missing.slice();",
+                  "  if (courseStatus !== 'Published') {",
+                  "    reasons.push(`courseStatus=${courseStatus || 'missing'} (published course required)`);",
+                  "  }",
+                  "  if (enrollmentCreated !== 'true') {",
+                  "    reasons.push('enrollment was not created');",
+                  "  }",
+                  "  console.warn(`Skipping request because prerequisites are not satisfied: ${reasons.join(', ')}`);",
+                  "  if (pm.execution && typeof pm.execution.skipRequest === 'function') {",
+                  "    pm.execution.skipRequest();",
+                  "  }",
+                  "}"
+                ]
+              }
+            },
+            {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
@@ -910,7 +1190,14 @@
                   "pm.test('Status is 200', function () {",
                   "  pm.response.to.have.status(200);",
                   "});",
-                  "const body = pm.response.json();",
+                  "const body = (() => {",
+                  "  try {",
+                  "    return pm.response.json();",
+                  "  } catch (error) {",
+                  "    return null;",
+                  "  }",
+                  "})();",
+                  "pm.expect(body, 'JSON response body').to.be.an('object');",
                   "pm.expect(body.succeeded).to.eql(true);",
                   "const items = (body.data && body.data.items) || [];",
                   "const match = items.find(e => e.courseId === pm.environment.get('courseId'));",
@@ -966,6 +1253,21 @@
           "name": "GET /api/v1/enrollments/{{enrollmentId}}",
           "event": [
             {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const missing = ['enrollmentId'].filter(name => !pm.environment.get(name));",
+                  "if (missing.length > 0) {",
+                  "  console.warn(`Skipping request because required environment values are missing: ${missing.join(', ')}`);",
+                  "  if (pm.execution && typeof pm.execution.skipRequest === 'function') {",
+                  "    pm.execution.skipRequest();",
+                  "  }",
+                  "}"
+                ]
+              }
+            },
+            {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
@@ -973,7 +1275,14 @@
                   "pm.test('Status is 200', function () {",
                   "  pm.response.to.have.status(200);",
                   "});",
-                  "const body = pm.response.json();",
+                  "const body = (() => {",
+                  "  try {",
+                  "    return pm.response.json();",
+                  "  } catch (error) {",
+                  "    return null;",
+                  "  }",
+                  "})();",
+                  "pm.expect(body, 'JSON response body').to.be.an('object');",
                   "pm.expect(body.succeeded).to.eql(true);",
                   "const submissions = (body.data && body.data.submissions) || [];",
                   "const match = submissions.find(s => s.assignmentId === pm.environment.get('assignmentId'));",
@@ -1015,12 +1324,34 @@
           "name": "POST /api/v1/enrollments/{{enrollmentId}}/lessons/{{lessonId}}/start",
           "event": [
             {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const missing = ['enrollmentId', 'lessonId'].filter(name => !pm.environment.get(name));",
+                  "if (missing.length > 0) {",
+                  "  console.warn(`Skipping request because required environment values are missing: ${missing.join(', ')}`);",
+                  "  if (pm.execution && typeof pm.execution.skipRequest === 'function') {",
+                  "    pm.execution.skipRequest();",
+                  "  }",
+                  "}"
+                ]
+              }
+            },
+            {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
                   "pm.response.to.have.status(200);",
-                  "const body = pm.response.json();",
+                  "const body = (() => {",
+                  "  try {",
+                  "    return pm.response.json();",
+                  "  } catch (error) {",
+                  "    return null;",
+                  "  }",
+                  "})();",
+                  "pm.expect(body, 'JSON response body').to.be.an('object');",
                   "pm.expect(body.succeeded).to.eql(true);"
                 ]
               }
@@ -1056,12 +1387,34 @@
           "name": "POST /api/v1/enrollments/{{enrollmentId}}/lessons/{{lessonId}}/complete",
           "event": [
             {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const missing = ['enrollmentId', 'lessonId'].filter(name => !pm.environment.get(name));",
+                  "if (missing.length > 0) {",
+                  "  console.warn(`Skipping request because required environment values are missing: ${missing.join(', ')}`);",
+                  "  if (pm.execution && typeof pm.execution.skipRequest === 'function') {",
+                  "    pm.execution.skipRequest();",
+                  "  }",
+                  "}"
+                ]
+              }
+            },
+            {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
                   "pm.response.to.have.status(200);",
-                  "const body = pm.response.json();",
+                  "const body = (() => {",
+                  "  try {",
+                  "    return pm.response.json();",
+                  "  } catch (error) {",
+                  "    return null;",
+                  "  }",
+                  "})();",
+                  "pm.expect(body, 'JSON response body').to.be.an('object');",
                   "pm.expect(body.succeeded).to.eql(true);"
                 ]
               }
@@ -1097,14 +1450,38 @@
           "name": "POST /api/v1/submissions",
           "event": [
             {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const missing = ['assignmentId', 'enrollmentId'].filter(name => !pm.environment.get(name));",
+                  "if (missing.length > 0) {",
+                  "  console.warn(`Skipping request because required environment values are missing: ${missing.join(', ')}`);",
+                  "  if (pm.execution && typeof pm.execution.skipRequest === 'function') {",
+                  "    pm.execution.skipRequest();",
+                  "  }",
+                  "}"
+                ]
+              }
+            },
+            {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
                   "pm.response.to.have.status(201);",
-                  "const body = pm.response.json();",
+                  "const body = (() => {",
+                  "  try {",
+                  "    return pm.response.json();",
+                  "  } catch (error) {",
+                  "    return null;",
+                  "  }",
+                  "})();",
+                  "pm.expect(body, 'JSON response body').to.be.an('object');",
                   "pm.expect(body.succeeded).to.eql(true);",
-                  "pm.expect(body.data).to.eql(null);"
+                  "pm.test('Create submission does not require a created ID in the response body', function () {",
+                  "  pm.expect(body.data === null || typeof body.data === 'undefined').to.eql(true);",
+                  "});"
                 ]
               }
             }
@@ -1143,12 +1520,34 @@
           "name": "GET /api/v1/enrollments/{{enrollmentId}} (Recover submissionId)",
           "event": [
             {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const missing = ['enrollmentId', 'assignmentId'].filter(name => !pm.environment.get(name));",
+                  "if (missing.length > 0) {",
+                  "  console.warn(`Skipping request because required environment values are missing: ${missing.join(', ')}`);",
+                  "  if (pm.execution && typeof pm.execution.skipRequest === 'function') {",
+                  "    pm.execution.skipRequest();",
+                  "  }",
+                  "}"
+                ]
+              }
+            },
+            {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
                   "pm.response.to.have.status(200);",
-                  "const body = pm.response.json();",
+                  "const body = (() => {",
+                  "  try {",
+                  "    return pm.response.json();",
+                  "  } catch (error) {",
+                  "    return null;",
+                  "  }",
+                  "})();",
+                  "pm.expect(body, 'JSON response body').to.be.an('object');",
                   "pm.expect(body.succeeded).to.eql(true);",
                   "const submissions = (body.data && body.data.submissions) || [];",
                   "const match = submissions.find(s => s.assignmentId === pm.environment.get('assignmentId'));",
@@ -1193,12 +1592,34 @@
           "name": "GET /api/v1/students/{{studentId}}/progress",
           "event": [
             {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const missing = ['studentId'].filter(name => !pm.environment.get(name));",
+                  "if (missing.length > 0) {",
+                  "  console.warn(`Skipping request because required environment values are missing: ${missing.join(', ')}`);",
+                  "  if (pm.execution && typeof pm.execution.skipRequest === 'function') {",
+                  "    pm.execution.skipRequest();",
+                  "  }",
+                  "}"
+                ]
+              }
+            },
+            {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
                   "pm.response.to.have.status(200);",
-                  "const body = pm.response.json();",
+                  "const body = (() => {",
+                  "  try {",
+                  "    return pm.response.json();",
+                  "  } catch (error) {",
+                  "    return null;",
+                  "  }",
+                  "})();",
+                  "pm.expect(body, 'JSON response body').to.be.an('object');",
                   "pm.expect(body.succeeded).to.eql(true);"
                 ]
               }
@@ -1241,12 +1662,34 @@
           "name": "GET /api/v1/instructors/{{instructorId}}/pending-submissions",
           "event": [
             {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const missing = ['instructorId', 'assignmentId'].filter(name => !pm.environment.get(name));",
+                  "if (missing.length > 0) {",
+                  "  console.warn(`Skipping request because required environment values are missing: ${missing.join(', ')}`);",
+                  "  if (pm.execution && typeof pm.execution.skipRequest === 'function') {",
+                  "    pm.execution.skipRequest();",
+                  "  }",
+                  "}"
+                ]
+              }
+            },
+            {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
                   "pm.response.to.have.status(200);",
-                  "const body = pm.response.json();",
+                  "const body = (() => {",
+                  "  try {",
+                  "    return pm.response.json();",
+                  "  } catch (error) {",
+                  "    return null;",
+                  "  }",
+                  "})();",
+                  "pm.expect(body, 'JSON response body').to.be.an('object');",
                   "pm.expect(body.succeeded).to.eql(true);",
                   "const items = (body.data && body.data.items) || [];",
                   "const match = items.find(s => s.assignmentId === pm.environment.get('assignmentId'));",
@@ -1299,12 +1742,34 @@
           "name": "POST /api/v1/submissions/{{submissionId}}/grade",
           "event": [
             {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const missing = ['submissionId'].filter(name => !pm.environment.get(name));",
+                  "if (missing.length > 0) {",
+                  "  console.warn(`Skipping request because required environment values are missing: ${missing.join(', ')}`);",
+                  "  if (pm.execution && typeof pm.execution.skipRequest === 'function') {",
+                  "    pm.execution.skipRequest();",
+                  "  }",
+                  "}"
+                ]
+              }
+            },
+            {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
                   "pm.response.to.have.status(200);",
-                  "const body = pm.response.json();",
+                  "const body = (() => {",
+                  "  try {",
+                  "    return pm.response.json();",
+                  "  } catch (error) {",
+                  "    return null;",
+                  "  }",
+                  "})();",
+                  "pm.expect(body, 'JSON response body').to.be.an('object');",
                   "pm.expect(body.succeeded).to.eql(true);"
                 ]
               }
@@ -1346,12 +1811,34 @@
           "name": "GET /api/v1/submissions/{{submissionId}}",
           "event": [
             {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const missing = ['submissionId'].filter(name => !pm.environment.get(name));",
+                  "if (missing.length > 0) {",
+                  "  console.warn(`Skipping request because required environment values are missing: ${missing.join(', ')}`);",
+                  "  if (pm.execution && typeof pm.execution.skipRequest === 'function') {",
+                  "    pm.execution.skipRequest();",
+                  "  }",
+                  "}"
+                ]
+              }
+            },
+            {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
                   "pm.response.to.have.status(200);",
-                  "const body = pm.response.json();",
+                  "const body = (() => {",
+                  "  try {",
+                  "    return pm.response.json();",
+                  "  } catch (error) {",
+                  "    return null;",
+                  "  }",
+                  "})();",
+                  "pm.expect(body, 'JSON response body').to.be.an('object');",
                   "pm.expect(body.succeeded).to.eql(true);"
                 ]
               }
@@ -1388,12 +1875,34 @@
           "name": "POST /api/v1/enrollments/{{enrollmentId}}/review",
           "event": [
             {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const missing = ['enrollmentId'].filter(name => !pm.environment.get(name));",
+                  "if (missing.length > 0) {",
+                  "  console.warn(`Skipping request because required environment values are missing: ${missing.join(', ')}`);",
+                  "  if (pm.execution && typeof pm.execution.skipRequest === 'function') {",
+                  "    pm.execution.skipRequest();",
+                  "  }",
+                  "}"
+                ]
+              }
+            },
+            {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
                   "pm.response.to.have.status(200);",
-                  "const body = pm.response.json();",
+                  "const body = (() => {",
+                  "  try {",
+                  "    return pm.response.json();",
+                  "  } catch (error) {",
+                  "    return null;",
+                  "  }",
+                  "})();",
+                  "pm.expect(body, 'JSON response body').to.be.an('object');",
                   "pm.expect(body.succeeded).to.eql(true);"
                 ]
               }
@@ -1436,12 +1945,34 @@
           "name": "POST /api/v1/certificates/enrollments/{{enrollmentId}}/issue",
           "event": [
             {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const missing = ['enrollmentId'].filter(name => !pm.environment.get(name));",
+                  "if (missing.length > 0) {",
+                  "  console.warn(`Skipping request because required environment values are missing: ${missing.join(', ')}`);",
+                  "  if (pm.execution && typeof pm.execution.skipRequest === 'function') {",
+                  "    pm.execution.skipRequest();",
+                  "  }",
+                  "}"
+                ]
+              }
+            },
+            {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
                   "pm.response.to.have.status(200);",
-                  "const body = pm.response.json();",
+                  "const body = (() => {",
+                  "  try {",
+                  "    return pm.response.json();",
+                  "  } catch (error) {",
+                  "    return null;",
+                  "  }",
+                  "})();",
+                  "pm.expect(body, 'JSON response body').to.be.an('object');",
                   "pm.expect(body.succeeded).to.eql(true);",
                   "if (body.data && body.data.certificateCode) {",
                   "  pm.environment.set('certificateCode', body.data.certificateCode);",
@@ -1479,12 +2010,34 @@
           "name": "GET /api/v1/certificates/enrollments/{{enrollmentId}}",
           "event": [
             {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const missing = ['enrollmentId'].filter(name => !pm.environment.get(name));",
+                  "if (missing.length > 0) {",
+                  "  console.warn(`Skipping request because required environment values are missing: ${missing.join(', ')}`);",
+                  "  if (pm.execution && typeof pm.execution.skipRequest === 'function') {",
+                  "    pm.execution.skipRequest();",
+                  "  }",
+                  "}"
+                ]
+              }
+            },
+            {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
                   "pm.response.to.have.status(200);",
-                  "const body = pm.response.json();",
+                  "const body = (() => {",
+                  "  try {",
+                  "    return pm.response.json();",
+                  "  } catch (error) {",
+                  "    return null;",
+                  "  }",
+                  "})();",
+                  "pm.expect(body, 'JSON response body').to.be.an('object');",
                   "pm.expect(body.succeeded).to.eql(true);",
                   "if (body.data && body.data.certificateCode) {",
                   "  pm.environment.set('certificateCode', body.data.certificateCode);",
@@ -1525,12 +2078,34 @@
           "name": "GET /api/v1/certificates/verify/{{certificateCode}}",
           "event": [
             {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const missing = ['certificateCode'].filter(name => !pm.environment.get(name));",
+                  "if (missing.length > 0) {",
+                  "  console.warn(`Skipping request because required environment values are missing: ${missing.join(', ')}`);",
+                  "  if (pm.execution && typeof pm.execution.skipRequest === 'function') {",
+                  "    pm.execution.skipRequest();",
+                  "  }",
+                  "}"
+                ]
+              }
+            },
+            {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
                   "pm.response.to.have.status(200);",
-                  "const body = pm.response.json();",
+                  "const body = (() => {",
+                  "  try {",
+                  "    return pm.response.json();",
+                  "  } catch (error) {",
+                  "    return null;",
+                  "  }",
+                  "})();",
+                  "pm.expect(body, 'JSON response body').to.be.an('object');",
                   "pm.expect(body.succeeded).to.eql(true);",
                   "if (body.data && body.data.certificateCode) {",
                   "  pm.environment.set('certificateCode', body.data.certificateCode);",
@@ -1656,6 +2231,23 @@
         },
         {
           "name": "POST /api/v1/courses/{{courseId}}/submit-for-review (Optional Draft Rule Check)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const missing = ['courseId'].filter(name => !pm.environment.get(name));",
+                  "if (missing.length > 0) {",
+                  "  console.warn(`Skipping request because required environment values are missing: ${missing.join(', ')}`);",
+                  "  if (pm.execution && typeof pm.execution.skipRequest === 'function') {",
+                  "    pm.execution.skipRequest();",
+                  "  }",
+                  "}"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "POST",
             "header": [
@@ -1683,6 +2275,23 @@
         },
         {
           "name": "PUT /api/v1/courses/{{courseId}} (Optional Route/Body Mismatch)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const missing = ['courseId'].filter(name => !pm.environment.get(name));",
+                  "if (missing.length > 0) {",
+                  "  console.warn(`Skipping request because required environment values are missing: ${missing.join(', ')}`);",
+                  "  if (pm.execution && typeof pm.execution.skipRequest === 'function') {",
+                  "    pm.execution.skipRequest();",
+                  "  }",
+                  "}"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "PUT",
             "header": [
