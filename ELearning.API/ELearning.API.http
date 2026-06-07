@@ -29,7 +29,7 @@ Content-Type: application/json
   "email": "{{instructorEmail}}",
   "password": "{{password}}",
   "bio": "Backend engineering instructor.",
-  "expertise": "Clean Architecture, .NET, cloud-ready APIs"
+  "expertise": "Clean Architecture, .NET, backend API design"
 }
 
 ### Login instructor
