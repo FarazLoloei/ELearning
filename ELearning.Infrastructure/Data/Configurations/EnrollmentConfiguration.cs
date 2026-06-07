@@ -34,7 +34,7 @@ public class EnrollmentConfiguration : IEntityTypeConfiguration<Enrollment>
 
         // Configure relationships
         builder.HasOne<Student>()
-            .WithMany(s => s.Enrollments)
+            .WithMany(student => student.Enrollments)
             .HasForeignKey(e => e.StudentId)
             .OnDelete(DeleteBehavior.Cascade);
 
@@ -43,9 +43,15 @@ public class EnrollmentConfiguration : IEntityTypeConfiguration<Enrollment>
             .HasForeignKey(p => p.EnrollmentId)
             .OnDelete(DeleteBehavior.Cascade);
 
+        builder.Navigation(e => e.ProgressRecords)
+            .UsePropertyAccessMode(PropertyAccessMode.Field);
+
         builder.HasMany(e => e.Submissions)
             .WithOne()
             .HasForeignKey(s => s.EnrollmentId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Navigation(e => e.Submissions)
+            .UsePropertyAccessMode(PropertyAccessMode.Field);
     }
 }

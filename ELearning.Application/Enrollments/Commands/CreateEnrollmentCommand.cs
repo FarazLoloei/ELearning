@@ -7,7 +7,7 @@ namespace ELearning.Application.Enrollments.Commands;
 using ELearning.Application.Common.Model;
 using MediatR;
 
-public sealed record CreateEnrollmentCommand : IRequest<Result>
+public sealed record CreateEnrollmentCommand : IRequest<Result<Guid>>
 {
     public Guid CourseId { get; init; }
 }

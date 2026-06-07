@@ -7,6 +7,7 @@ namespace ELearning.Infrastructure.Data.Repositories;
 using ELearning.Domain.Entities.EnrollmentAggregate;
 using ELearning.Domain.Entities.EnrollmentAggregate.Abstractions.Repositories;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 
 public class EnrollmentRepository(ApplicationDbContext context) : IEnrollmentRepository
 {
@@ -23,15 +24,59 @@ public class EnrollmentRepository(ApplicationDbContext context) : IEnrollmentRep
         await context.Enrollments.AddAsync(entity, cancellationToken);
     }
 
-    public Task UpdateAsync(Enrollment entity, CancellationToken cancellationToken)
+    public async Task UpdateAsync(Enrollment entity, CancellationToken cancellationToken)
     {
         var entry = context.Entry(entity);
         if (entry.State == EntityState.Detached)
         {
             context.Enrollments.Attach(entity);
+            entry = context.Entry(entity);
         }
 
-        return Task.CompletedTask;
+        var rowVersionEntry = entry.Property(nameof(Enrollment.RowVersion));
+        if (rowVersionEntry.OriginalValue is null && rowVersionEntry.CurrentValue is not null)
+        {
+            rowVersionEntry.OriginalValue = rowVersionEntry.CurrentValue;
+        }
+
+        await this.TrackNewEnrollmentContentAsync(entity, cancellationToken);
+    }
+
+    private async Task TrackNewEnrollmentContentAsync(Enrollment enrollment, CancellationToken cancellationToken)
+    {
+        foreach (var progress in enrollment.ProgressRecords)
+        {
+            var progressEntry = context.Entry(progress);
+            await TrackAsAddedWhenMissingAsync(
+                progressEntry,
+                () => context.Progresses.AnyAsync(existingProgress => existingProgress.Id == progress.Id, cancellationToken));
+        }
+
+        foreach (var submission in enrollment.Submissions)
+        {
+            var submissionEntry = context.Entry(submission);
+            await TrackAsAddedWhenMissingAsync(
+                submissionEntry,
+                () => context.Submissions.AnyAsync(existingSubmission => existingSubmission.Id == submission.Id, cancellationToken));
+        }
+    }
+
+    private static async Task TrackAsAddedWhenMissingAsync(EntityEntry entry, Func<Task<bool>> existsInDatabase)
+    {
+        if (entry.State == EntityState.Added)
+        {
+            return;
+        }
+
+        if (entry.State is not (EntityState.Detached or EntityState.Modified))
+        {
+            return;
+        }
+
+        if (!await existsInDatabase())
+        {
+            entry.State = EntityState.Added;
+        }
     }
 
     public Task DeleteAsync(Enrollment entity, CancellationToken cancellationToken)

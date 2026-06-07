@@ -12,12 +12,12 @@ using ELearning.Domain.ValueObjects;
 
 public class Student : User
 {
-    private readonly Dictionary<Guid, Enrollment> enrollments = new();
+    private readonly List<Enrollment> enrollments = [];
 
     /// <summary>
     /// Gets courses this student is enrolled in.
     /// </summary>
-    public IReadOnlyCollection<Enrollment> Enrollments => this.enrollments.Values.ToList().AsReadOnly();
+    public IReadOnlyCollection<Enrollment> Enrollments => this.enrollments.AsReadOnly();
 
     private Student()
         : base()
@@ -31,22 +31,28 @@ public class Student : User
 
     public bool EnrollInCourse(Course course)
     {
-        if (course == null)
-        {
-            throw new ArgumentNullException(nameof(course));
-        }
+        ArgumentNullException.ThrowIfNull(course);
 
-        if (this.enrollments.ContainsKey(course.Id))
+        if (this.enrollments.Any(enrollment => enrollment.CourseId == course.Id))
         {
-            return false; // Already enrolled
+            return false;
         }
 
         var enrollment = new Enrollment(this.Id, course.Id, null, null);
-        this.enrollments[course.Id] = enrollment;
+        this.enrollments.Add(enrollment);
 
         this.AddDomainEvent(new EnrollmentCreatedEvent(this, course, enrollment));
         return true;
     }
 
-    public bool UnenrollFromCourse(Guid courseId) => this.enrollments.Remove(courseId);
+    public bool UnenrollFromCourse(Guid courseId)
+    {
+        var enrollment = this.enrollments.FirstOrDefault(existingEnrollment => existingEnrollment.CourseId == courseId);
+        if (enrollment is null)
+        {
+            return false;
+        }
+
+        return this.enrollments.Remove(enrollment);
+    }
 }

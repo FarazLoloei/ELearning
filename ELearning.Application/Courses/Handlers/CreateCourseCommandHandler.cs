@@ -19,9 +19,9 @@ using MediatR;
 public class CreateCourseCommandHandler(ICourseRepository courseRepository,
         ICurrentUserService currentUserService,
         IUserRepository userRepository)
-    : IRequestHandler<CreateCourseCommand, Result>
+    : IRequestHandler<CreateCourseCommand, Result<Guid>>
 {
-    public async Task<Result> Handle(CreateCourseCommand request, CancellationToken cancellationToken)
+    public async Task<Result<Guid>> Handle(CreateCourseCommand request, CancellationToken cancellationToken)
     {
         if (!currentUserService.IsAuthenticated || currentUserService.UserId is null)
         {
@@ -41,7 +41,7 @@ public class CreateCourseCommandHandler(ICourseRepository courseRepository,
 
         if (category is null || level is null)
         {
-            return Result.Failure(ApplicationError.BadRequest(
+            return Result.Failure<Guid>(ApplicationError.BadRequest(
                 $"Invalid category or level. Category: {category?.Name ?? "null"}, Level: {level?.Name ?? "null"}"));
         }
 
@@ -60,6 +60,6 @@ public class CreateCourseCommandHandler(ICourseRepository courseRepository,
 
         await courseRepository.AddAsync(course, cancellationToken);
 
-        return Result.Success();
+        return Result.Success(course.Id);
     }
 }

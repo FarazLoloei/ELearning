@@ -17,4 +17,4 @@ public record CreateCourseCommand(
     int LevelId,
     decimal Price,
     int DurationHours,
-    int DurationMinutes) : IRequest<Result>;
+    int DurationMinutes) : IRequest<Result<Guid>>;

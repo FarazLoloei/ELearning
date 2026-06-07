@@ -2,7 +2,7 @@
   "info": {
     "_postman_id": "c5f4d245-5528-4b0e-b947-1c9e3c8f6a11",
     "name": "E-Learning Manual Smoke",
-    "description": "Manual shadow/smoke workflow for the E-Learning backend portfolio API.\n\nKnown blockers and notes:\n- No public admin registration/bootstrap endpoint exists in the REST API. Admin approval requests are included as optional/manual and require an out-of-band admin token.\n- CreateCourse, CreateEnrollment, and CreateSubmission return 201 with data = null, so IDs must be recovered from follow-up read endpoints.\n- /health/ready checks database readiness only; it does not verify RabbitMQ readiness.\n- Prefer /api/v1 routes throughout this collection.\n- Draft course recovery uses GET /api/v1/instructors/{{instructorId}}/with-courses by exact uniqueCourseTitle match.\n- For a stronger demo, the happy path adds a module, lesson, and assignment before submit-for-review.",
+    "description": "Manual shadow/smoke workflow for the E-Learning backend portfolio API.\n\nKnown blockers and notes:\n- No public admin registration/bootstrap endpoint exists in the REST API. Admin approval requests are included as optional/manual and require an out-of-band admin token.\n- CreateCourse, CreateEnrollment, and CreateSubmission now return created IDs directly in the response body.\n- /health/ready checks database readiness only; it does not verify RabbitMQ readiness.\n- Prefer /api/v1 routes throughout this collection.\n- GET /api/v1/instructors/{{instructorId}}/with-courses remains as optional draft-course visibility verification.\n- For a stronger demo, the happy path adds a module, lesson, and assignment before submit-for-review.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "event": [],
@@ -456,9 +456,10 @@
                   "})();",
                   "pm.expect(body, 'JSON response body').to.be.an('object');",
                   "pm.expect(body.succeeded).to.eql(true);",
-                  "pm.test('Create course does not require a created ID in the response body', function () {",
-                  "  pm.expect(body.data === null || typeof body.data === 'undefined').to.eql(true);",
-                  "});"
+                  "pm.test('Create course returns created courseId', function () {",
+                  "  pm.expect(body.data).to.be.a('string').and.not.empty;",
+                  "});",
+                  "pm.environment.set('courseId', body.data);"
                 ]
               }
             }
@@ -490,7 +491,7 @@
                 "courses"
               ]
             },
-            "description": "Creates a draft course. The API returns 201 with data = null, so recover courseId via the next request."
+            "description": "Creates a draft course and stores the created courseId directly from the response body."
           },
           "response": []
         },
@@ -565,7 +566,7 @@
                 "with-courses"
               ]
             },
-            "description": "Recovers draft courseId by matching uniqueCourseTitle. This is the preferred recovery path for newly created draft courses."
+            "description": "Optional verification that the authored draft course is visible to the instructor by unique title."
           },
           "response": []
         },
@@ -860,14 +861,9 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "const courseStatus = pm.environment.get('courseStatus');",
-                  "const missing = ['courseId'].filter(name => !pm.environment.get(name));",
-                  "if (missing.length > 0 || courseStatus !== 'Published') {",
-                  "  const reasons = missing.slice();",
-                  "  if (courseStatus !== 'Published') {",
-                  "    reasons.push(`courseStatus=${courseStatus || 'missing'} (published course required)`);",
-                  "  }",
-                  "  console.warn(`Skipping request because prerequisites are not satisfied: ${reasons.join(', ')}`);",
+                  "const missing = ['courseId', 'instructorToken'].filter(name => !pm.environment.get(name));",
+                  "if (missing.length > 0) {",
+                  "  console.warn(`Skipping request because prerequisites are not satisfied: ${missing.join(', ')}`);",
                   "  if (pm.execution && typeof pm.execution.skipRequest === 'function') {",
                   "    pm.execution.skipRequest();",
                   "  }",
@@ -920,7 +916,7 @@
                 "{{courseId}}"
               ]
             },
-            "description": "Optional owner verification for the authored course."
+            "description": "Owner verification for the authored course during the instructor flow."
           },
           "response": []
         }
@@ -1117,9 +1113,10 @@
                   "if (pm.response.code === 201) {",
                   "  pm.environment.set('enrollmentCreated', 'true');",
                   "}",
-                  "pm.test('Create enrollment does not require a created ID in the response body', function () {",
-                  "  pm.expect(body.data === null || typeof body.data === 'undefined').to.eql(true);",
-                  "});"
+                  "pm.test('Create enrollment returns created enrollmentId', function () {",
+                  "  pm.expect(body.data).to.be.a('string').and.not.empty;",
+                  "});",
+                  "pm.environment.set('enrollmentId', body.data);"
                 ]
               }
             }
@@ -1283,12 +1280,7 @@
                   "  }",
                   "})();",
                   "pm.expect(body, 'JSON response body').to.be.an('object');",
-                  "pm.expect(body.succeeded).to.eql(true);",
-                  "const submissions = (body.data && body.data.submissions) || [];",
-                  "const match = submissions.find(s => s.assignmentId === pm.environment.get('assignmentId'));",
-                  "if (match) {",
-                  "  pm.environment.set('submissionId', match.id);",
-                  "}"
+                  "pm.expect(body.succeeded).to.eql(true);"
                 ]
               }
             }
@@ -1479,9 +1471,10 @@
                   "})();",
                   "pm.expect(body, 'JSON response body').to.be.an('object');",
                   "pm.expect(body.succeeded).to.eql(true);",
-                  "pm.test('Create submission does not require a created ID in the response body', function () {",
-                  "  pm.expect(body.data === null || typeof body.data === 'undefined').to.eql(true);",
-                  "});"
+                  "pm.test('Create submission returns created submissionId', function () {",
+                  "  pm.expect(body.data).to.be.a('string').and.not.empty;",
+                  "});",
+                  "pm.environment.set('submissionId', body.data);"
                 ]
               }
             }
@@ -1517,7 +1510,7 @@
           "response": []
         },
         {
-          "name": "GET /api/v1/enrollments/{{enrollmentId}} (Recover submissionId)",
+          "name": "GET /api/v1/enrollments/{{enrollmentId}} (Verify submission)",
           "event": [
             {
               "listen": "prerequest",
@@ -1586,6 +1579,7 @@
               ]
             }
           },
+          "description": "Optional verification that the submission is visible on the enrollment detail after direct submissionId capture.",
           "response": []
         },
         {
