@@ -198,6 +198,7 @@ dotnet list ELearning.IntegrationTests/ELearning.IntegrationTests.csproj package
 - [Testing](docs/testing.md)
 - [ADR 0001: Modular Monolith](docs/adr/0001-modular-monolith.md)
 - [ADR 0002: Outbox, RabbitMQ, And Notifications](docs/adr/0002-outbox-rabbitmq-notifications.md)
+- For a step-by-step manual run guide, see [Company Reviewer Runbook](docs/company-runbook.md).
 
 ## Security Notes
 
