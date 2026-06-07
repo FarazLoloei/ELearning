@@ -5,6 +5,7 @@
 namespace ELearning.Infrastructure.Data.Repositories;
 
 using System.Data;
+using System.Globalization;
 using Dapper;
 using ELearning.Application.Instructors.ReadModels;
 using ELearning.Domain.Entities.UserAggregate.Abstractions.Repositories;
@@ -142,7 +143,7 @@ public class InstructorReadRepository(ApplicationDbContext context, ISqlDialect 
                                      GROUP BY u.Id, u.FirstName, u.LastName, u.Email, u.Bio, u.Expertise, u.ProfilePictureUrl
                                      """;
 
-        var instructor = await connection.QuerySingleOrDefaultAsync<InstructorSummaryRow>(
+        var instructor = await connection.QuerySingleOrDefaultAsync(
             new CommandDefinition(instructorSql, new { InstructorId = instructorId }, cancellationToken: cancellationToken));
 
         if (instructor is null)
@@ -155,8 +156,8 @@ public class InstructorReadRepository(ApplicationDbContext context, ISqlDialect 
                                          c.Title,
                                          c.Category AS CategoryId,
                                          c.Status AS StatusId,
-                                         c.PublishedDate,
-                                         c.createdAtUTC AS CreatedAt,
+                                         c.PublishedDate AS PublishedDate,
+                                         c.createdAtUTC AS CreatedAtUtc,
                                          COUNT(DISTINCT e.StudentId) AS EnrollmentsCount
                                   FROM Courses c
                                   LEFT JOIN Enrollments e ON e.CourseId = c.Id
@@ -165,22 +166,29 @@ public class InstructorReadRepository(ApplicationDbContext context, ISqlDialect 
                                   ORDER BY c.createdAtUTC DESC
                                   """;
 
-        var courses = await connection.QueryAsync<InstructorCourseRow>(
+        var courses = await connection.QueryAsync(
             new CommandDefinition(coursesSql, new { InstructorId = instructorId }, cancellationToken: cancellationToken));
 
-        var courseReadModels = courses.Select(MapToInstructorCourseReadModel).ToList();
+        var courseReadModels = courses.Select(row => new InstructorCourseReadModel(
+            ReadGuid(row.Id),
+            ReadString(row.Title),
+            ReadInt32(row.CategoryId),
+            ReadInt32(row.EnrollmentsCount),
+            ReadInt32(row.StatusId),
+            ReadNullableDateTime(row.PublishedDate),
+            ReadDateTime(row.CreatedAtUtc))).ToList();
 
         return new InstructorWithCoursesReadModel(
-            instructor.Id,
-            instructor.FirstName,
-            instructor.LastName,
-            instructor.Email,
-            instructor.Bio,
-            instructor.Expertise,
-            instructor.ProfilePictureUrl ?? string.Empty,
-            CalculateAverageRating(instructor.WeightedRatingsSum, instructor.TotalRatingsCount),
-            instructor.TotalStudents,
-            instructor.TotalCourses,
+            ReadGuid(instructor.Id),
+            ReadString(instructor.FirstName),
+            ReadString(instructor.LastName),
+            ReadString(instructor.Email),
+            ReadString(instructor.Bio),
+            ReadString(instructor.Expertise),
+            ReadNullableString(instructor.ProfilePictureUrl),
+            CalculateAverageRating(ReadDecimal(instructor.WeightedRatingsSum), ReadInt32(instructor.TotalRatingsCount)),
+            ReadInt32(instructor.TotalStudents),
+            ReadInt32(instructor.TotalCourses),
             courseReadModels);
     }
 
@@ -248,18 +256,39 @@ public class InstructorReadRepository(ApplicationDbContext context, ISqlDialect 
             row.TotalStudents,
             row.TotalCourses);
 
-    private static InstructorCourseReadModel MapToInstructorCourseReadModel(InstructorCourseRow row) =>
-        new(
-            row.Id,
-            row.Title,
-            row.CategoryId,
-            row.EnrollmentsCount,
-            row.StatusId,
-            row.PublishedDate,
-            row.CreatedAt);
-
     private static decimal CalculateAverageRating(decimal weightedRatingsSum, int totalRatingsCount) =>
         totalRatingsCount == 0 ? 0 : weightedRatingsSum / totalRatingsCount;
+
+    private static Guid ReadGuid(object value) =>
+        value switch
+        {
+            Guid guid => guid,
+            string text => Guid.Parse(text),
+            _ => Guid.Parse(Convert.ToString(value, CultureInfo.InvariantCulture) ?? string.Empty),
+        };
+
+    private static string ReadString(object? value) =>
+        value?.ToString() ?? string.Empty;
+
+    private static string? ReadNullableString(object? value) =>
+        value?.ToString();
+
+    private static int ReadInt32(object value) =>
+        Convert.ToInt32(value, CultureInfo.InvariantCulture);
+
+    private static decimal ReadDecimal(object value) =>
+        Convert.ToDecimal(value, CultureInfo.InvariantCulture);
+
+    private static DateTime ReadDateTime(object value) =>
+        value switch
+        {
+            DateTime dateTime => dateTime,
+            string text => DateTime.Parse(text, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind),
+            _ => Convert.ToDateTime(value, CultureInfo.InvariantCulture),
+        };
+
+    private static DateTime? ReadNullableDateTime(object? value) =>
+        value is null or DBNull ? null : ReadDateTime(value);
 
     private sealed record InstructorSummaryRow(
         Guid Id,
@@ -273,15 +302,6 @@ public class InstructorReadRepository(ApplicationDbContext context, ISqlDialect 
         int TotalStudents,
         decimal WeightedRatingsSum,
         int TotalRatingsCount);
-
-    private sealed record InstructorCourseRow(
-        Guid Id,
-        string Title,
-        int CategoryId,
-        int StatusId,
-        DateTime CreatedAt,
-        DateTime? PublishedDate,
-        int EnrollmentsCount);
 
     private sealed record RatingRow(decimal Rating, int RatingCount);
 }
