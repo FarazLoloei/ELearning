@@ -2,13 +2,13 @@
 
 [![ci](https://github.com/FarazLoloei/ELearning/actions/workflows/ci.yml/badge.svg)](https://github.com/FarazLoloei/ELearning/actions/workflows/ci.yml)
 
-Backend-focused sample API for an e-learning platform built as a modular monolith with Clean Architecture-style layering, DDD-inspired workflow modeling, CQRS with MediatR, and reliable messaging.
+Backend-focused .NET Web API sample for an e-learning platform.
 
-This repository is a .NET backend portfolio project. It is intentionally not a full learning-management product or a production guarantee; it is a focused sample that shows deliberate architecture, credible business workflows, and practical runtime/deployment support for review and local use.
+It demonstrates layered architecture, CQRS, persistence with EF Core and Dapper, authentication, messaging with an outbox pattern, automated tests, and sample deployment artifacts.
 
-## Why This Project Exists
+This repository is a backend sample project. It is intentionally not a full learning-management product or a complete production platform.
 
-Many sample backends stop at CRUD. This project is shaped around product workflows instead:
+## Supported Workflows
 
 - instructors author courses with modules, lessons, and assignments
 - admins govern publication through review, approval, and rejection actions
@@ -41,7 +41,7 @@ Many sample backends stop at CRUD. This project is shaped around product workflo
 | Messaging | Outbox pattern, RabbitMQ, idempotent notification consumer |
 | Security | JWT bearer auth, refresh tokens, role-based authorization, security audit events |
 | Observability | Health checks, OpenTelemetry tracing/metrics/logging basics |
-| Operations and packaging | Dockerfile, Docker Compose, Kubernetes Kustomize base, GitHub Actions CI |
+| Delivery artifacts | Dockerfile, Docker Compose, Kubernetes Kustomize base, GitHub Actions CI |
 | Quality | Unit/domain tests, integration tests, architecture tests, dependency vulnerability scanning |
 
 ## Architecture At A Glance
@@ -60,26 +60,6 @@ flowchart LR
 
 The solution keeps business rules in the domain/application layers and keeps infrastructure concerns behind adapters. See [Architecture](docs/architecture.md) for the deeper explanation.
 
-## Business Workflows
-
-```mermaid
-stateDiagram-v2
-    [*] --> Draft
-    Draft --> InReview: Submit for review
-    InReview --> Published: Admin approves
-    InReview --> Rejected: Admin rejects
-    Rejected --> Draft: Instructor edits
-    Published --> Archived: Archive
-```
-
-Representative workflows:
-
-- instructor creates a course, adds modules/lessons/assignments, and submits it for review
-- admin approves or rejects publication
-- student enrolls in a published course
-- student progresses through lessons and assessments
-- completed students can review a course and receive a certificate
-
 ## API Capabilities
 
 - auth: login, register, refresh, revoke
@@ -88,7 +68,7 @@ Representative workflows:
 - submissions: create and grade assessment submissions
 - certificates: issue, retrieve by enrollment, verify by public code
 
-Useful endpoints:
+## Useful Endpoints
 
 - Swagger UI: `/`
 - REST: `/api/v1/*` and compatibility routes under `/api/*`
@@ -113,9 +93,8 @@ See [Messaging](docs/messaging.md) and [ADR 0002](docs/adr/0002-outbox-rabbitmq-
 
 - `/health/live` checks the process is alive
 - `/health/ready` checks database connectivity
-- OpenTelemetry tracing, metrics, and logging are configured at startup
-- console export is disabled by default
-- OTLP export is enabled only when `Observability:OtlpEndpoint` is configured
+- OpenTelemetry tracing, metrics, and logging basics are configured at startup
+- console export is disabled by default, and OTLP export is enabled only when `Observability:OtlpEndpoint` is configured
 
 ## Run Locally
 
@@ -223,10 +202,6 @@ The validation commands above let readers run the current test suite and deploym
 - SQL Server and RabbitMQ production hosting are intentionally left to managed services or dedicated operators.
 - GraphQL is secondary and does not attempt to expose every REST workflow.
 - The project focuses on backend architecture and workflows, not a frontend UI.
-
-## Why This Repo Is Useful As A Backend Sample
-
-This project is useful as a backend sample because it shows explicit workflow modeling, clear layer boundaries, pragmatic CQRS, provider-aware persistence, reliable messaging patterns, observable health endpoints, and meaningful automated tests without expanding into a full platform.
 
 ## License
 
