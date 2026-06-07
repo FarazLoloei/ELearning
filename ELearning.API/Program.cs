@@ -7,7 +7,6 @@ using ELearning.API.Infrastructure;
 using ELearning.API.Middleware;
 using ELearning.Application;
 using ELearning.Infrastructure;
-using ELearning.Infrastructure.DaprServices;
 using Ocelot.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -21,7 +20,6 @@ builder.AddApiObservability();
 
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
-builder.Services.AddDaprServices(builder.Configuration);
 builder.Services.AddGraphQLServices();
 
 builder.Services.AddApiPresentation();
