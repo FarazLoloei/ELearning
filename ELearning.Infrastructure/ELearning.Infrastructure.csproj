@@ -1,14 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
-    <Compile Remove="Data\Repositories\LessonReadRepository.cs" />
-    <Compile Remove="Data\Repositories\ModuleReadRepository.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
 	  <PackageReference Include="Dapper" Version="2.1.72" />
-	  <PackageReference Include="Dapr.AspNetCore" Version="1.17.4" />
-	  <PackageReference Include="Dapr.Client" Version="1.17.4" />
 	  <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.5">
 	    <PrivateAssets>all</PrivateAssets>
 	    <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -20,6 +13,10 @@
 
   <ItemGroup>
     <ProjectReference Include="..\ELearning.Application\ELearning.Application.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
 
   <ItemGroup>
