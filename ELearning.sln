@@ -17,6 +17,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ELearning.Application.Tests
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ELearning.IntegrationTests", "ELearning.IntegrationTests\ELearning.IntegrationTests.csproj", "{5B0C8A5B-78D3-4789-A78D-18312E824832}"
 EndProject
+Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-compose.dcproj", "{279D7217-A7E7-4BAA-BB91-10C771BED2C7}"
+EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{5EA21EF8-1411-42DA-AA46-AF46FD211943}"
 EndProject
 Global
@@ -113,6 +115,18 @@ Global
 		{5B0C8A5B-78D3-4789-A78D-18312E824832}.Release|x64.Build.0 = Release|Any CPU
 		{5B0C8A5B-78D3-4789-A78D-18312E824832}.Release|x86.ActiveCfg = Release|Any CPU
 		{5B0C8A5B-78D3-4789-A78D-18312E824832}.Release|x86.Build.0 = Release|Any CPU
+		{279D7217-A7E7-4BAA-BB91-10C771BED2C7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{279D7217-A7E7-4BAA-BB91-10C771BED2C7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{279D7217-A7E7-4BAA-BB91-10C771BED2C7}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{279D7217-A7E7-4BAA-BB91-10C771BED2C7}.Debug|x64.Build.0 = Debug|Any CPU
+		{279D7217-A7E7-4BAA-BB91-10C771BED2C7}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{279D7217-A7E7-4BAA-BB91-10C771BED2C7}.Debug|x86.Build.0 = Debug|Any CPU
+		{279D7217-A7E7-4BAA-BB91-10C771BED2C7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{279D7217-A7E7-4BAA-BB91-10C771BED2C7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{279D7217-A7E7-4BAA-BB91-10C771BED2C7}.Release|x64.ActiveCfg = Release|Any CPU
+		{279D7217-A7E7-4BAA-BB91-10C771BED2C7}.Release|x64.Build.0 = Release|Any CPU
+		{279D7217-A7E7-4BAA-BB91-10C771BED2C7}.Release|x86.ActiveCfg = Release|Any CPU
+		{279D7217-A7E7-4BAA-BB91-10C771BED2C7}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
