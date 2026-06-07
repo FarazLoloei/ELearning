@@ -2,9 +2,9 @@
 
 [![ci](https://github.com/FarazLoloei/ELearning/actions/workflows/ci.yml/badge.svg)](https://github.com/FarazLoloei/ELearning/actions/workflows/ci.yml)
 
-Production-inspired backend sample for an e-learning platform built as a modular monolith with Clean Architecture, DDD-inspired workflow modeling, CQRS with MediatR, reliable messaging, and cloud-ready foundations.
+Backend-focused sample API for an e-learning platform built as a modular monolith with Clean Architecture-style layering, DDD-inspired workflow modeling, CQRS with MediatR, and reliable messaging.
 
-This repository is a senior .NET backend portfolio project. It is intentionally not a full learning-management product or a production guarantee; it is a focused sample that shows deliberate architecture, credible business workflows, and practical deployment readiness.
+This repository is a .NET backend portfolio project. It is intentionally not a full learning-management product or a production guarantee; it is a focused sample that shows deliberate architecture, credible business workflows, and practical runtime/deployment support for review and local use.
 
 ## Why This Project Exists
 
@@ -27,7 +27,7 @@ Many sample backends stop at CRUD. This project is shaped around product workflo
 - consistent REST error contracts with `ProblemDetails`
 - EF Core write model, Dapper read models, SQL Server migrations, and SQLite in-memory local/test defaults
 - outbox pattern, RabbitMQ integration events, and idempotent notification processing
-- health endpoints, OpenTelemetry basics, Docker Compose, Kubernetes manifests, CI, tests, and dependency scanning
+- health endpoints, OpenTelemetry basics, Docker Compose, Kubernetes manifests, CI, tests, and dependency vulnerability scanning
 
 ## Technology Stack
 
@@ -41,8 +41,8 @@ Many sample backends stop at CRUD. This project is shaped around product workflo
 | Messaging | Outbox pattern, RabbitMQ, idempotent notification consumer |
 | Security | JWT bearer auth, refresh tokens, role-based authorization, security audit events |
 | Observability | Health checks, OpenTelemetry tracing/metrics/logging basics |
-| Delivery readiness | Dockerfile, Docker Compose, Kubernetes Kustomize base, GitHub Actions CI |
-| Quality | Unit/domain tests, integration tests, architecture tests, vulnerability scan |
+| Operations and packaging | Dockerfile, Docker Compose, Kubernetes Kustomize base, GitHub Actions CI |
+| Quality | Unit/domain tests, integration tests, architecture tests, dependency vulnerability scanning |
 
 ## Architecture At A Glance
 
@@ -168,7 +168,7 @@ Stop the stack:
 docker compose down
 ```
 
-## Kubernetes Readiness
+## Kubernetes Base Manifests
 
 Kustomize base manifests live under `deploy/kubernetes/base` and include:
 
@@ -198,10 +198,7 @@ docker compose config
 kubectl kustomize deploy/kubernetes/base
 ```
 
-Current local verification:
-
-- `ELearning.Application.Tests`: `110` passing
-- `ELearning.IntegrationTests`: `55` passing
+The validation commands above let readers run the current test suite and deployment checks locally.
 
 ## Documentation
 
@@ -222,14 +219,14 @@ Current local verification:
 ## Known Limitations
 
 - Email delivery is represented by an application seam and logging implementation, not a real SMTP or third-party provider.
-- Kubernetes manifests are API readiness artifacts, not a full production platform.
+- Kubernetes manifests are sample API deployment artifacts, not a full production platform.
 - SQL Server and RabbitMQ production hosting are intentionally left to managed services or dedicated operators.
 - GraphQL is secondary and does not attempt to expose every REST workflow.
 - The project focuses on backend architecture and workflows, not a frontend UI.
 
-## Why This Is A Strong Backend Sample
+## Why This Repo Is Useful As A Backend Sample
 
-This project demonstrates senior-level backend judgment through explicit workflow modeling, clear layer boundaries, pragmatic CQRS, provider-aware persistence, reliable messaging foundations, observable health endpoints, deployment-ready artifacts, and meaningful automated tests without turning the sample into an over-engineered platform.
+This project is useful as a backend sample because it shows explicit workflow modeling, clear layer boundaries, pragmatic CQRS, provider-aware persistence, reliable messaging patterns, observable health endpoints, and meaningful automated tests without expanding into a full platform.
 
 ## License
 

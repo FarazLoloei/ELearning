@@ -1,6 +1,6 @@
 # Deployment
 
-The project includes deployment-readiness artifacts for local containers and basic Kubernetes API manifests. These files are meant to make the sample runnable and reviewable outside the IDE.
+The project includes sample deployment artifacts for local containers and basic Kubernetes API manifests. These files are meant to make the sample runnable and reviewable outside the IDE.
 
 They are not a complete production platform.
 

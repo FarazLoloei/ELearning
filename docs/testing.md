@@ -9,10 +9,7 @@ The test suite is designed to demonstrate behavior, architecture boundaries, and
 | `ELearning.Application.Tests` | domain behavior, application services, DTO validation, architecture rules |
 | `ELearning.IntegrationTests` | HTTP workflows, authentication/authorization, health checks, configuration, persistence, outbox, notification idempotency |
 
-Current local verification:
-
-- `ELearning.Application.Tests`: `110` passing
-- `ELearning.IntegrationTests`: `55` passing
+Run the validation commands below to see the current test totals in your environment.
 
 ## Coverage Themes
 
