@@ -44,7 +44,18 @@ Pipeline:
 dotnet restore ELearning.sln
 dotnet build ELearning.sln -nologo /p:UseSharedCompilation=false
 dotnet test ELearning.sln -nologo /p:UseSharedCompilation=false
-dotnet list ELearning.sln package --vulnerable --include-transitive
+```
+
+Dependency vulnerability scan, matching CI:
+
+```powershell
+dotnet list ELearning.API/ELearning.API.csproj package --vulnerable --include-transitive
+dotnet list ELearning.Application/ELearning.Application.csproj package --vulnerable --include-transitive
+dotnet list ELearning.Domain/ELearning.Domain.csproj package --vulnerable --include-transitive
+dotnet list ELearning.Infrastructure/ELearning.Infrastructure.csproj package --vulnerable --include-transitive
+dotnet list ELearning.SharedKernel/ELearning.SharedKernel.csproj package --vulnerable --include-transitive
+dotnet list ELearning.Application.Tests/ELearning.Application.Tests.csproj package --vulnerable --include-transitive
+dotnet list ELearning.IntegrationTests/ELearning.IntegrationTests.csproj package --vulnerable --include-transitive
 ```
 
 Deployment artifact checks:

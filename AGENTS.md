@@ -47,12 +47,25 @@ Preferred validation commands:
 dotnet restore ELearning.sln
 dotnet build ELearning.sln -nologo /p:UseSharedCompilation=false
 dotnet test ELearning.sln -nologo /p:UseSharedCompilation=false
-dotnet list ELearning.sln package --vulnerable --include-transitive
 docker compose config
 kubectl kustomize deploy/kubernetes/base
 ```
 
 Use targeted tests when possible for small changes.
+
+Dependency vulnerability scan, matching CI:
+
+```powershell
+dotnet list ELearning.API/ELearning.API.csproj package --vulnerable --include-transitive
+dotnet list ELearning.Application/ELearning.Application.csproj package --vulnerable --include-transitive
+dotnet list ELearning.Domain/ELearning.Domain.csproj package --vulnerable --include-transitive
+dotnet list ELearning.Infrastructure/ELearning.Infrastructure.csproj package --vulnerable --include-transitive
+dotnet list ELearning.SharedKernel/ELearning.SharedKernel.csproj package --vulnerable --include-transitive
+dotnet list ELearning.Application.Tests/ELearning.Application.Tests.csproj package --vulnerable --include-transitive
+dotnet list ELearning.IntegrationTests/ELearning.IntegrationTests.csproj package --vulnerable --include-transitive
+```
+
+If new SDK-style `.csproj` projects are added later, keep this documentation and the CI project list aligned.
 
 ## Provider Defaults
 
